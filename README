@@ -1,0 +1,67 @@
+RollCageX 0.04
+
+This is a really short readme trying to answear any question you might have.
+
+[LICENSING]
+---
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+---
+
+[CONTROLLS]
+First, you must chose an active car, to switch between the available cars, use:
+ F1 - car with 1m wheel diameter
+ F2 - car with 2m wheel diameter
+ F3 - car with 3m wheel diameter
+ F4 - car with 4m wheel diameter
+
+Arrow keys for accelerating/reversing and steering, space for drifting breaks
+Ctrl and Alt keys controlls non-locking breaks (should be easier than the
+drifting breaks which will act similar to the breaks in the original games)
+
+You can also spawn extra "debug" boxes, which will be dropped above the mark on
+the ground, using F5 anf F6 (F6 dropps it at a distance which should take it
+exactly 10 seconds to reach the ground - good for realitim/simtime comparision)
+
+[REQUIREMENTS]
+Shouldn't take to much computer power, any modern system will be enough.
+
+Running the game requires the following extra runtime libraries (unless if you
+are running a static binary)
+
+Library dependenies:
+	Open Dynamics Engine		(ODE)
+	Simple Directmedia Layer	(SDL)
+	OpenGL implementation		(os or graphics server specific)
+
+You should compile the game yourself if you can, you will need the dev
+libraries (if your distro/os package them sepparately)
+
+[INSTALLING]
+Just run the program, there is no need to move it
+
+[COMPILING]
+Running "make" in the directory containing the sourcecode should be enough,
+if you are running windows, you should install MinGW (a minimalistic GNU port
+running under windows) and the libraries, you are probably going to want to
+compile a static binary by typing "make win32-static". If you are not running
+a dev friendly os (GNU, BSD), or windows, you might have to look into changing
+the normal compilation arguments in the Makefile to make compilation work.
+
+[CREDITS]
+(people refered to by their nickname on the gorcx.net forum)
+"MeAkaJon" - the creator of the project
+"Soul Slinger" - coder (me, the creator of all current ersions of rcx)
+
+[LINKS]
+http://www.gorcx.net
