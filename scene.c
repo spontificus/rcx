@@ -100,19 +100,34 @@ new_surface(float vertices[4][3])
 
 static void
 render_surface_shadow_volume(struct surface *surf,
-                             float *surf_pos, float *light_pos)
+                             GLfloat matrix[16], float *light_pos)
 {
 	int i;
 	float v[4][3];
+        float sv[4][3];
+        GLfloat X;
+        GLfloat Y;
+        GLfloat Z;
 
 	for(i = 0; i < 4; i++) {
-		surf->vertices[i][0] += surf_pos[0];
-		surf->vertices[i][1] += surf_pos[1];
-		surf->vertices[i][2] += surf_pos[2];
+                X = surf->vertices[i][0];
+                Y = surf->vertices[i][1];
+                Z = surf->vertices[i][2];
+        
+                GLfloat NewX = X * matrix[0] + Y * matrix[4] + Z * matrix[8] + matrix[12];
+                GLfloat NewY = X * matrix[1] + Y * matrix[5] + Z * matrix[9] + matrix[13];
+                GLfloat NewZ = X * matrix[2] + Y * matrix[6] + Z * matrix[10] + matrix[14];
+                //GLfloat NewX = X * matrix[0][0] + Y * matrix[1][0] + Z * matrix[2][0];
+                //GLfloat NewY = X * matrix[0][1] + Y * matrix[1][1] + Z * matrix[2][1];
+                //GLfloat NewZ = X * matrix[0][2] + Y * matrix[1][2] + Z * matrix[2][2];
 
-		v[i][0] = (surf->vertices[i][0] - light_pos[0]);
-		v[i][1] = (surf->vertices[i][1] - light_pos[1]);
-		v[i][2] = (surf->vertices[i][2] - light_pos[2]);
+		sv[i][0] = NewX;
+		sv[i][1] = NewY;
+		sv[i][2] = NewZ;
+
+		v[i][0] = (sv[i][0] - light_pos[0]);
+		v[i][1] = (sv[i][1] - light_pos[1]);
+		v[i][2] = (sv[i][2] - light_pos[2]);
 		normalize(v[i]);
 		v[i][0] *= M_INFINITY;
 		v[i][1] *= M_INFINITY;
@@ -132,27 +147,24 @@ render_surface_shadow_volume(struct surface *surf,
 
 	/* front cap */
 	glBegin(GL_QUADS);
-		glVertex3fv(surf->vertices[0]);
-		glVertex3fv(surf->vertices[1]);
-		glVertex3fv(surf->vertices[2]);
-		glVertex3fv(surf->vertices[3]);
+		glVertex3fv(sv[0]);
+		glVertex3fv(sv[1]);
+		glVertex3fv(sv[2]);
+		glVertex3fv(sv[3]);
 	glEnd();
 
 	glBegin(GL_QUAD_STRIP);
-	glVertex3fv(surf->vertices[0]);
+	glVertex3fv(sv[0]);
 	glVertex3fv(v[0]);
 	for(i = 1; i <= 4; i++) {
-		glVertex3fv(surf->vertices[i % 4]);
+		glVertex3fv(sv[i % 4]);
 		glVertex3fv(v[i % 4]);
 	}
 	glEnd();
 
-	for(i = 0; i < 4; i++) {
-		surf->vertices[i][0] -= surf_pos[0];
-		surf->vertices[i][1] -= surf_pos[1];
-		surf->vertices[i][2] -= surf_pos[2];
-	}
+	
 }
+
 
 static struct cube *
 new_cube(float size)
@@ -355,7 +367,7 @@ render_cube(struct cube *c)
 }
 
 static void
-render_cube_shadow(struct cube *c, const dReal *pos, const dReal *rot)
+render_cube_shadow(struct cube *c, GLfloat matrix[16])
 {
 	int i;
 
@@ -370,12 +382,12 @@ render_cube_shadow(struct cube *c, const dReal *pos, const dReal *rot)
 		glCullFace(GL_FRONT);
 		glStencilFunc(GL_ALWAYS, 0x0, 0xff);
 		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
-		render_surface_shadow_volume(c->surfaces[i], pos, light_pos);
+		render_surface_shadow_volume(c->surfaces[i], matrix, light_pos);
 
 		glCullFace(GL_BACK);
 		glStencilFunc(GL_ALWAYS, 0x0, 0xff);
 		glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
-		render_surface_shadow_volume(c->surfaces[i], pos, light_pos);
+		render_surface_shadow_volume(c->surfaces[i], matrix, light_pos);
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
 		glDisable(GL_CULL_FACE);
@@ -387,6 +399,42 @@ render_cube_shadow(struct cube *c, const dReal *pos, const dReal *rot)
 		draw_shadow();
 		glDisable(GL_STENCIL_TEST);
 	}
+}
+
+static void
+render_gen_shadow(struct surfaces *sc, GLfloat matrix[16])
+{
+        
+        while (sc != NULL) {
+                glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+                glDepthMask(GL_FALSE);
+                glEnable(GL_CULL_FACE);
+                glEnable(GL_STENCIL_TEST);
+                glEnable(GL_POLYGON_OFFSET_FILL);
+                glPolygonOffset(0.0f, 100.0f);
+
+                glCullFace(GL_FRONT);
+                glStencilFunc(GL_ALWAYS, 0x0, 0xff);
+                glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
+                render_surface_shadow_volume(sc->s, matrix, light_pos);
+
+                glCullFace(GL_BACK);
+                glStencilFunc(GL_ALWAYS, 0x0, 0xff);
+                glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
+                render_surface_shadow_volume(sc->s, matrix, light_pos);
+
+                glDisable(GL_POLYGON_OFFSET_FILL);
+                glDisable(GL_CULL_FACE);
+                glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+                glDepthMask(GL_TRUE);
+
+                glStencilFunc(GL_NOTEQUAL, 0x0, 0xff);
+                glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+                draw_shadow();
+                glDisable(GL_STENCIL_TEST);
+                
+                sc = sc->nxt;
+        }
 }
 
 

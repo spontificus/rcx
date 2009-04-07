@@ -259,6 +259,10 @@ car *load_car_debug(dReal size)
 {
 	printf("--- Loading (debug) car\n");
 	//currently, no data loaded, except allocating and setting basic values
+        
+        struct surface *ns;
+        struct surfaces *nsc;
+        
 	car *target = allocate_car();
 
 	//set wheel data
@@ -296,14 +300,54 @@ car *load_car_debug(dReal size)
 	//(not: wheel axis is along z)
 	target->wheel_graphics = allocate_graphics_list();
 	glNewList (target->wheel_graphics->render_list, GL_COMPILE);
+        
+        struct surfaces *mys = NULL;
+        
 	//tyre
 	glColor3f (0.0f, 0.0f, 0.0f);
 	glBegin (GL_QUAD_STRIP);
 	float v;
-	for (v=0; v<=2*M_PI; v+=2*M_PI/10)
+        float inc = 2.0*M_PI/10.0;
+        float surf[4][3];
+        int first = 1;
+        
+	for (v=0; v<=2*M_PI; v+= inc)
 	{
 		glVertex3f(w_r*sin(v), w_r*cos(v), -w_w/2.0f);
 		glVertex3f(w_r*sin(v), w_r*cos(v), w_w/2.0f);
+                
+                if (first == 1) {
+                  first = 0;
+                  surf[0][0] = w_r*sin(v);
+                  surf[0][1] = w_r*cos(v);
+                  surf[0][2] = -w_w/2.0f;
+                  
+                  surf[1][0] = w_r*sin(v);
+                  surf[1][1] = w_r*cos(v);
+                  surf[1][2] = w_w/2.0f;
+                }
+                
+                surf[2][0] = w_r*sin(v+inc);
+                surf[2][1] = w_r*cos(v+inc);
+                surf[2][2] = -w_w/2.0f;
+                
+                surf[3][0] = w_r*sin(v+inc);
+                surf[3][1] = w_r*cos(v+inc);
+                surf[3][2] = w_w/2.0f;
+                
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));;
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+                
+                surf[0][0] = surf[3][0];
+                surf[0][1] = surf[3][1];
+                surf[0][2] = surf[3][2];
+                
+                surf[1][0] = surf[2][0];
+                surf[1][1] = surf[2][1];
+                surf[1][2] = surf[2][2];
 	}
 	glEnd();
 	//rim
@@ -318,6 +362,7 @@ car *load_car_debug(dReal size)
 		glVertex3f(w_r/5, -w_r*0.9f, w_w/3.0f);
 		glVertex3f(-w_r/5, -w_r*0.9f, w_w/3.0f);
 		glVertex3f(-w_r/5, w_r*0.9f, w_w/3.0f);
+                
 	glEnd();
 
 	glEndList();
@@ -333,14 +378,104 @@ car *load_car_debug(dReal size)
 		glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
 		glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
 
+                surf[0][0] = b_x/2.0f;
+                surf[0][1] = b_y/2.0f;
+                surf[0][2] = b_z/2.0f;
+                
+                surf[1][0] = -b_x/2.0f;
+                surf[1][1] = b_y/2.0f;
+                surf[1][2] = b_z/2.0f;
+                
+                surf[2][0] = -b_x/2.0f;
+                surf[2][1] = -b_y/2.0f;
+                surf[2][2] = b_z/2.0f;
+                
+                surf[3][0] = b_x/2.0f;
+                surf[3][1] = -b_y/2.0f;
+                surf[3][2] = b_z/2.0f;
+                
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+
+                surf[0][0] = surf[3][0];
+                surf[0][1] = surf[3][1];
+                surf[0][2] = surf[3][2];
+                
+                surf[1][0] = surf[2][0];
+                surf[1][1] = surf[2][1];
+                surf[1][2] = surf[2][2];
+
 		glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
 		glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
+               
+                surf[2][0] = -b_x/2.0f;
+                surf[2][1] = -b_y/2.0f;
+                surf[2][2] = -b_z/2.0f;
+                
+                surf[3][0] = b_x/2.0f;
+                surf[3][1] = -b_y/2.0f;
+                surf[3][2] = -b_z/2.0f;
+                
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+
+                surf[0][0] = surf[3][0];
+                surf[0][1] = surf[3][1];
+                surf[0][2] = surf[3][2];
+                
+                surf[1][0] = surf[2][0];
+                surf[1][1] = surf[2][1];
+                surf[1][2] = surf[2][2];
 
 		glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
 		glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
 
+                surf[2][0] = -b_x/2.0f;
+                surf[2][1] = -b_y/2.0f;
+                surf[2][2] = -b_z/2.0f;
+                
+                surf[3][0] = b_x/2.0f;
+                surf[3][1] = b_y/2.0f;
+                surf[3][2] = -b_z/2.0f;
+                
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+
+                surf[0][0] = surf[3][0];
+                surf[0][1] = surf[3][1];
+                surf[0][2] = surf[3][2];
+                
+                surf[1][0] = surf[2][0];
+                surf[1][1] = surf[2][1];
+                surf[1][2] = surf[2][2];
+
 		glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
 		glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
+                
+                surf[2][0] = -b_x/2.0f;
+                surf[2][1] = b_y/2.0f;
+                surf[2][2] = b_z/2.0f;
+                
+                surf[3][0] = b_x/2.0f;
+                surf[3][1] = b_y/2.0f;
+                surf[3][2] = b_z/2.0f;
+                
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+
+                
 	glEnd();
 	glBegin(GL_QUADS);
 		glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
@@ -348,12 +483,59 @@ car *load_car_debug(dReal size)
 		glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
 		glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
 
+                surf[0][0] = b_x/2.0f;
+                surf[0][1] = b_y/2.0f;
+                surf[0][2] = b_z/2.0f;
+                
+                surf[1][0] = b_x/2.0f;
+                surf[1][1] = b_y/2.0f;
+                surf[1][2] = -b_z/2.0f;
+                
+                surf[2][0] = b_x/2.0f;
+                surf[2][1] = -b_y/2.0f;
+                surf[2][2] = -b_z/2.0f;
+                
+                surf[3][0] = b_x/2.0f;
+                surf[3][1] = -b_y/2.0f;
+                surf[3][2] = b_z/2.0f;
+                
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+
 		glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
 		glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
 		glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
 		glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
+                
+                surf[0][0] = -b_x/2.0f;
+                surf[0][1] = b_y/2.0f;
+                surf[0][2] = b_z/2.0f;
+                
+                surf[1][0] = -b_x/2.0f;
+                surf[1][1] = b_y/2.0f;
+                surf[1][2] = -b_z/2.0f;
+                
+                surf[2][0] = -b_x/2.0f;
+                surf[2][1] = -b_y/2.0f;
+                surf[2][2] = -b_z/2.0f;
+                
+                surf[3][0] = -b_x/2.0f;
+                surf[3][1] = -b_y/2.0f;
+                surf[3][2] = b_z/2.0f;
+                
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+                
 	glEnd();
 	glEndList();
+
+        target->s = mys;
 
 	printf("---\n\n");
 	return (target);
@@ -375,6 +557,10 @@ void spawn_car_debug(car *target, dReal x, dReal y, dReal z)
 
 
 	component *body=allocate_component(NULL, target->object);
+        
+        // copy over shadow surfaces
+        body->s = target->s;
+        
 	//body:
 	printf("\nTODO: add transformed geoms to body (for detecting side flipping)\n\n");
 	//(physics)

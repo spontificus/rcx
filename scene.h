@@ -53,7 +53,7 @@ struct surface {
 };
 
 struct surfaces {
-        struct surface s;
+        struct surface *s;
         struct surfaces *nxt;
 } surfaces;
 
@@ -75,14 +75,16 @@ static void normalize(float v[3]);
 static void cross_product(const float *v1, const float *v2, float *out);
 static void multiply_vector_by_matrix(const float m[9], float v[3]);
 static struct surface * new_surface(float vertices[4][3]);
-static void render_surface_shadow_volume(struct surface *surf, float *surf_pos, float *light_pos);
+
+static void render_surface_shadow_volume(struct surface *surf, GLfloat matrix[16], float *light_pos);
 static struct cube * new_cube(float size);
 static unsigned int generate_lightmap(struct surface *surf, float *position);
 void scene_toggle_lighting();
 static void draw_shadow();
 static void render_surface(struct surface *surf, float *position);
 static void render_cube(struct cube *c);
-static void render_cube_shadow(struct cube *c, const dReal *pos, const dReal *rot);
+static void render_cube_shadow(struct cube *c, GLfloat matrix[16]);
+static void render_gen_shadow(struct surfaces *sc, GLfloat matrix[16]);
 void scene_render();
 static unsigned int get_ticks();
 void scene_cycle();

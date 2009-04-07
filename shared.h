@@ -91,7 +91,7 @@ typedef struct component_struct {
         
         // used to store surface data for shadows
         // most likely there are better ways to do this
-        //surfaces *s;
+        struct surfaces *s;
         
         // but for now everything is a cube
         struct cube *c;
@@ -130,6 +130,10 @@ typedef struct car_struct {
 
 	//debug data
 	dReal b_x, b_y, b_z, w_r, w_w, w_x, w_y;
+        
+        // ugly hack
+        // but how else to transfer the vertices?
+        struct surfaces *s;
 
 	struct car_struct *next;
 	struct car_struct *prev;
