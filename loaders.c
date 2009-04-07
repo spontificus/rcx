@@ -3,7 +3,7 @@
 //(allocating and freeing is handled in shared.c)
 
 
-int load_world_debug (void)
+int load_world_debug (float size)
 {
 	//build hard-coded world, with gravity and box for environment
 
@@ -23,19 +23,19 @@ int load_world_debug (void)
 
 	//4 more planes as walls
 	track.plane[1] = allocate_component(NULL, NULL);
-	track.plane[1]->geom_id = dCreatePlane (space,1,0,0,-30);
+	track.plane[1]->geom_id = dCreatePlane (space,1,0,0,-size);
 	dGeomSetData (track.plane[1]->geom_id, (void*)(component*)(track.plane[1]));//???
 
 	track.plane[2] = allocate_component(NULL, NULL);
-	track.plane[2]->geom_id = dCreatePlane (space,-1,0,0,-30);
+	track.plane[2]->geom_id = dCreatePlane (space,-1,0,0,-size);
 	dGeomSetData (track.plane[2]->geom_id, (void*)(component*)(track.plane[2]));//???
 
 	track.plane[3] = allocate_component(NULL, NULL);
-	track.plane[3]->geom_id = dCreatePlane (space,0,1,0,-30);
+	track.plane[3]->geom_id = dCreatePlane (space,0,1,0,-size);
 	dGeomSetData (track.plane[3]->geom_id, (void*)(component*)(track.plane[3]));//???
 
 	track.plane[4] = allocate_component(NULL, NULL);
-	track.plane[4]->geom_id = dCreatePlane (space,0,-1,0,-30);
+	track.plane[4]->geom_id = dCreatePlane (space,0,-1,0,-size);
 	dGeomSetData (track.plane[4]->geom_id, (void*)(component*)(track.plane[4]));//???
 
 
@@ -47,55 +47,55 @@ int load_world_debug (void)
 	//the ground and walls for the environment box
 	glColor3f (0.0f, 1.0f, 0.0f);
 	glBegin (GL_QUADS);
-	glVertex3f (-30.0f, -30.0f, 0.0f);
-	glVertex3f (-30.0f, 30.0f, 0.0f);
-	glVertex3f (30.0f, 30.0f, 0.0f);
-	glVertex3f (30.0f, -30.0f, 0.0f);
+	glVertex3f (-size, -size, 0.0f);
+	glVertex3f (-size, size, 0.0f);
+	glVertex3f (size, size, 0.0f);
+	glVertex3f (size, -size, 0.0f);
 	glEnd();
 
 	glColor3f (0.5f, 0.5f, 0.5f);
 	glBegin (GL_QUAD_STRIP);
-	glVertex3f (-30.0f, -30.0f, 0.0f);
-	glVertex3f (-30.0f, -30.0f, 10.0f);
-	glVertex3f (-30.0f, 30.0f, 0.0f);
-	glVertex3f (-30.0f, 30.0f, 10.0f);
-	glVertex3f (30.0f, 30.0f, 0.0f);
-	glVertex3f (30.0f, 30.0f, 10.0f);
-	glVertex3f (30.0f, -30.0f, 0.0f);
-	glVertex3f (30.0f, -30.0f, 10.0f);
-	glVertex3f (-30.0f, -30.0f, 0.0f);
-	glVertex3f (-30.0f, -30.0f, 10.0f);
+	glVertex3f (-size, -size, 0.0f);
+	glVertex3f (-size, -size, 10.0f);
+	glVertex3f (-size, size, 0.0f);
+	glVertex3f (-size, size, 10.0f);
+	glVertex3f (size, size, 0.0f);
+	glVertex3f (size, size, 10.0f);
+	glVertex3f (size, -size, 0.0f);
+	glVertex3f (size, -size, 10.0f);
+	glVertex3f (-size, -size, 0.0f);
+	glVertex3f (-size, -size, 10.0f);
 	glEnd();
 
 	//draw black lines to make corners more "sharp"
 	glColor3f (0.0f, 0.0f, 0.0f);
 	glBegin (GL_LINE_LOOP);
-	glVertex3f (-29.9f, 29.9f, 0.1f);
-	glVertex3f (29.9f, 29.9f, 0.1f);
-	glVertex3f (29.9f, -29.9f, 0.1f);
-	glVertex3f (-29.9f, -29.9f, 0.1f);
+	glVertex3f (-(size - 0.1), (size - 0.1), 0.1f);
+	glVertex3f ((size - 0.1), (size - 0.1), 0.1f);
+	glVertex3f ((size - 0.1), -(size - 0.1), 0.1f);
+	glVertex3f (-(size - 0.1), -(size - 0.1), 0.1f);
 	glEnd();
 
 	glBegin (GL_LINE_LOOP);
-	glVertex3f (-30.0f, 30.0f, 10.0f);
-	glVertex3f (30.0f, 30.0f, 10.0f);
-	glVertex3f (30.0f, -30.0f, 10.0f);
-	glVertex3f (-30.0f, -30.0f, 10.0f);
+	glVertex3f (-size, size, 10.0f);
+	glVertex3f (size, size, 10.0f);
+	glVertex3f (size, -size, 10.0f);
+	glVertex3f (-size, -size, 10.0f);
 	glEnd();
 
 	
 	glBegin (GL_LINES);
-	glVertex3f (-29.9f, 29.9f, 0.0f);
-	glVertex3f (-29.9f, 29.9f, 10.0f);
+	glVertex3f (-(size - 0.1), (size - 0.1), 0.0f);
+	glVertex3f (-(size - 0.1), (size - 0.1), 10.0f);
 
-	glVertex3f (29.9f, 29.9f, 0.0f);
-	glVertex3f (29.9f, 29.9f, 10.0f);
+	glVertex3f ((size - 0.1), (size - 0.1), 0.0f);
+	glVertex3f ((size - 0.1), (size - 0.1), 10.0f);
 
-	glVertex3f (29.9f, -29.9f, 0.0f);
-	glVertex3f (29.9f, -29.9f, 10.0f);
+	glVertex3f ((size - 0.1), -(size - 0.1), 0.0f);
+	glVertex3f ((size - 0.1), -(size - 0.1), 10.0f);
 
-	glVertex3f (-29.9f, -29.9f, 0.0f);
-	glVertex3f (-29.9f, -29.9f, 10.0f);
+	glVertex3f (-(size - 0.1), -(size - 0.1), 0.0f);
+	glVertex3f (-(size - 0.1), -(size - 0.1), 10.0f);
 	glEnd();
 
 	glEndList();

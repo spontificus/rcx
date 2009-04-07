@@ -96,7 +96,7 @@ int main (int argc, char *argv[])
 
 	printf("\n");
 
-	if (load_world_debug())
+	if (load_world_debug(300))
 		emergency_quit();
 
 	debug_box = load_object_debug();
