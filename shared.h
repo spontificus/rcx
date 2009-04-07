@@ -88,6 +88,13 @@ typedef struct component_struct {
 	//set prev to null in last link in chain
 	struct component_struct *prev;
 	struct component_struct *next;
+        
+        // used to store surface data for shadows
+        // most likely there are better ways to do this
+        //surfaces *s;
+        
+        // but for now everything is a cube
+        struct cube *c;
 } component;
 
 component *component_head = NULL; //points at the first component in chain

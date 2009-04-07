@@ -23,6 +23,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef SCENE_H
+#define SCENE_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -49,10 +52,15 @@ struct surface {
 	float s_dist, t_dist;
 };
 
+struct surfaces {
+        struct surface s;
+        struct surfaces *nxt;
+} surfaces;
+
 struct cube {
 	struct surface *surfaces[6];
 	float position[3];
-};
+} cube;
 
 static float light_pos[3] = { 10.0f, 0.0f, 8.0f };
 static float light_color[3] = { 1.0f, 1.0f, 1.0f };
@@ -74,7 +82,9 @@ void scene_toggle_lighting();
 static void draw_shadow();
 static void render_surface(struct surface *surf, float *position);
 static void render_cube(struct cube *c);
-static void render_cube_shadow(struct cube *c);
+static void render_cube_shadow(struct cube *c, const dReal *pos, const dReal *rot);
 void scene_render();
 static unsigned int get_ticks();
 void scene_cycle();
+
+#endif

@@ -355,7 +355,7 @@ render_cube(struct cube *c)
 }
 
 static void
-render_cube_shadow(struct cube *c)
+render_cube_shadow(struct cube *c, const dReal *pos, const dReal *rot)
 {
 	int i;
 
@@ -370,12 +370,12 @@ render_cube_shadow(struct cube *c)
 		glCullFace(GL_FRONT);
 		glStencilFunc(GL_ALWAYS, 0x0, 0xff);
 		glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
-		render_surface_shadow_volume(c->surfaces[i], c->position, light_pos);
+		render_surface_shadow_volume(c->surfaces[i], pos, light_pos);
 
 		glCullFace(GL_BACK);
 		glStencilFunc(GL_ALWAYS, 0x0, 0xff);
 		glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
-		render_surface_shadow_volume(c->surfaces[i], c->position, light_pos);
+		render_surface_shadow_volume(c->surfaces[i], pos, light_pos);
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
 		glDisable(GL_CULL_FACE);
@@ -450,8 +450,8 @@ scene_render()
 	render_cube(room);
 
 	/* render shadows */
-	for(i = 0; i < 4; i++)
-		render_cube_shadow(cubes[i]);
+//	for(i = 0; i < 4; i++)
+//		render_cube_shadow(cubes[i]);
 
 	/* render light */
 	glColor3fv(light_color);

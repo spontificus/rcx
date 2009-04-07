@@ -245,6 +245,9 @@ void spawn_object_debug(script *script, dReal x, dReal y, dReal z)
 	//Next, Graphics
 	cmp->graphics_list = script->graphics_debug;
 
+        // everything is a cube
+        cmp->c = new_cube(0.5);
+
 	//done
 //	focused_geom = cmp->geom_id;
 	printf("--\n\n");

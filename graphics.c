@@ -111,10 +111,18 @@ void graphics_step (void)
 	{
 		if (!cmp->graphics_list) //invisible
 			break;
+                
+
+                
+                pos = dBodyGetPosition (cmp->body_id);
+                rot = dBodyGetRotation (cmp->body_id);
+
+                if (cmp->c != NULL) {
+                  render_cube_shadow(cmp->c, pos, rot);
+                }
 
 		glPushMatrix();
-			pos = dBodyGetPosition (cmp->body_id);
-			rot = dBodyGetRotation (cmp->body_id);
+			
 
 
 			//create transformation matrix to render correct position and rotation (float)

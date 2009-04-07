@@ -123,7 +123,7 @@ graphics_list *allocate_graphics_list (void)
 	printf("> allocating 3d list storage\n");
 
 	graphics_list * tmp_3d = malloc (sizeof(graphics_list));
-	//ad to list
+	//add to list
 	tmp_3d->next = graphics_list_head;
 	graphics_list_head = tmp_3d;
 
