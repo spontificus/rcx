@@ -37,9 +37,10 @@ car *car_active = NULL;
 
 #include "graphics.c"
 #include "physics.c"
-#include "shared.c" //functions for handling custom data
+#include "shared.c"  //functions for handling custom data
 #include "loaders.c" //loading functions for confs, tracks, cars, etc...
 #include "events.c"  //responds to events both OS- and game simulation related
+#include "scene.c"   //implements stencil shadows
 
 //if something goes wrong (after initing physics and graphics)
 void emergency_quit (void)

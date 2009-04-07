@@ -1,4 +1,4 @@
-SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c
+SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c scene.c
 SDL = `sdl-config --cflags --libs`
 ODE = `ode-config --cflags --libs`
 OGL = -lGL -lGLU

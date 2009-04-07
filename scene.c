@@ -23,37 +23,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/time.h>
-#include <math.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-
-#define M_INFINITY 50.0f
-#define LIGHTMAP_SIZE 16
-
-#ifndef glActiveTextureARB
-extern void glActiveTextureARB(GLenum);
-#endif
-#ifndef glMultiTexCoord2fARB
-extern void glMultiTexCoord2fARB(GLenum, float, float);
-#endif
-
-extern unsigned char *read_pcx(const char *filename, unsigned int *widthp, unsigned int *heightp);
-
-struct surface {
-	float vertices[4][3];
-	float matrix[9];
-
-	float s_dist, t_dist;
-};
-
-struct cube {
-	struct surface *surfaces[6];
-	float position[3];
-};
+#include "scene.h"
 
 static float
 dot_product(float v1[3], float v2[3])
@@ -254,9 +224,6 @@ new_cube(float size)
 	return c;
 }
 
-static float light_pos[3] = { 10.0f, 0.0f, 8.0f };
-static float light_color[3] = { 1.0f, 1.0f, 1.0f };
-
 static unsigned int
 generate_lightmap(struct surface *surf, float *position)
 {
@@ -320,7 +287,6 @@ generate_lightmap(struct surface *surf, float *position)
 	return lightmap_tex_num;
 }
 
-static int lighting = 1;
 
 void
 scene_toggle_lighting()
@@ -423,9 +389,6 @@ render_cube_shadow(struct cube *c)
 	}
 }
 
-static float cam_rot[3] = { 22.0f, 0.0f, 0.0f };
-static struct cube *cubes[4];
-static float sphere_pos[3] = { -10.0f, -5.0f, -10.0f };
 
 void
 scene_render()
@@ -439,20 +402,6 @@ scene_render()
 		unsigned char *data;
 		unsigned int width, height;
 
-		glEnable(GL_TEXTURE_2D);
-
-		/* load texture */
-		data = read_pcx("texture.pcx", &width, &height);
-		glEnable(GL_TEXTURE_2D);
-		glGenTextures(1, &surface_tex_num);
-		glBindTexture(GL_TEXTURE_2D, surface_tex_num);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
 		/* create objects */
 		room = new_cube(15.0f);
@@ -488,12 +437,7 @@ scene_render()
 
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-	glActiveTextureARB(GL_TEXTURE0_ARB);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, surface_tex_num);
-	glActiveTextureARB(GL_TEXTURE1_ARB);
-	if(lighting)
-		glEnable(GL_TEXTURE_2D);
+
 
 	/* render each cube */
 	for(i = 0; i < 4; i++) {
@@ -504,10 +448,6 @@ scene_render()
 	}
 
 	render_cube(room);
-
-	glDisable(GL_TEXTURE_2D);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
-	glDisable(GL_TEXTURE_2D);
 
 	/* render shadows */
 	for(i = 0; i < 4; i++)
@@ -524,7 +464,7 @@ scene_render()
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glFlush();
-	glutSwapBuffers();
+//	glutSwapBuffers();
 }
 
 static unsigned int
