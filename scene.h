@@ -62,7 +62,7 @@ struct cube {
 	float position[3];
 } cube;
 
-static float light_pos[3] = { 10.0f, 0.0f, 8.0f };
+static float light_pos[3] = { 20.0f, 0.0f, 8.0f };
 static float light_color[3] = { 1.0f, 1.0f, 1.0f };
 static float sphere_pos[3] = { -10.0f, -5.0f, -10.0f };
 static float cam_rot[3] = { 22.0f, 0.0f, 0.0f };

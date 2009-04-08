@@ -329,11 +329,11 @@ car *load_car_debug(dReal size)
                 
                 surf[2][0] = w_r*sin(v+inc);
                 surf[2][1] = w_r*cos(v+inc);
-                surf[2][2] = -w_w/2.0f;
+                surf[2][2] = w_w/2.0f;
                 
                 surf[3][0] = w_r*sin(v+inc);
                 surf[3][1] = w_r*cos(v+inc);
-                surf[3][2] = w_w/2.0f;
+                surf[3][2] = -w_w/2.0f;
                 
                 ns = new_surface(surf);
                 nsc = malloc(sizeof(surfaces));;
@@ -357,11 +357,56 @@ car *load_car_debug(dReal size)
 		glVertex3f(w_r*0.9f, -w_r/5, w_w/3.0f);
 		glVertex3f(-w_r*0.9f, -w_r/5, w_w/3.0f);
 		glVertex3f(-w_r*0.9f, w_r/5, w_w/3.0f);
+                
+                surf[0][0] = w_r*0.9f;
+                surf[0][1] = w_r/5;
+                surf[0][2] = w_w/3.0f;
+
+                surf[1][0] = w_r*0.9f;
+                surf[1][1] = -w_r/5;
+                surf[1][2] = w_w/3.0f;
+                
+                surf[2][0] = -w_r*0.9f;
+                surf[2][1] = -w_r/5;
+                surf[2][2] = w_w/3.0f;
+                
+                surf[3][0] = -w_r*0.9f;
+                surf[3][1] = w_r/5;
+                surf[3][2] = w_w/3.0f;
+
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
+
 
 		glVertex3f(w_r/5, w_r*0.9f, w_w/3.0f);
 		glVertex3f(w_r/5, -w_r*0.9f, w_w/3.0f);
 		glVertex3f(-w_r/5, -w_r*0.9f, w_w/3.0f);
 		glVertex3f(-w_r/5, w_r*0.9f, w_w/3.0f);
+                
+                surf[0][0] = w_r/5;
+                surf[0][1] = w_r*0.9f;
+                surf[0][2] = w_w/3.0f;
+
+                surf[1][0] = w_r/5;
+                surf[1][1] = -w_r*0.9f;
+                surf[1][2] = w_w/3.0f;
+                
+                surf[2][0] = -w_r/5;
+                surf[2][1] = -w_r*0.9f;
+                surf[2][2] = w_w/3.0f;
+                
+                surf[3][0] = -w_r/5;
+                surf[3][1] = w_r*0.9f;
+                surf[3][2] = w_w/3.0f;
+
+                ns = new_surface(surf);
+                nsc = malloc(sizeof(surfaces));
+                nsc->s = ns;
+                nsc->nxt = mys;
+                mys = nsc;
                 
 	glEnd();
 
