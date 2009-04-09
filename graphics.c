@@ -55,8 +55,15 @@ int graphics_init(void)
 		return -1;
 	}
 
-	//glClearDepth (1.0); pointless to define this?
+	GLfloat light0_position[] = {0.0, 30.0, 0.0, 1.0};
+	GLfloat light0_diffuse[] = {1.0, 1.0, 1.0, 0.0};
+	glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+//	glEnable(GL_COLOR_MATERIAL);
 
+	//glClearDepth (1.0); pointless to define this?
 	glDepthFunc (GL_LESS);
 	glEnable (GL_DEPTH_TEST);
 	glShadeModel (GL_SMOOTH); //by default, can be changed
