@@ -12,6 +12,91 @@ void simpleColor(float r, float g, float b) {
 	glMaterialf(GL_FRONT, GL_SHININESS, 0.25);
 }
 
+void build_cuboid(float b_x, float b_y, float b_z, int edges) {
+        glBegin(GL_QUADS);
+                glNormal3d (0,0,1);
+                glVertex3f(b_x, b_y, b_z);
+                glVertex3f(-b_x, b_y, b_z);
+                glVertex3f(-b_x, -b_y, b_z);
+                glVertex3f(b_x, -b_y, b_z);
+
+                glNormal3d (0,-1,0);
+                glVertex3f(b_x, -b_y, b_z);
+                glVertex3f(-b_x, -b_y, b_z);
+                glVertex3f(-b_x, -b_y, -b_z);
+                glVertex3f(b_x, -b_y, -b_z);
+                
+
+                glNormal3d (0,0,-1);
+                glVertex3f(b_x, -b_y, -b_z);
+                glVertex3f(-b_x, -b_y, -b_z);
+                glVertex3f(-b_x, b_y, -b_z);
+                glVertex3f(b_x, b_y, -b_z);
+
+                glNormal3d (-1,0,0);
+                glVertex3f(-b_x, -b_y, b_z);
+                glVertex3f(-b_x, -b_y, -b_z);
+                glVertex3f(-b_x, b_y, -b_z);
+                glVertex3f(-b_x, b_y, b_z);
+                
+                glNormal3d (0,1,0);
+                glVertex3f(-b_x, b_y, b_z);
+                glVertex3f(-b_x, b_y, -b_z);
+                glVertex3f(b_x, b_y, -b_z);
+                glVertex3f(b_x, b_y, b_z);
+
+                glNormal3d (1,0,0);
+                glVertex3f(b_x, b_y, b_z);
+                glVertex3f(b_x, b_y, -b_z);
+                glVertex3f(b_x, -b_y, -b_z);
+                glVertex3f(b_x, -b_y, b_z);
+
+        glEnd();
+
+        if ( edges == 1 ) {
+                //draw black lines to make corners more "sharp"
+                
+                float b_xp = b_x + 0.01;
+                float b_xn = -(b_xp);
+                
+                float b_yp = b_y + 0.01;
+                float b_yn = -(b_yp);
+                
+                float b_zp = b_z + 0.01;
+                float b_zn = -(b_zp);
+                
+                // er, we overwrite the original material here - howto store/replace?
+                simpleColor (0.0f, 0.0f, 0.0f);
+                glBegin (GL_LINE_LOOP);
+                        glVertex3f (b_xn, b_yp, b_zn);
+                        glVertex3f (b_xn, b_yn, b_zn);
+                        glVertex3f (b_xp, b_yn, b_zn);
+                        glVertex3f (b_xp, b_yp, b_zn);
+                glEnd();
+
+                glBegin (GL_LINE_LOOP);
+                        glVertex3f (b_xn, b_yp, b_zp);
+                        glVertex3f (b_xn, b_yn, b_zp);
+                        glVertex3f (b_xp, b_yn, b_zp);
+                        glVertex3f (b_xp, b_yp, b_zp);
+                glEnd();
+
+                glBegin (GL_LINES);
+                        glVertex3f (b_xn, b_yp, b_zn);
+                        glVertex3f (b_xn, b_yp, b_zp);
+
+                        glVertex3f (b_xn, b_yn, b_zn);
+                        glVertex3f (b_xn, b_yn, b_zp);
+
+                        glVertex3f (b_xp, b_yn, b_zp);
+                        glVertex3f (b_xp, b_yn, b_zn);
+
+                        glVertex3f (b_xp, b_yp, b_zp);
+                        glVertex3f (b_xp, b_yp, b_zn);
+                glEnd();
+        }
+}
+
 int load_world_debug (void)
 {
 	//build hard-coded world, with gravity and box for environment
@@ -92,36 +177,35 @@ int load_world_debug (void)
         glVertex3f (-30.0f, -30.0f, 0.0f);
 	glEnd();
 
-	//draw black lines to make corners more "sharp"
-	simpleColor (0.0f, 0.0f, 0.0f);
-	glBegin (GL_LINE_LOOP);
-	glVertex3f (-29.9f, 29.9f, 0.1f);
-	glVertex3f (29.9f, 29.9f, 0.1f);
-	glVertex3f (29.9f, -29.9f, 0.1f);
-	glVertex3f (-29.9f, -29.9f, 0.1f);
-	glEnd();
+        simpleColor (0.0f, 0.0f, 0.0f);
+        glBegin (GL_LINE_LOOP);
+        glVertex3f (-29.9f, 29.9f, 0.1f);
+        glVertex3f (29.9f, 29.9f, 0.1f);
+        glVertex3f (29.9f, -29.9f, 0.1f);
+        glVertex3f (-29.9f, -29.9f, 0.1f);
+        glEnd();
 
-	glBegin (GL_LINE_LOOP);
-	glVertex3f (-30.0f, 30.0f, 10.0f);
-	glVertex3f (30.0f, 30.0f, 10.0f);
-	glVertex3f (30.0f, -30.0f, 10.0f);
-	glVertex3f (-30.0f, -30.0f, 10.0f);
-	glEnd();
+        glBegin (GL_LINE_LOOP);
+        glVertex3f (-30.0f, 30.0f, 10.0f);
+        glVertex3f (30.0f, 30.0f, 10.0f);
+        glVertex3f (30.0f, -30.0f, 10.0f);
+        glVertex3f (-30.0f, -30.0f, 10.0f);
+        glEnd();
 
-	
-	glBegin (GL_LINES);
-	glVertex3f (-29.9f, 29.9f, 0.0f);
-	glVertex3f (-29.9f, 29.9f, 10.0f);
+        
+        glBegin (GL_LINES);
+        glVertex3f (-29.9f, 29.9f, 0.0f);
+        glVertex3f (-29.9f, 29.9f, 10.0f);
 
-	glVertex3f (29.9f, 29.9f, 0.0f);
-	glVertex3f (29.9f, 29.9f, 10.0f);
+        glVertex3f (29.9f, 29.9f, 0.0f);
+        glVertex3f (29.9f, 29.9f, 10.0f);
 
-	glVertex3f (29.9f, -29.9f, 0.0f);
-	glVertex3f (29.9f, -29.9f, 10.0f);
+        glVertex3f (29.9f, -29.9f, 0.0f);
+        glVertex3f (29.9f, -29.9f, 10.0f);
 
-	glVertex3f (-29.9f, -29.9f, 0.0f);
-	glVertex3f (-29.9f, -29.9f, 10.0f);
-	glEnd();
+        glVertex3f (-29.9f, -29.9f, 0.0f);
+        glVertex3f (-29.9f, -29.9f, 10.0f);
+        glEnd();
 
 	glEndList();
 
@@ -146,72 +230,11 @@ script *load_object_debug(void)
 //	glColor3f (1.0f, 0.0f, 0.0f);
 	glBegin (GL_QUADS);
 	glNormal3f(-1,0,0);
-	glVertex3f (-0.5, -0.5, -0.5);
-	glVertex3f (-0.5, -0.5, 0.5);
-	glVertex3f (-0.5, 0.5, 0.5);
-        glVertex3f (-0.5, 0.5, -0.5);
-
-	glNormal3f(0,1,0);
-        glVertex3f (-0.5, 0.5, -0.5);
-        glVertex3f (-0.5, 0.5, 0.5);
-	glVertex3f (0.5, 0.5, 0.5);
-        glVertex3f (0.5, 0.5, -0.5);
-
-	glNormal3f(1,0,0);
-        glVertex3f (0.5, 0.5, -0.5);
-        glVertex3f (0.5, 0.5, 0.5);
-	glVertex3f (0.5, -0.5, 0.5);
-        glVertex3f (0.5, -0.5, -0.5);
-
-	glNormal3f(0,0,1);
-	glVertex3f (0.5, 0.5, 0.5);
-	glVertex3f (-0.5, 0.5, 0.5);
-	glVertex3f (-0.5, -0.5, 0.5);
-        glVertex3f (0.5, -0.5, 0.5);
-
-	glNormal3f(0,-1,0);
-        glVertex3f (0.5, -0.5, 0.5);
-        glVertex3f (-0.5, -0.5, 0.5);
-	glVertex3f (-0.5, -0.5, -0.5);
-        glVertex3f (0.5, -0.5, -0.5);
-
-	glNormal3f(0,0,-1);
-        glVertex3f (0.5, -0.5, -0.5);
-        glVertex3f (-0.5, -0.5, -0.5);
-	glVertex3f (-0.5, 0.5, -0.5);
-        glVertex3f (0.5, 0.5, -0.5);
+        build_cuboid(0.5, 0.5, 0.5, 1);
+	
 
 	glEnd();
-
-	//black lines to sharpen the edges
-	simpleColor (0.0f, 0.0f, 0.0f);
-	glBegin (GL_LINE_LOOP);
-	glVertex3f (-0.51, 0.51, -0.51);
-	glVertex3f (-0.51, -0.51, -0.51);
-	glVertex3f (0.51, -0.51, -0.51);
-	glVertex3f (0.51, 0.51, -0.51);
-	glEnd();
-
-	glBegin (GL_LINE_LOOP);
-	glVertex3f (-0.51, 0.51, 0.51);
-	glVertex3f (-0.51, -0.51, 0.51);
-	glVertex3f (0.51, -0.51, 0.51);
-	glVertex3f (0.51, 0.51, 0.51);
-	glEnd();
-
-	glBegin (GL_LINES);
-	glVertex3f (-0.51, 0.51, -0.51);
-	glVertex3f (-0.51, 0.51, 0.51);
-
-	glVertex3f (-0.51, -0.51, -0.51);
-	glVertex3f (-0.51, -0.51, 0.51);
-
-	glVertex3f (0.51, -0.51, 0.51);
-	glVertex3f (0.51, -0.51, -0.51);
-
-	glVertex3f (0.51, 0.51, 0.51);
-	glVertex3f (0.51, 0.51, -0.51);
-	glEnd();
+	
 
 	glEndList();
 
@@ -362,45 +385,7 @@ car *load_car_debug(dReal size)
 	target->body_graphics = allocate_graphics_list();
 	glNewList (target->body_graphics->render_list, GL_COMPILE);
 	simpleColor(1.0f, 1.0f, 0.0f);
-	glBegin(GL_QUADS);
-		glNormal3d (0,0,1);
-		glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
-		glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
-                glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
-                glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
-
-		glNormal3d (0,-1,0);
-                glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
-                glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
-		glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
-                glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
-                
-
-		glNormal3d (0,0,-1);
-                glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
-                glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
-		glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-                glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-
-                glNormal3d (-1,0,0);
-		glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
-		glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
-		glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-                glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
-                
-		glNormal3d (0,1,0);
-                glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
-                glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-		glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-                glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
-
-		glNormal3d (1,0,0);
-                glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
-                glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-		glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
-                glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
-
-	glEnd();
+        build_cuboid(b_x/2.0f, b_y/2.0f, b_z/2.0f, 1);
 	glEndList();
 
 	printf("---\n\n");
