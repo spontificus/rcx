@@ -55,7 +55,7 @@ int graphics_init(void)
 		return -1;
 	}
 
-	GLfloat light0_position[] = {0.0, 30.0, 0.0, 1.0};
+	GLfloat light0_position[] = {0.0, 30.0, 10.0, 1.0};
 	GLfloat light0_diffuse[] = {1.0, 1.0, 1.0, 0.0};
 	glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);

@@ -66,21 +66,30 @@ int load_world_debug (void)
 	glEnd();
 
 	simpleColor (0.5f, 0.5f, 0.5f);
-	glBegin (GL_QUAD_STRIP);
+	glBegin (GL_QUADS);
 	glNormal3d (1,0,0);
 	glVertex3f (-30.0f, -30.0f, 0.0f);
 	glVertex3f (-30.0f, -30.0f, 10.0f);
-	glVertex3f (-30.0f, 30.0f, 0.0f);
 	glVertex3f (-30.0f, 30.0f, 10.0f);
+        glVertex3f (-30.0f, 30.0f, 0.0f);
+        
 	glNormal3d (0,-1,0);
-	glVertex3f (30.0f, 30.0f, 0.0f);
+        glVertex3f (-30.0f, 30.0f, 0.0f);
+        glVertex3f (-30.0f, 30.0f, 10.0f);
 	glVertex3f (30.0f, 30.0f, 10.0f);
+        glVertex3f (30.0f, 30.0f, 0.0f);
+        
 	glNormal3d (-1,0,0);
-	glVertex3f (30.0f, -30.0f, 0.0f);
+        glVertex3f (30.0f, 30.0f, 0.0f);
+        glVertex3f (30.0f, 30.0f, 10.0f);
 	glVertex3f (30.0f, -30.0f, 10.0f);
+        glVertex3f (30.0f, -30.0f, 0.0f);
+        
 	glNormal3d (0,1,0);
-	glVertex3f (-30.0f, -30.0f, 0.0f);
+        glVertex3f (30.0f, -30.0f, 0.0f);
+        glVertex3f (30.0f, -30.0f, 10.0f);
 	glVertex3f (-30.0f, -30.0f, 10.0f);
+        glVertex3f (-30.0f, -30.0f, 0.0f);
 	glEnd();
 
 	//draw black lines to make corners more "sharp"
@@ -135,36 +144,42 @@ script *load_object_debug(void)
 
 	simpleColor (1.0f, 0.0f, 0.0f);
 //	glColor3f (1.0f, 0.0f, 0.0f);
-	glBegin (GL_QUAD_STRIP);
+	glBegin (GL_QUADS);
 	glNormal3f(-1,0,0);
 	glVertex3f (-0.5, -0.5, -0.5);
 	glVertex3f (-0.5, -0.5, 0.5);
-	glVertex3f (-0.5, 0.5, -0.5);
 	glVertex3f (-0.5, 0.5, 0.5);
+        glVertex3f (-0.5, 0.5, -0.5);
 
 	glNormal3f(0,1,0);
-	glVertex3f (0.5, 0.5, -0.5);
+        glVertex3f (-0.5, 0.5, -0.5);
+        glVertex3f (-0.5, 0.5, 0.5);
 	glVertex3f (0.5, 0.5, 0.5);
+        glVertex3f (0.5, 0.5, -0.5);
 
 	glNormal3f(1,0,0);
-	glVertex3f (0.5, -0.5, -0.5);
+        glVertex3f (0.5, 0.5, -0.5);
+        glVertex3f (0.5, 0.5, 0.5);
 	glVertex3f (0.5, -0.5, 0.5);
-	glEnd();
+        glVertex3f (0.5, -0.5, -0.5);
 
-	glBegin (GL_QUAD_STRIP);
 	glNormal3f(0,0,1);
 	glVertex3f (0.5, 0.5, 0.5);
 	glVertex3f (-0.5, 0.5, 0.5);
-	glVertex3f (0.5, -0.5, 0.5);
 	glVertex3f (-0.5, -0.5, 0.5);
+        glVertex3f (0.5, -0.5, 0.5);
 
 	glNormal3f(0,-1,0);
-	glVertex3f (0.5, -0.5, -0.5);
+        glVertex3f (0.5, -0.5, 0.5);
+        glVertex3f (-0.5, -0.5, 0.5);
 	glVertex3f (-0.5, -0.5, -0.5);
+        glVertex3f (0.5, -0.5, -0.5);
 
 	glNormal3f(0,0,-1);
-	glVertex3f (0.5, 0.5, -0.5);
+        glVertex3f (0.5, -0.5, -0.5);
+        glVertex3f (-0.5, -0.5, -0.5);
 	glVertex3f (-0.5, 0.5, -0.5);
+        glVertex3f (0.5, 0.5, -0.5);
 
 	glEnd();
 
@@ -347,36 +362,43 @@ car *load_car_debug(dReal size)
 	target->body_graphics = allocate_graphics_list();
 	glNewList (target->body_graphics->render_list, GL_COMPILE);
 	simpleColor(1.0f, 1.0f, 0.0f);
-	glBegin(GL_QUAD_STRIP);
+	glBegin(GL_QUADS);
 		glNormal3d (0,0,1);
 		glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
 		glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
-		glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
-		glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
+                glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
+                glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
 
 		glNormal3d (0,-1,0);
-		glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
+                glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
+                glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
 		glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
+                glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
+                
 
 		glNormal3d (0,0,-1);
-		glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
+                glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
+                glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
 		glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-	glEnd();
+                glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
 
-	glBegin(GL_QUAD_STRIP);
-		glNormal3d (-1,0,0);
+                glNormal3d (-1,0,0);
 		glVertex3f(-b_x/2.0f, -b_y/2.0f, b_z/2.0f);
 		glVertex3f(-b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
-		glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
 		glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
-
+                glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
+                
 		glNormal3d (0,1,0);
-		glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
+                glVertex3f(-b_x/2.0f, b_y/2.0f, b_z/2.0f);
+                glVertex3f(-b_x/2.0f, b_y/2.0f, -b_z/2.0f);
 		glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
+                glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
 
 		glNormal3d (1,0,0);
-		glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
+                glVertex3f(b_x/2.0f, b_y/2.0f, b_z/2.0f);
+                glVertex3f(b_x/2.0f, b_y/2.0f, -b_z/2.0f);
 		glVertex3f(b_x/2.0f, -b_y/2.0f, -b_z/2.0f);
+                glVertex3f(b_x/2.0f, -b_y/2.0f, b_z/2.0f);
 
 	glEnd();
 	glEndList();
