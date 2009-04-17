@@ -1,9 +1,12 @@
 SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c
-LIBS   = sdl ode gl glu
-ARGS   = -march=i686 -mtune=i686 -O2 -pipe -Wall
+SDL = `sdl-config --cflags --libs`
+ODE = `ode-config --cflags --libs`
+OGL = -lGL -lGLU
+LIBS   = $(SDL) $(ODE) $(OGL) -lm
+ARGS   = -O2 -pipe -Wall
 
 normal: $(SOURCE)
-	gcc -o ../rcx main.c `pkg-config --cflags --libs $(LIBS)` $(ARGS)
+	gcc -o ../rcx main.c $(LIBS) $(ARGS)
 
 #might cause ("nVidious") problems... :-P
 static: $(SOURCE)
