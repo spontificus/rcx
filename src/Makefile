@@ -1,9 +1,9 @@
 SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c
 SDL = `sdl-config --cflags --libs`
 ODE = `ode-config --cflags --libs`
-OGL = -lGL -lGLU
+OGL = `pkg-config --cflags --libs glu`
 LIBS   = $(SDL) $(ODE) $(OGL) -lm
-ARGS   = -O2 -pipe -Wall
+ARGS   = -O2 -pipe -Wall -march=native -mtune=native
 
 normal: $(SOURCE)
 	gcc -o ../rcx main.c $(LIBS) $(ARGS)
