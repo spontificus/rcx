@@ -80,6 +80,11 @@ typedef struct file_3d_struct {
 	struct file_3d_struct *next;
 } file_3d;
 
+typedef struct turd_struct {
+	float x,y,z;
+	float a,b,c;
+} turd_struct;
+
 //graphics_list *graphics_list_head = NULL;
 file_3d *file_3d_head = NULL;
 

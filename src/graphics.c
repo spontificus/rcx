@@ -79,6 +79,9 @@ int graphics_init(void)
 	glDepthFunc (GL_LESS);
 	glEnable (GL_DEPTH_TEST);
 	glShadeModel (GL_SMOOTH); //by default, can be changed
+	
+	// wireframe hack
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	graphics_resize (screen->w, screen->h);
 

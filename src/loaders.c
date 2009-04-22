@@ -929,6 +929,181 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 
 }
 
+#define num_control		10
+#define dist_control	20
+#define dist_interp		5
+struct turd_struct *turds_cp[2][num_control];
+
+void initTurdTrack() {
+	// ugly hard-coded etc
+	/* control points every 20 units
+	 * interpolated points every 5 units
+	 */
+	
+	int i;
+	 
+	float dy = dist_control;
+	float dz = 30.0;
+	
+	float road_r=10;
+	float bx = 0;
+	float by = 100;
+	struct turd_struct *tmp_turd;
+	
+	// construct road edges
+	for (i = 0; i < num_control; i++) {
+		float deg = ((float)(360.0/num_control)*i) ;
+		float rad = deg * (3.1415926/180.0);
+		tmp_turd = malloc(sizeof(turd_struct));
+		tmp_turd->x = bx - road_r;
+		tmp_turd->y = by + i*dist_control;
+		tmp_turd->z = dz * sin( rad ) + 5;
+		/* set x-axis rotation angle as 
+		 *  the tangent of the sin curve,
+		 *  placed in the range of +/- pi/4 to get the minimal and maximal rotational values in radians,
+		 *  then scaled over the projected height and length of the curve
+		 */
+		tmp_turd->a = (cos(rad) * (3.14159/4.0)) / (1.0/(dz/dy));
+		turds_cp[0][i] = tmp_turd;
+		
+		tmp_turd = malloc(sizeof(turd_struct));
+		tmp_turd->x = bx + road_r;
+		tmp_turd->y = by + i*dist_control;
+		tmp_turd->z = dz * sin( rad ) + 5;
+		tmp_turd->a = (cos(rad) * (3.14159/4.0)) / (1.0/(dz/dy));
+		turds_cp[1][i] = tmp_turd;
+	}
+	
+	// draw road edges
+	glBegin(GL_LINE_STRIP);
+	for (i = 0; i < num_control; i++) {
+		tmp_turd = turds_cp[0][i];
+		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);
+	}
+  glEnd();
+	
+	glBegin(GL_LINE_STRIP);
+	for (i = 0; i < num_control; i++) {
+		tmp_turd = turds_cp[1][i];
+		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);
+	}
+  glEnd();
+	
+	// draw normals
+	glBegin(GL_LINES);
+	for (i = 0; i < num_control; i++) {
+		float a,b,c;
+		tmp_turd = turds_cp[0][i];
+		b = 5*-sin(tmp_turd->a);
+		c = 5*cos(tmp_turd->a);
+		
+		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
+		glVertex3f(tmp_turd->x + a, tmp_turd->y + b, tmp_turd->z + c);
+		
+		tmp_turd = turds_cp[1][i];
+		b = 5*-sin(tmp_turd->a);
+		c = 5*cos(tmp_turd->a);
+		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
+		glVertex3f(tmp_turd->x + a, tmp_turd->y + b, tmp_turd->z + c);
+
+	}
+	glEnd();
+	
+}
+
+void doTurdTrack() {
+	int i;
+	struct turd_struct *p0;
+	struct turd_struct *p1;
+	struct turd_struct *p2;
+	
+	float P0,P1,P2;
+	
+	/* use standard quadratic bezier nomenclature
+	 * p0 = starting point
+	 * p1 = control point
+	 * p2 = end point
+	 *
+	 * upper case floats are the angles at those points
+	 * in our little test world, xy is actually yz
+	 */
+	
+	glBegin(GL_LINE_STRIP);
+	
+	p0 = turds_cp[0][0];
+	for (i = 1; i < num_control-1; i++) {
+		p2 = turds_cp[0][i];
+				
+		// calculate P1 from raw difference of P0 and P2
+		P1 = fabs(p2->a - p0->a);
+		
+		// calculate angle to p2 from p0, and infer P0 from difference of that to
+		// known tangent of p0, which p1 lies upon
+		P0 = fabs(atan2(p2->z - p0->z, p2->y - p2->y) - p0->a);
+		
+		// gotta love triangles
+		P2 = (180 - ( P0 + P1) );
+		
+		// get base distance between the two points p0 and p2
+		float p0p2 = sqrt(pow(p2->z - p0->z,2) + pow(p2->y - p0->y,2));
+		
+	  // we now know enough to use the law of sines to calculate the
+		// distance between the control point p1 and the two endpoints
+		float p0p2_sP1 = p0p2 * sin(P1);
+		float p1p2 = ( p0p2_sP1 ) / sin(P0);
+		float p0p1 = ( p0p2_sP1 ) / sin(P2);
+		
+		// calculate xy deltas between endpoints and the control point
+		float dp0p1x = sin(p0->a) * p0p1;
+		float dp0p1y = cos(p0->a) * p0p1;
+		
+		float dp1p2x = sin(p2->a) * p1p2;
+		float dp1p2y = cos(p2->a) * p1p2;
+		
+		int i;
+		
+		for (i = 0; i < (dist_control/dist_interp); i++) {
+		  // t scales between 0-1, and represents how far along the curve we are
+		  // i want a float dammit
+			float t = (1.0 / ((float)dist_control/(float)dist_interp)) * (float)(i+1);
+			
+			printf("t:%f\n", t);
+			
+			// get the in-transit offsets
+			float p0p1tx = p0->y + (t * dp0p1x);
+			float p0p1ty = p0->z + (t * dp0p1y);
+			
+			printf("p0p1tx: %f, p0p1ty:%f\n", p0p1tx, p0p1ty);
+			
+			float p1p2tx = p2->y - ((1-t) * dp1p2x);
+			float p1p2ty = p2->z - ((1-t) * dp1p2y);
+			
+			// the line segment between p0p1t and p1p2t
+			float dp1p2_p0p1x = p1p2tx - p0p1tx;
+			float dp1p2_p0p1y = p1p2ty - p0p1ty;
+			
+			// and finally the quadratic bezier coords
+			float x = p0p1tx + (t * dp1p2_p0p1x);
+			float y = p0p1ty + (t * dp1p2_p0p1y);
+			
+			// normal? Fudge it
+			float n = t * (p2->a - p0->a);
+			
+			float b = 2*-sin(n);
+			float c = 2*cos(n);
+			glVertex3f(p0->x, x, y);	
+			//glVertex3f(p0->x, x + b, y + c);
+			printf("x: %f, y:%f\n", x, y);
+		}
+		
+		
+		p0 = p2;
+	}
+	
+	glEnd();
+}
+
+
 int load_track (char *path)
 {
 	printlog(1, "=> Loading track: %s\n", path);
@@ -994,14 +1169,14 @@ int load_track (char *path)
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
-
+/*
 	geom = dCreatePlane (0, 0,-1,0,-100);
 	data = allocate_geom_data(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
-
+*/
 
 	//since a plane is a non-placeable geom, the sepparate components will
 	//not be "rendered" separately, instead create one 3d image sepparately
@@ -1025,13 +1200,13 @@ int load_track (char *path)
 	glVertex3f (-100.0f, -100.0f, 10.0f);
 	glVertex3f (-100.0f, 100.0f, 10.0f);
 	glVertex3f (-100.0f, 100.0f, 0.0f);
-
+/*
 	glNormal3f (0.0f, -1.0f, 0.0f);
 	glVertex3f (-100.0f, 100.0f, 0.0f);
 	glVertex3f (-100.0f, 100.0f, 10.0f);
 	glVertex3f (100.0f, 100.0f, 10.0f);
 	glVertex3f (100.0f, 100.0f, 0.0f);
-
+*/
 	glNormal3f (-1.0f, 0.0f, 0.0f);
 	glVertex3f (100.0f, 100.0f, 0.0f);
 	glVertex3f (100.0f, 100.0f, 10.0f);
@@ -1043,7 +1218,10 @@ int load_track (char *path)
 	glVertex3f (100.0f, -100.0f, 10.0f);
 	glVertex3f (-100.0f, -100.0f, 10.0f);
 	glVertex3f (-100.0f, -100.0f, 0.0f);
+	
 	glEnd();
+	initTurdTrack();
+	doTurdTrack();
 
 	glEndList();
 
