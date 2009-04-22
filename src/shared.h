@@ -72,7 +72,9 @@ data_index internal_index = {
 
 //file_3d: when a 3d file is loaded, we need a way to keep track of all
 //rendering lists, so as to prevent memory leaks when unloading data
-//typedef struct graphics_list_struct {
+//
+//TODO: replace with trimesh structure
+//
 typedef struct file_3d_struct {
 //	GLuint render_list;
 	GLuint list;
