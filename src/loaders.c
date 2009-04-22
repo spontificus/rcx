@@ -931,7 +931,7 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 
 #define num_control		10
 #define dist_control	20
-#define dist_interp		5
+#define dist_interp		3
 struct turd_struct *turds_cp[2][num_control];
 
 void initTurdTrack() {
@@ -982,12 +982,14 @@ void initTurdTrack() {
 	}
   glEnd();
 	
+	/*
 	glBegin(GL_LINE_STRIP);
 	for (i = 0; i < num_control; i++) {
 		tmp_turd = turds_cp[1][i];
 		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);
 	}
   glEnd();
+	*/
 	
 	// draw normals
 	glBegin(GL_LINES);
@@ -1000,11 +1002,13 @@ void initTurdTrack() {
 		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
 		glVertex3f(tmp_turd->x + a, tmp_turd->y + b, tmp_turd->z + c);
 		
+		/*
 		tmp_turd = turds_cp[1][i];
 		b = 5*-sin(tmp_turd->a);
 		c = 5*cos(tmp_turd->a);
 		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
 		glVertex3f(tmp_turd->x + a, tmp_turd->y + b, tmp_turd->z + c);
+		*/
 
 	}
 	glEnd();
@@ -1028,40 +1032,70 @@ void doTurdTrack() {
 	 * in our little test world, xy is actually yz
 	 */
 	
-	glBegin(GL_LINE_STRIP);
+	
 	
 	p0 = turds_cp[0][0];
 	for (i = 1; i < num_control-1; i++) {
+		printf("--------------------------------------------\n");
 		p2 = turds_cp[0][i];
 				
-		// calculate P1 from raw difference of P0 and P2
-		P1 = fabs(p2->a - p0->a);
 		
 		// calculate angle to p2 from p0, and infer P0 from difference of that to
 		// known tangent of p0, which p1 lies upon
-		P0 = fabs(atan2(p2->z - p0->z, p2->y - p2->y) - p0->a);
+		P0 = fabs( fabs(atan2(p2->z - p0->z, p2->y - p0->y)) - fabs(p0->a) );
+		//P0 = fabs(p2->a - p0->a);
+		
+		// calculate P1 from raw difference of P0 and P2
+		P2 = fabs( fabs( p2->a) - fabs(atan2(p2->z - p0->z, p2->y - p0->y)));
 		
 		// gotta love triangles
-		P2 = (180 - ( P0 + P1) );
+		P1 = (3.14159 - ( P0 + P2) );
 		
 		// get base distance between the two points p0 and p2
 		float p0p2 = sqrt(pow(p2->z - p0->z,2) + pow(p2->y - p0->y,2));
 		
 	  // we now know enough to use the law of sines to calculate the
 		// distance between the control point p1 and the two endpoints
+		/*
 		float p0p2_sP1 = p0p2 * sin(P1);
 		float p1p2 = ( p0p2_sP1 ) / sin(P0);
 		float p0p1 = ( p0p2_sP1 ) / sin(P2);
+		*/
+		// sin(P0) / p1p2 == sin(p1) / p0p2
+		float p1p2 = fabs((p0p2 * sin(P0) ) / sin(P1));
+		float p0p1 = fabs((p0p2 * sin(P2) ) / sin(P1));
+	
+		printf("Sizes: p0p2: %f, p0p1:%f, p1p2: %f\n", p0p2, p0p1, p1p2);
+		printf("Angles: P0: %f, P1: %f, P2: %f\n", P0, P1, P2);
 		
+		
+		printf("p0x:%f p0y:%f, p2x:%f p2y:%f\n", p0->y, p0->z, p2->y, p2->z);
+		printf("Angles: p0a: %f, p2a: %f\n", p0->a, p2->a);
+	
 		// calculate xy deltas between endpoints and the control point
-		float dp0p1x = sin(p0->a) * p0p1;
-		float dp0p1y = cos(p0->a) * p0p1;
+		float dp0p1x = -sin(-3.141/2.0 + p0->a) * p0p1;
+		float dp0p1y = cos(-3.141/2.0 + p0->a) * p0p1;
 		
-		float dp1p2x = sin(p2->a) * p1p2;
-		float dp1p2y = cos(p2->a) * p1p2;
+		float dp1p2x = -sin(p2->a - 3.141/2.0) * p1p2;
+		float dp1p2y = cos(p2->a - 3.141/2.0) * p1p2;
 		
 		int i;
 		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
+		glBegin(GL_LINES);
+		glVertex3f(p0->x, p0->y, p0->z);	
+		glVertex3f(p0->x, p0->y+dp0p1x, p0->z+dp0p1y);
+		glEnd();
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
+		glBegin(GL_LINES);
+		glVertex3f(p2->x, p2->y, p2->z);	
+		glVertex3f(p2->x, p2->y-dp1p2x, p2->z-dp1p2y);		
+		glEnd();
+		
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);	
+		glBegin(GL_LINE_STRIP);
 		for (i = 0; i < (dist_control/dist_interp); i++) {
 		  // t scales between 0-1, and represents how far along the curve we are
 		  // i want a float dammit
@@ -1096,11 +1130,11 @@ void doTurdTrack() {
 			printf("x: %f, y:%f\n", x, y);
 		}
 		
-		
+		glEnd();
 		p0 = p2;
 	}
 	
-	glEnd();
+	
 }
 
 
