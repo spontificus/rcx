@@ -929,9 +929,9 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 
 }
 
-#define num_control		10
-#define dist_control	10
-#define dist_interp		1
+#define num_control		17
+#define dist_control	20
+#define dist_interp		4
 struct turd_struct *turds_cp[2][num_control];
 
 void initTurdTrack() {
@@ -951,32 +951,55 @@ void initTurdTrack() {
 	struct turd_struct *tmp_turd;
 	
 	// construct road edges
+	float ph = 0;
+	float h = 0;
+	float nh = 0;
+	
+	float ty = dy * num_control;
+	
 	for (i = 0; i < num_control; i++) {
 		float deg = ((float)(360.0/num_control)*i) ;
 		float rad = deg * (3.1415926/180.0);
-		tmp_turd = malloc(sizeof(turd_struct));
+		
+		float px = i*dy;
+		
+		float pdi = (px - 1)/dy;
+		float ndi = (px + 1)/dy;
+		
+		float pdeg = ((float)(360.0/num_control)*pdi) ;
+		float ndeg = ((float)(360.0/num_control)*ndi) ;
+		float prad = pdeg * (3.1415926/180.0);
+		float nrad = ndeg * (3.1415926/180.0);
+		
+		
+		ph = dz * sin( prad );
+		h = dz * sin( rad );
+		nh = dz * sin( nrad );
+		
+		tmp_turd = malloc(sizeof(turd_struct));		
 		tmp_turd->x = bx - road_r;
-		tmp_turd->y = by + i*dy;
-		tmp_turd->z = dz * sin( rad ) + 5;
+		tmp_turd->y = by + px;
+		tmp_turd->z = h-3;
 		/* set x-axis rotation angle as 
 		 *  the tangent of the sin curve,
 		 *  placed in the range of +/- pi/4 to get the minimal and maximal rotational values in radians,
 		 *  then scaled over the projected height and length of the curve
 		 */
-		float full_rot_range = 3.14159 / 4.0;
-		float scale_modifier = (dy*num_control)/dz;
-		float tmp_ang = (cos( rad )) * full_rot_range;
-		tmp_turd->a = tmp_ang * scale_modifier;
+		
+		tmp_turd->a = atan2(nh-ph, 2) ;
 		turds_cp[0][i] = tmp_turd;
+		
+		printf("ph:%f, nh:%f, d:%f, a:%f\n", ph, nh, nh-ph, tmp_turd->a);
 		
 		tmp_turd = malloc(sizeof(turd_struct));
 		tmp_turd->x = bx + road_r;
 		tmp_turd->y = by + i*dy;
-		tmp_turd->z = dz * sin( rad ) + 5;
+		tmp_turd->z = dz * sin( rad );
 		tmp_turd->a = (cos(rad) * (3.14159/4.0)) / (1.0/(dz/dy));
 		turds_cp[1][i] = tmp_turd;
 	}
 	
+/*
 	// draw road edges
 	glBegin(GL_LINE_STRIP);
 	for (i = 0; i < num_control; i++) {
@@ -985,14 +1008,14 @@ void initTurdTrack() {
 	}
   glEnd();
 	
-	/*
+	
 	glBegin(GL_LINE_STRIP);
 	for (i = 0; i < num_control; i++) {
 		tmp_turd = turds_cp[1][i];
 		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);
 	}
   glEnd();
-	*/
+*/
 	
 	// draw normals
 	glBegin(GL_LINES);
@@ -1012,7 +1035,7 @@ void initTurdTrack() {
 		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
 		glVertex3f(tmp_turd->x + a, tmp_turd->y + b, tmp_turd->z + c);
 		*/
-
+		
 	}
 	glEnd();
 	
@@ -1083,7 +1106,7 @@ void doTurdTrack() {
 		float dp1p2y = cos(p2->a - 3.141/2.0) * p1p2;
 		
 		int i;
-		
+		/*
 		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
 		glBegin(GL_LINES);
 		glVertex3f(p0->x, p0->y, p0->z);	
@@ -1095,10 +1118,13 @@ void doTurdTrack() {
 		glVertex3f(p2->x, p2->y, p2->z);	
 		glVertex3f(p2->x, p2->y-dp1p2x, p2->z-dp1p2y);		
 		glEnd();
+		*/
 		
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);	
-		glBegin(GL_LINE_STRIP);
+		glMaterialfv (GL_FRONT, GL_SPECULAR, black);
+		glMaterialfv (GL_FRONT, GL_DIFFUSE, white);
+		glMaterialfv (GL_FRONT, GL_AMBIENT, black);
+		glMateriali (GL_FRONT, GL_SHININESS, .30);
+		glBegin(GL_LINES);
 		for (i = 0; i < (dist_control/dist_interp); i++) {
 		  // t scales between 0-1, and represents how far along the curve we are
 		  // i want a float dammit
@@ -1128,7 +1154,9 @@ void doTurdTrack() {
 			
 			float b = 2*-sin(n);
 			float c = 2*cos(n);
-			glVertex3f(p0->x, x, y);	
+			glNormal3f (0,-sin(n), cos(n));
+			glVertex3f(p0->x, x, y);
+			glVertex3f(p0->x+20, x, y);	
 			//glVertex3f(p0->x, x + b, y + c);
 			printf("x: %f, y:%f\n", x, y);
 		}
