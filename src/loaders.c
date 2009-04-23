@@ -929,6 +929,27 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 
 }
 
+void initSpiral() {
+	FILE *fp;
+	char buf[100];
+	void *ptr;
+
+#ifdef windows
+	fp = fopen("./data/worlds/Sandbox/tracks/Box/spiral.conf", "rb");
+#else
+	fp = fopen("./data/worlds/Sandbox/tracks/Box/spiral.conf", "r");
+#endif
+	float x,y,z,a,b,c;
+
+	while (ptr = fgets(&buf, 100, fp) ) {
+		printf("s:%s\n", buf);
+		sscanf(buf,"%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
+		printf("%f %f %f %f %f %f\n", x, y, z, a, b, c);
+	
+	}
+	close(fp);
+}
+
 #define num_control		17
 #define dist_control	20
 #define dist_interp		4
@@ -939,7 +960,7 @@ void initTurdTrack() {
 	/* control points every 20 units
 	 * interpolated points every 5 units
 	 */
-	
+	initSpiral();
 	int i;
 	 
 	float dy = dist_control;
