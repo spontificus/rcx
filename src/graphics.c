@@ -128,6 +128,8 @@ void graphics_step (Uint32 step)
 		glCallList (track.file_3d->list);
 	glPopMatrix();
 
+  doTurdTrack();
+
 	//loop through all geoms, see if they need rendering
 	geom_data *geom;
 	const dReal *pos, *rot; //store rendering position
