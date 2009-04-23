@@ -1010,7 +1010,7 @@ void initTurdTrack() {
 		tmp_turd->a = atan2(nh-ph, 2) ;
 		turds_cp[0][i] = tmp_turd;
 		
-		printf("ph:%f, nh:%f, d:%f, a:%f\n", ph, nh, nh-ph, tmp_turd->a);
+		//printf("ph:%f, nh:%f, d:%f, a:%f\n", ph, nh, nh-ph, tmp_turd->a);
 		
 		tmp_turd = malloc(sizeof(turd_struct));
 		tmp_turd->x = bx + road_r;
@@ -1083,7 +1083,7 @@ void doTurdTrack() {
 	
 	p0 = turds_cp[0][0];
 	for (i = 1; i < num_control-1; i++) {
-		printf("--------------------------------------------\n");
+		//printf("--------------------------------------------\n");
 		p2 = turds_cp[0][i];
 				
 		
@@ -1112,12 +1112,12 @@ void doTurdTrack() {
 		float p1p2 = fabs((p0p2 * sin(P0) ) / sin(P1));
 		float p0p1 = fabs((p0p2 * sin(P2) ) / sin(P1));
 	
-		printf("Sizes: p0p2: %f, p0p1:%f, p1p2: %f\n", p0p2, p0p1, p1p2);
-		printf("Angles: P0: %f, P1: %f, P2: %f\n", P0, P1, P2);
+		//printf("Sizes: p0p2: %f, p0p1:%f, p1p2: %f\n", p0p2, p0p1, p1p2);
+		//printf("Angles: P0: %f, P1: %f, P2: %f\n", P0, P1, P2);
 		
 		
-		printf("p0x:%f p0y:%f, p2x:%f p2y:%f\n", p0->y, p0->z, p2->y, p2->z);
-		printf("Angles: p0a: %f, p2a: %f\n", p0->a, p2->a);
+		//printf("p0x:%f p0y:%f, p2x:%f p2y:%f\n", p0->y, p0->z, p2->y, p2->z);
+		//printf("Angles: p0a: %f, p2a: %f\n", p0->a, p2->a);
 	
 		// calculate xy deltas between endpoints and the control point
 		float dp0p1x = -sin(-3.141/2.0 + p0->a) * p0p1;
@@ -1151,13 +1151,13 @@ void doTurdTrack() {
 		  // i want a float dammit
 			float t = (1.0 / ((float)dist_control/(float)dist_interp)) * (float)(i+1);
 			
-			printf("t:%f\n", t);
+			//printf("t:%f\n", t);
 			
 			// get the in-transit offsets
 			float p0p1tx = p0->y + (t * dp0p1x);
 			float p0p1ty = p0->z + (t * dp0p1y);
 			
-			printf("p0p1tx: %f, p0p1ty:%f\n", p0p1tx, p0p1ty);
+			//printf("p0p1tx: %f, p0p1ty:%f\n", p0p1tx, p0p1ty);
 			
 			float p1p2tx = p2->y - ((1-t) * dp1p2x);
 			float p1p2ty = p2->z - ((1-t) * dp1p2y);
@@ -1179,7 +1179,7 @@ void doTurdTrack() {
 			glVertex3f(p0->x, x, y);
 			glVertex3f(p0->x+20, x, y);	
 			//glVertex3f(p0->x, x + b, y + c);
-			printf("x: %f, y:%f\n", x, y);
+			//printf("x: %f, y:%f\n", x, y);
 		}
 		
 		glEnd();
@@ -1307,7 +1307,7 @@ int load_track (char *path)
 	
 	glEnd();
 	initTurdTrack();
-	doTurdTrack();
+	//doTurdTrack();
 
 	glEndList();
 
