@@ -930,8 +930,8 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 }
 
 #define num_control		10
-#define dist_control	20
-#define dist_interp		3
+#define dist_control	10
+#define dist_interp		1
 struct turd_struct *turds_cp[2][num_control];
 
 void initTurdTrack() {
@@ -943,7 +943,7 @@ void initTurdTrack() {
 	int i;
 	 
 	float dy = dist_control;
-	float dz = 30.0;
+	float dz = dist_control;
 	
 	float road_r=10;
 	float bx = 0;
@@ -956,19 +956,22 @@ void initTurdTrack() {
 		float rad = deg * (3.1415926/180.0);
 		tmp_turd = malloc(sizeof(turd_struct));
 		tmp_turd->x = bx - road_r;
-		tmp_turd->y = by + i*dist_control;
+		tmp_turd->y = by + i*dy;
 		tmp_turd->z = dz * sin( rad ) + 5;
 		/* set x-axis rotation angle as 
 		 *  the tangent of the sin curve,
 		 *  placed in the range of +/- pi/4 to get the minimal and maximal rotational values in radians,
 		 *  then scaled over the projected height and length of the curve
 		 */
-		tmp_turd->a = (cos(rad) * (3.14159/4.0)) / (1.0/(dz/dy));
+		float full_rot_range = 3.14159 / 4.0;
+		float scale_modifier = (dy*num_control)/dz;
+		float tmp_ang = (cos( rad )) * full_rot_range;
+		tmp_turd->a = tmp_ang * scale_modifier;
 		turds_cp[0][i] = tmp_turd;
 		
 		tmp_turd = malloc(sizeof(turd_struct));
 		tmp_turd->x = bx + road_r;
-		tmp_turd->y = by + i*dist_control;
+		tmp_turd->y = by + i*dy;
 		tmp_turd->z = dz * sin( rad ) + 5;
 		tmp_turd->a = (cos(rad) * (3.14159/4.0)) / (1.0/(dz/dy));
 		turds_cp[1][i] = tmp_turd;

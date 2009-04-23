@@ -100,19 +100,21 @@ void event_step(Uint32 step)
 		//get keys pressed
 		keys = SDL_GetKeyState(NULL);
 
+		float step_m = 1;
+
 		//move camera
 		if (keys[prof->cam_x_pos])
-			cpos[0]+=step*0.03;
+			cpos[0]+=step*step_m;
 		else if (keys[prof->cam_x_neg])
-			cpos[0]-=step*0.03;
+			cpos[0]-=step*step_m;
 		if (keys[prof->cam_y_pos])
-			cpos[1]+=step*0.03;
+			cpos[1]+=step*step_m;
 		else if (keys[prof->cam_y_neg])
-			cpos[1]-=step*0.03;
+			cpos[1]-=step*step_m;
 		if (keys[prof->cam_z_pos])
-			cpos[2]+=step*0.03;
+			cpos[2]+=step*step_m;
 		else if (keys[prof->cam_z_neg])
-			cpos[2]-=step*0.03;
+			cpos[2]-=step*step_m;
 
 		//if selected car, read input
 		if (prof->car)
