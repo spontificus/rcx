@@ -956,38 +956,17 @@ void initSpiral() {
 #endif
 
 
-	float x,y,z,a,b,c, dx=0,dy=0,dz=0;
+	float x,y,z,a,b,c;
 
   int first = 1;
 	struct turd_struct *tmp_turd = NULL;
 	struct turd_struct *head_turd = NULL;
 	struct turd_struct *last_turd = NULL;
 
-	float mod=3;
+	float mod=10;
 
-	float px,py,pz, vx,vy,vz, xvx,xvy,xvz, yvx,yvy,yvz, va,vb,vc;
+	float px,py,pz;
 	
-	x=0;
-	y=0;
-	z=0;
-	
-	a=0;
-	b=0;
-	c=0;
-	
-	// setup normal vector, length 5
-	vx = 0;
-	vy = 0;
-	vz = 5;
-	
-	va = a;
-	vb = b;
-	vc = c;	
-	
-	px = 0;
-	py = 0;
-	pz = 0;
-
 	float *m;
 
 	int count = 0;
@@ -1043,12 +1022,14 @@ void initSpiral() {
 		py = x*m[1] + y*m[5] + z*m[9] + m[13];
 		pz = x*m[2] + y*m[6] + z*m[10] + m[14];
 		
+		/*
 		printf("x:%f, y:%f, z:%f\n", x, y, z);
 		printf("px:%f, py:%f, pz:%f\n", px, py, pz);
 		printf("%f %f %f %f\n", m[0], m[4], m[8], m[12]);
 		printf("%f %f %f %f\n", m[1], m[5], m[9], m[13]);
 		printf("%f %f %f %f\n", m[2], m[6], m[10], m[14]);
 		printf("%f %f %f %f\n", m[3], m[7], m[11], m[15]);
+		*/
 
 
 		tmp_turd->x = x;
@@ -1067,19 +1048,18 @@ void initSpiral() {
 		tmp_turd->relx = mvr[0];
 		tmp_turd->rely = mvr[1];
 		tmp_turd->relz = mvr[2];
-		
-		tmp_turd->nx = vx;
-		tmp_turd->ny = vy;
-		tmp_turd->nz = vz;
 
-/*
-		glBegin(GL_LINE);
-		glVertex3f(x, y, z);
-	  glVertex3f(x + vx, y + vy, z + vz);
-		glEnd();
-*/
+		// real world coords
+		mvr = mbv(tmp_turd->m, 0,0,0);
+		tmp_turd->wx = mvr[0];
+		tmp_turd->wy = mvr[1];
+		tmp_turd->wz = mvr[2];
 
-
+		// and finally the normal
+		mvr = mbv(tmp_turd->m, 0,0,1);
+		tmp_turd->nx = mvr[0];
+		tmp_turd->ny = mvr[1];
+		tmp_turd->nz = mvr[2];
 
 		if (first == 1) {
 			first = 0;
@@ -1108,7 +1088,9 @@ void initSpiral() {
 	spiral_head= head_turd;
 }
 
-#define dot(u,v)   (u[0] * v[0] + u[1] * v[1] + u[2] * v[2])
+float dot(dVector3 u, dVector3 v) {
+	return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+}
 
 
 void drawTurd(struct turd_struct *head) {
@@ -1117,7 +1099,7 @@ void drawTurd(struct turd_struct *head) {
 	float x,y,z, a,b,c;
 	
 
-	
+	// text matricies + draw axis
 	while (cur_turd) {
 		glPushMatrix();
 		nxt_turd = cur_turd->nxt;
@@ -1157,6 +1139,8 @@ void drawTurd(struct turd_struct *head) {
 		glPopMatrix();
 	}
 	
+	// draw left+right sides
+	//
 	cur_turd = head;
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);	
 	glBegin(GL_LINE_STRIP);
@@ -1179,49 +1163,126 @@ void drawTurd(struct turd_struct *head) {
 		cur_turd = nxt_turd;
 	}
 	glEnd();
-}
-
-void drawfTurd(struct turd_struct *head) {
-
-	struct turd_struct *p0;
-	struct turd_struct *p1;
-	struct turd_struct *p2;
 	
-	float P0,P1,P2;
-	float sc, tc;
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
 	
-	dVector3 u;
-	dVector3 v;
-	dVector3 w;
+	// cubic interp
+	cur_turd = head;
+	//printf("---\n");
+	while (cur_turd->nxt) {	
+		nxt_turd = cur_turd->nxt;
+			
+		// first, find the closest intersection between the z-axis of 
+		// the two points
+		float ps0x,ps0y,ps0z, ps1x,ps1y,ps1z, pe0x,pe0y,pe0z, pe1x,pe1y,pe1z;
+		float sc, tc;
+		
+		ps0x = cur_turd->wx;
+		ps0y = cur_turd->wy;
+		ps0z = cur_turd->wz;
+		ps1x = cur_turd->nx;
+		ps1y = cur_turd->ny;
+		ps1z = cur_turd->nz;
+		
+		pe0x = nxt_turd->wx;
+		pe0y = nxt_turd->wy;
+		pe0z = nxt_turd->wz;
+		pe1x = nxt_turd->nx;
+		pe1y = nxt_turd->ny;
+		pe1z = nxt_turd->nz;
+		
+		dVector3 u;
+		dVector3 v;
+		dVector3 w;	
+		
+		u[0] = ps1x - ps0x;
+		u[1] = ps1y - ps0y;
+		u[2] = ps1z - ps0z;
+		
+		v[0] = pe1x - pe0x;
+		v[1] = pe1y - pe0y;
+		v[2] = pe1z - pe0z;
+		
+		w[0] = ps0x - pe0x;
+		w[1] = ps0y - pe0y;
+		w[2] = ps0z - pe0z;
+		
+		float ca = dot(u,u);
+		float cb = dot(u,v);
+		float cc = dot(v,v);
+		float cd = dot(u,w);
+		float ce = dot(v,w);
+		float cD = ca*cc - cb*cb;
+		
+		if (cD < 0.01) {
+			
+			sc = 0;
+			tc = (cb>cc ? cd/cb : ce/cc);
+			//printf("almost parallel:%f\n",tc);
+		} else {
+			sc = (cb*ce - cc*cd) / cD;
+			tc = (ca*ce - cb*cd) / cD;
+		}
 	
-	float ps0x,ps0y,ps0z, ps1x,ps1y,ps1z, pe0x,pe0y,pe0z, pe1x,pe1y,pe1z;
+	  // now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
+		float scx,scy,scz, tcx,tcy,tcz;
+		scx = ps0x + ((ps1x - ps0x) * sc);
+		scy = ps0y + ((ps1y - ps0y) * sc);
+		scz = ps0z + ((ps1z - ps0z) * sc);
+		
+		tcx = pe0x + ((pe1x - pe0x) * tc);
+		tcy = pe0y + ((pe1y - pe0y) * tc);
+		tcz = pe0z + ((pe1z - pe0z) * tc);
+		
+		/*
+		glBegin(GL_LINES);
+		glVertex3f(scx, scy, scz);
+		glVertex3f(tcx, tcy, tcz);
+		glEnd();
+		*/
+		
+		// now we have the line which represents our moving control point, we can start
+		// the interpolation.
+		
+		float cpx,cpy,cpz;
+		float spx,spy,spz;
+		float epx,epy,epz;
+		float ipx,ipy,ipz;
+		
+		int i = 0;
+		int num = 5;
+		glBegin(GL_LINE_STRIP);
+		for (i=0; i<=num; i++) {
+			float t = (float)i/num;
+			
+			cpx = scx + t * (tcx - scx);
+			cpy = scy + t * (tcy - scy);
+			cpz = scz + t * (tcz - scz);
+			
+			spx = ps0x + t * (cpx - ps0x);
+			spy = ps0y + t * (cpy - ps0y);
+			spz = ps0z + t * (cpz - ps0z);
+			
+			epx = cpx + t * (pe0x - cpx);
+			epy = cpy + t * (pe0y - cpy);
+			epz = cpz + t * (pe0z - cpz);
+			
+			ipx = spx + t * (epx - spx);
+			ipy = spy + t * (epy - spy);
+			ipz = spz + t * (epz - spz);
+			
+			// ???
+			glVertex3f(ipx,ipy,ipz);
+			
+		}
+		glEnd();
+/*	
+		printf("sc:%f, tc:%f\n", sc,tc);
+		printf("scx:%f, scy:%f, scz:%f\n", scx,scy,scz);
+		printf("tcx:%f, tcy:%f, tcz:%f\n", tcx,tcy,tcz);
+*/
 	
-	u[0] = ps1x - ps0x;
-	u[1] = ps1y - ps0y;
-	u[2] = ps1z - ps0z;
-	
-	v[0] = pe1x - pe0x;
-	v[1] = pe1y - pe0y;
-	v[2] = pe1z - pe0z;
-	
-	w[0] = ps0x - pe0x;
-	w[1] = ps0y - pe0y;
-	w[2] = ps0z - pe0z;
-	
-	float a = dot(u,u);
-	float b = dot(u,v);
-	float c = dot(v,v);
-	float d = dot(u,w);
-	float e = dot(v,w);
-	float D = a*c - b*b;
-	
-	if (D < 0.01) {
-		printf("almost parallel\n");
-		sc = 0;
-		tc = (b>c ? d/b : e/c);
-	} else {
-		sc = (b*e - c*d) / D;
-    tc = (a*e - b*d) / D;
+		cur_turd = nxt_turd;
 	}
 	
 	

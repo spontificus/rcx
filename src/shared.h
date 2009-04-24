@@ -84,6 +84,7 @@ typedef struct turd_struct {
 	float x,y,z;
 	float a,b,c;
 	float nx,ny,nz;
+	float wx,wy,wz;
 	float relx,rely,relz;
 	float rerx,rery,rerz;
 	GLfloat m[16];
