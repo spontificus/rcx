@@ -91,6 +91,22 @@ typedef struct turd_struct {
 	struct turd_struct *nxt;
 } turd_struct;
 
+typedef struct interp_stuct {
+		float ps0x,ps0y,ps0z;
+		float ps1x,ps1y,ps1z;
+		float pe0x,pe0y,pe0z;
+		float pe1x,pe1y,pe1z;
+
+		float scx,scy,scz;	// closest start
+		float tcx,tcy,tcz;  // closest term
+
+		float cpx,cpy,cpz;  // moving pivot
+		float spx,spy,spz;  
+		float epx,epy,epz;
+		float ipx,ipy,ipz;
+
+} interp_struct;
+
 //graphics_list *graphics_list_head = NULL;
 file_3d *file_3d_head = NULL;
 

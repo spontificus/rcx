@@ -1092,6 +1092,94 @@ float dot(dVector3 u, dVector3 v) {
 	return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
 }
 
+interp_struct *interpInit( turd_struct *cur_turd, turd_struct *nxt_turd ) {
+		interp_struct *in = malloc(sizeof(interp_struct));
+		
+		in->ps0x = cur_turd->wx;
+		in->ps0y = cur_turd->wy;
+		in->ps0z = cur_turd->wz;
+		in->ps1x = cur_turd->nx;
+		in->ps1y = cur_turd->ny;
+		in->ps1z = cur_turd->nz;
+
+		in->pe0x = nxt_turd->wx;
+		in->pe0y = nxt_turd->wy;
+		in->pe0z = nxt_turd->wz;
+		in->pe1x = nxt_turd->nx;
+		in->pe1y = nxt_turd->ny;
+		in->pe1z = nxt_turd->nz;
+		
+		return in;
+}
+
+void interpGenClosestLine( interp_struct *in ) {
+		
+		// first, find the closest intersection between the z-axis of 
+		// the two points
+		float sc, tc;
+
+		dVector3 u;
+		dVector3 v;
+		dVector3 w;	
+		
+		u[0] = in->ps1x - in->ps0x;
+		u[1] = in->ps1y - in->ps0y;
+		u[2] = in->ps1z - in->ps0z;
+		
+		v[0] = in->pe1x - in->pe0x;
+		v[1] = in->pe1y - in->pe0y;
+		v[2] = in->pe1z - in->pe0z;
+		
+		w[0] = in->ps0x - in->pe0x;
+		w[1] = in->ps0y - in->pe0y;
+		w[2] = in->ps0z - in->pe0z;
+		
+		float ca = dot(u,u);
+		float cb = dot(u,v);
+		float cc = dot(v,v);
+		float cd = dot(u,w);
+		float ce = dot(v,w);
+		float cD = ca*cc - cb*cb;
+		
+		if (cD < 0.01) {
+			
+			sc = 0;
+			tc = (cb>cc ? cd/cb : ce/cc);
+			//printf("almost parallel:%f\n",tc);
+		} else {
+			sc = (cb*ce - cc*cd) / cD;
+			tc = (ca*ce - cb*cd) / cD;
+		}
+	
+	  // now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
+		
+		in->scx = in->ps0x + ((in->ps1x - in->ps0x) * sc);
+		in->scy = in->ps0y + ((in->ps1y - in->ps0y) * sc);
+		in->scz = in->ps0z + ((in->ps1z - in->ps0z) * sc);
+		
+		in->tcx = in->pe0x + ((in->pe1x - in->pe0x) * tc);
+		in->tcy = in->pe0y + ((in->pe1y - in->pe0y) * tc);
+		in->tcz = in->pe0z + ((in->pe1z - in->pe0z) * tc);
+}
+
+void interpDraw( interp_struct *in, float t, float *v ) {
+
+	in->cpx = in->scx + t * (in->tcx - in->scx);
+	in->cpy = in->scy + t * (in->tcy - in->scy);
+	in->cpz = in->scz + t * (in->tcz - in->scz);
+	
+	in->spx = in->ps0x + t * (in->cpx - in->ps0x);
+	in->spy = in->ps0y + t * (in->cpy - in->ps0y);
+	in->spz = in->ps0z + t * (in->cpz - in->ps0z);
+	
+	in->epx = in->cpx + t * (in->pe0x - in->cpx);
+	in->epy = in->cpy + t * (in->pe0y - in->cpy);
+	in->epz = in->cpz + t * (in->pe0z - in->cpz);
+	
+	v[0] = in->spx + t * (in->epx - in->spx);
+	v[1] = in->spy + t * (in->epy - in->spy);
+	v[2] = in->spz + t * (in->epz - in->spz);
+}
 
 void drawTurd(struct turd_struct *head) {
 	struct turd_struct *cur_turd = head;
@@ -1166,121 +1254,25 @@ void drawTurd(struct turd_struct *head) {
 	
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
 	
-	// cubic interp
+	float cp[3];
+		
 	cur_turd = head;
-	//printf("---\n");
 	while (cur_turd->nxt) {	
 		nxt_turd = cur_turd->nxt;
-			
-		// first, find the closest intersection between the z-axis of 
-		// the two points
-		float ps0x,ps0y,ps0z, ps1x,ps1y,ps1z, pe0x,pe0y,pe0z, pe1x,pe1y,pe1z;
-		float sc, tc;
+	//printf("---\n");
+		interp_struct *in = interpInit(cur_turd, nxt_turd);
+		interpGenClosestLine( in );
 		
-		ps0x = cur_turd->wx;
-		ps0y = cur_turd->wy;
-		ps0z = cur_turd->wz;
-		ps1x = cur_turd->nx;
-		ps1y = cur_turd->ny;
-		ps1z = cur_turd->nz;
-		
-		pe0x = nxt_turd->wx;
-		pe0y = nxt_turd->wy;
-		pe0z = nxt_turd->wz;
-		pe1x = nxt_turd->nx;
-		pe1y = nxt_turd->ny;
-		pe1z = nxt_turd->nz;
-		
-		dVector3 u;
-		dVector3 v;
-		dVector3 w;	
-		
-		u[0] = ps1x - ps0x;
-		u[1] = ps1y - ps0y;
-		u[2] = ps1z - ps0z;
-		
-		v[0] = pe1x - pe0x;
-		v[1] = pe1y - pe0y;
-		v[2] = pe1z - pe0z;
-		
-		w[0] = ps0x - pe0x;
-		w[1] = ps0y - pe0y;
-		w[2] = ps0z - pe0z;
-		
-		float ca = dot(u,u);
-		float cb = dot(u,v);
-		float cc = dot(v,v);
-		float cd = dot(u,w);
-		float ce = dot(v,w);
-		float cD = ca*cc - cb*cb;
-		
-		if (cD < 0.01) {
-			
-			sc = 0;
-			tc = (cb>cc ? cd/cb : ce/cc);
-			//printf("almost parallel:%f\n",tc);
-		} else {
-			sc = (cb*ce - cc*cd) / cD;
-			tc = (ca*ce - cb*cd) / cD;
-		}
-	
-	  // now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
-		float scx,scy,scz, tcx,tcy,tcz;
-		scx = ps0x + ((ps1x - ps0x) * sc);
-		scy = ps0y + ((ps1y - ps0y) * sc);
-		scz = ps0z + ((ps1z - ps0z) * sc);
-		
-		tcx = pe0x + ((pe1x - pe0x) * tc);
-		tcy = pe0y + ((pe1y - pe0y) * tc);
-		tcz = pe0z + ((pe1z - pe0z) * tc);
-		
-		/*
-		glBegin(GL_LINES);
-		glVertex3f(scx, scy, scz);
-		glVertex3f(tcx, tcy, tcz);
-		glEnd();
-		*/
-		
-		// now we have the line which represents our moving control point, we can start
-		// the interpolation.
-		
-		float cpx,cpy,cpz;
-		float spx,spy,spz;
-		float epx,epy,epz;
-		float ipx,ipy,ipz;
-		
-		int i = 0;
-		int num = 5;
+		int i;
+		int num=5;
+		float t;
 		glBegin(GL_LINE_STRIP);
 		for (i=0; i<=num; i++) {
-			float t = (float)i/num;
-			
-			cpx = scx + t * (tcx - scx);
-			cpy = scy + t * (tcy - scy);
-			cpz = scz + t * (tcz - scz);
-			
-			spx = ps0x + t * (cpx - ps0x);
-			spy = ps0y + t * (cpy - ps0y);
-			spz = ps0z + t * (cpz - ps0z);
-			
-			epx = cpx + t * (pe0x - cpx);
-			epy = cpy + t * (pe0y - cpy);
-			epz = cpz + t * (pe0z - cpz);
-			
-			ipx = spx + t * (epx - spx);
-			ipy = spy + t * (epy - spy);
-			ipz = spz + t * (epz - spz);
-			
-			// ???
-			glVertex3f(ipx,ipy,ipz);
-			
+			t = (float)i/num;
+			interpDraw( in, t, &cp );
+			glVertex3f(cp[0], cp[1], cp[2]);
 		}
 		glEnd();
-/*	
-		printf("sc:%f, tc:%f\n", sc,tc);
-		printf("scx:%f, scy:%f, scz:%f\n", scx,scy,scz);
-		printf("tcx:%f, tcy:%f, tcz:%f\n", tcx,tcy,tcz);
-*/
 	
 		cur_turd = nxt_turd;
 	}
