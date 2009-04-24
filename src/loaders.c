@@ -928,7 +928,20 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 		printlog(0, "\nERROR: trying to spawn unidentified object?!\n");
 
 }
+
+
 struct turd_struct *spiral_head;
+
+
+float *mbv(float *m, float x, float y, float z) {
+	static float v[3];
+	v[0] = x*m[0] + y*m[4] + z*m[8] + m[12];
+	v[1] = x*m[1] + y*m[5] + z*m[9] + m[13];
+	v[2] = x*m[2] + y*m[6] + z*m[10] + m[14];
+	
+	return &v;
+}
+
 
 // this _so_ should be a generic loader
 void initSpiral() {
@@ -950,7 +963,7 @@ void initSpiral() {
 	struct turd_struct *head_turd = NULL;
 	struct turd_struct *last_turd = NULL;
 
-	float mod=10;
+	float mod=3;
 
 	float px,py,pz, vx,vy,vz, xvx,xvy,xvz, yvx,yvy,yvz, va,vb,vc;
 	
@@ -975,50 +988,69 @@ void initSpiral() {
 	py = 0;
 	pz = 0;
 
-	glBegin(GL_LINE_STRIP);
+	float *m;
+
+	int count = 0;
+	
   // hacky hacky hacky
+	glPushMatrix();		
+	glMatrixMode(GL_MODELVIEW);
 	while (ptr = fgets(&buf, 100, fp) ) {
+		count++;
 		printf("\n");
+		printf("e:%d\n", glGetError());
 		printf("s:%s", buf);
 		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
 		printf("%f %f %f %f %f %f\n", x, y, z, a, b, c);
+		
+		tmp_turd = malloc(sizeof(turd_struct));
 
-		vx += x;
-		vy += y;
-		vz += z;
-
-		va += a;
-		vb += b;
-		vc += c;
-		
-		
-		// rotate over x axis
-		xvx = x;
-		xvy = y * cos(va) - z * sin(va);
-		xvz = y * sin(va) + z * cos(va);
-	
-		// rotate over y axis
-		yvx = xvz * sin(vb) + xvx * cos(vb);
-		yvy = xvy;
-		yvz = xvz * cos(vb) - xvx * sin(vb);
-		
-		
-		// rotate over z axis
-		dx = yvx * cos(vc) - yvy * sin(vc);
-		dy = yvx * sin(vc) + yvy * cos(vc);
-		dz = yvz;
-
-		// normalise
-		float n = sqrt((dx * dx) + (dy * dy) + (dz * dz));
-		dx /= n;
-		dy /= n;
-		dz /= n;
-    
 		x *= mod;
 		y *= mod;
 		z *= mod;
 
-		tmp_turd = malloc(sizeof(turd_struct));
+
+		glTranslatef(x,y,z);
+		glRotatef(a,1,0,0);
+		glRotatef(b,0,1,0);
+		glRotatef(c,0,0,1);
+		glFinish();
+		
+		//glMultMatrixf(tmp_turd->m);
+		// store the matrix for later conversion
+		glGetFloatv(GL_MODELVIEW_MATRIX,tmp_turd->m);
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);	
+		glBegin(GL_LINES);
+		glVertex3f(-5,0,0);
+		glVertex3f(5,0,0);
+		glEnd();
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, yellow);	
+		glBegin(GL_LINES);
+		glVertex3f(0,0,0);
+		glVertex3f(0,1,0);
+		glEnd();
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
+		glBegin(GL_LINES);
+		glVertex3f(0,0,0);
+		glVertex3f(0,0,1);
+		glEnd();
+
+		m = tmp_turd->m;
+		px = x*m[0] + y*m[4] + z*m[8] + m[12];
+		py = x*m[1] + y*m[5] + z*m[9] + m[13];
+		pz = x*m[2] + y*m[6] + z*m[10] + m[14];
+		
+		printf("x:%f, y:%f, z:%f\n", x, y, z);
+		printf("px:%f, py:%f, pz:%f\n", px, py, pz);
+		printf("%f %f %f %f\n", m[0], m[4], m[8], m[12]);
+		printf("%f %f %f %f\n", m[1], m[5], m[9], m[13]);
+		printf("%f %f %f %f\n", m[2], m[6], m[10], m[14]);
+		printf("%f %f %f %f\n", m[3], m[7], m[11], m[15]);
+
+
 		tmp_turd->x = x;
 		tmp_turd->y = y;
 		tmp_turd->z = z;
@@ -1026,21 +1058,19 @@ void initSpiral() {
 		tmp_turd->b = b;
 		tmp_turd->c = c;
 		
-		px += dx;
-		py += dy;
-		pz += dz;
+		float *mvr = mbv(tmp_turd->m, 1,0,0);
+		tmp_turd->rerx = mvr[0];
+		tmp_turd->rery = mvr[1];
+		tmp_turd->rerz = mvr[2];
 		
-		glVertex3f(px*mod,py*mod,pz*mod);
-		//glVertex3f(x+dx*mod,y+dy*mod,z+dz*mod);
-
-		
+		mvr = mbv(tmp_turd->m, -1,0,0);
+		tmp_turd->relx = mvr[0];
+		tmp_turd->rely = mvr[1];
+		tmp_turd->relz = mvr[2];
 		
 		tmp_turd->nx = vx;
 		tmp_turd->ny = vy;
 		tmp_turd->nz = vz;
-		
-		printf("vx:%f, vy:%f, vz:%f\n", vx, vy, vz);
-		printf("dx:%f, dy:%f, dz:%f\n", dx, dy, dz);
 
 /*
 		glBegin(GL_LINE);
@@ -1049,7 +1079,7 @@ void initSpiral() {
 		glEnd();
 */
 
-		
+
 
 		if (first == 1) {
 			first = 0;
@@ -1064,16 +1094,94 @@ void initSpiral() {
 		
 		last_turd = tmp_turd;
 	}
-	glEnd();
+	
+	int i = 0;
+	for (i=0; i<count; i++) {
+		count--;
+	}
+	glPopMatrix();
 	close(fp);
 
+	
+	
 
 	spiral_head= head_turd;
 }
 
 #define dot(u,v)   (u[0] * v[0] + u[1] * v[1] + u[2] * v[2])
 
+
 void drawTurd(struct turd_struct *head) {
+	struct turd_struct *cur_turd = head;
+	struct turd_struct *nxt_turd;
+	float x,y,z, a,b,c;
+	
+
+	
+	while (cur_turd) {
+		glPushMatrix();
+		nxt_turd = cur_turd->nxt;
+	
+		x = cur_turd->x;
+		y = cur_turd->y;
+		z = cur_turd->z;
+		a = cur_turd->a;
+		b = cur_turd->b;
+		c = cur_turd->c;
+		
+		//printf("x:%f, y:%f, z:%f\n", x, y, z);
+		//printf("a:%f, b:%f, c:%f\n", a, b, c);
+		//glLoadIdentity();
+		glMultMatrixf(cur_turd->m);
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);	
+		glBegin(GL_LINES);
+		glVertex3f(-1,0,0);
+		glVertex3f(1,0,0);
+		glEnd();
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, yellow);	
+		glBegin(GL_LINES);
+		glVertex3f(0,0,0);
+		glVertex3f(0,1,0);
+		glEnd();
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
+		glBegin(GL_LINES);
+		glVertex3f(0,0,0);
+		glVertex3f(0,0,1);
+		glEnd();
+
+		
+
+		cur_turd = nxt_turd;
+		glPopMatrix();
+	}
+	
+	cur_turd = head;
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);	
+	glBegin(GL_LINE_STRIP);
+	while (cur_turd) {	
+		nxt_turd = cur_turd->nxt;
+		
+		glVertex3f(cur_turd->rerx, cur_turd->rery, cur_turd->rerz);
+		
+		cur_turd = nxt_turd;
+	}
+	glEnd();
+	
+	cur_turd = head;
+	glBegin(GL_LINE_STRIP);
+	while (cur_turd) {	
+		nxt_turd = cur_turd->nxt;
+		
+		glVertex3f(cur_turd->relx, cur_turd->rely, cur_turd->relz);
+		
+		cur_turd = nxt_turd;
+	}
+	glEnd();
+}
+
+void drawfTurd(struct turd_struct *head) {
 
 	struct turd_struct *p0;
 	struct turd_struct *p1;
@@ -1305,6 +1413,8 @@ void initTurdTrack() {
 }
 
 void doTurdTrack() {
+	drawTurd(spiral_head);
+	
 	int i;
 	struct turd_struct *p0;
 	struct turd_struct *p1;
@@ -1548,10 +1658,10 @@ int load_track (char *path)
 	glVertex3f (-100.0f, -100.0f, 0.0f);
 	
 	glEnd();
-	initTurdTrack();
 	//doTurdTrack();
-
 	glEndList();
+
+	initTurdTrack();
 
 	//temp solution, ramp
 	geom = dCreateBox (0,8,12,1);

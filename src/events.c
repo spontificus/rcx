@@ -100,7 +100,7 @@ void event_step(Uint32 step)
 		//get keys pressed
 		keys = SDL_GetKeyState(NULL);
 
-		float step_m = 1;
+		float step_m = 0.1;
 
 		//move camera
 		if (keys[prof->cam_x_pos])
