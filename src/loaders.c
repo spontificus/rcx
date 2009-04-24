@@ -928,7 +928,9 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 		printlog(0, "\nERROR: trying to spawn unidentified object?!\n");
 
 }
+struct turd_struct *spiral_head;
 
+// this _so_ should be a generic loader
 void initSpiral() {
 	FILE *fp;
 	char buf[100];
@@ -939,15 +941,255 @@ void initSpiral() {
 #else
 	fp = fopen("./data/worlds/Sandbox/tracks/Box/spiral.conf", "r");
 #endif
-	float x,y,z,a,b,c;
 
-	while (ptr = fgets(&buf, 100, fp) ) {
-		printf("s:%s\n", buf);
-		sscanf(buf,"%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
-		printf("%f %f %f %f %f %f\n", x, y, z, a, b, c);
+
+	float x,y,z,a,b,c, dx=0,dy=0,dz=0;
+
+  int first = 1;
+	struct turd_struct *tmp_turd = NULL;
+	struct turd_struct *head_turd = NULL;
+	struct turd_struct *last_turd = NULL;
+
+	float mod=10;
+
+	float px,py,pz, vx,vy,vz, xvx,xvy,xvz, yvx,yvy,yvz, va,vb,vc;
 	
+	x=0;
+	y=0;
+	z=0;
+	
+	a=0;
+	b=0;
+	c=0;
+	
+	// setup normal vector, length 5
+	vx = 0;
+	vy = 0;
+	vz = 5;
+	
+	va = a;
+	vb = b;
+	vc = c;	
+	
+	px = 0;
+	py = 0;
+	pz = 0;
+
+	glBegin(GL_LINE_STRIP);
+  // hacky hacky hacky
+	while (ptr = fgets(&buf, 100, fp) ) {
+		printf("\n");
+		printf("s:%s", buf);
+		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
+		printf("%f %f %f %f %f %f\n", x, y, z, a, b, c);
+
+		vx += x;
+		vy += y;
+		vz += z;
+
+		va += a;
+		vb += b;
+		vc += c;
+		
+		
+		// rotate over x axis
+		xvx = x;
+		xvy = y * cos(va) - z * sin(va);
+		xvz = y * sin(va) + z * cos(va);
+	
+		// rotate over y axis
+		yvx = xvz * sin(vb) + xvx * cos(vb);
+		yvy = xvy;
+		yvz = xvz * cos(vb) - xvx * sin(vb);
+		
+		
+		// rotate over z axis
+		dx = yvx * cos(vc) - yvy * sin(vc);
+		dy = yvx * sin(vc) + yvy * cos(vc);
+		dz = yvz;
+
+		// normalise
+		float n = sqrt((dx * dx) + (dy * dy) + (dz * dz));
+		dx /= n;
+		dy /= n;
+		dz /= n;
+    
+		x *= mod;
+		y *= mod;
+		z *= mod;
+
+		tmp_turd = malloc(sizeof(turd_struct));
+		tmp_turd->x = x;
+		tmp_turd->y = y;
+		tmp_turd->z = z;
+		tmp_turd->a = a;
+		tmp_turd->b = b;
+		tmp_turd->c = c;
+		
+		px += dx;
+		py += dy;
+		pz += dz;
+		
+		glVertex3f(px*mod,py*mod,pz*mod);
+		//glVertex3f(x+dx*mod,y+dy*mod,z+dz*mod);
+
+		
+		
+		tmp_turd->nx = vx;
+		tmp_turd->ny = vy;
+		tmp_turd->nz = vz;
+		
+		printf("vx:%f, vy:%f, vz:%f\n", vx, vy, vz);
+		printf("dx:%f, dy:%f, dz:%f\n", dx, dy, dz);
+
+/*
+		glBegin(GL_LINE);
+		glVertex3f(x, y, z);
+	  glVertex3f(x + vx, y + vy, z + vz);
+		glEnd();
+*/
+
+		
+
+		if (first == 1) {
+			first = 0;
+			head_turd = tmp_turd;
+		}
+
+		if (last_turd != NULL) {
+			last_turd->nxt = tmp_turd;
+		}
+		
+		
+		
+		last_turd = tmp_turd;
 	}
+	glEnd();
 	close(fp);
+
+
+	spiral_head= head_turd;
+}
+
+#define dot(u,v)   (u[0] * v[0] + u[1] * v[1] + u[2] * v[2])
+
+void drawTurd(struct turd_struct *head) {
+
+	struct turd_struct *p0;
+	struct turd_struct *p1;
+	struct turd_struct *p2;
+	
+	float P0,P1,P2;
+	float sc, tc;
+	
+	dVector3 u;
+	dVector3 v;
+	dVector3 w;
+	
+	float ps0x,ps0y,ps0z, ps1x,ps1y,ps1z, pe0x,pe0y,pe0z, pe1x,pe1y,pe1z;
+	
+	u[0] = ps1x - ps0x;
+	u[1] = ps1y - ps0y;
+	u[2] = ps1z - ps0z;
+	
+	v[0] = pe1x - pe0x;
+	v[1] = pe1y - pe0y;
+	v[2] = pe1z - pe0z;
+	
+	w[0] = ps0x - pe0x;
+	w[1] = ps0y - pe0y;
+	w[2] = ps0z - pe0z;
+	
+	float a = dot(u,u);
+	float b = dot(u,v);
+	float c = dot(v,v);
+	float d = dot(u,w);
+	float e = dot(v,w);
+	float D = a*c - b*b;
+	
+	if (D < 0.01) {
+		printf("almost parallel\n");
+		sc = 0;
+		tc = (b>c ? d/b : e/c);
+	} else {
+		sc = (b*e - c*d) / D;
+    tc = (a*e - b*d) / D;
+	}
+	
+	
+	/* use standard quadratic bezier nomenclature
+	 * p0 = starting point
+	 * p1 = control point
+	 * p2 = end point
+	 *
+	 * upper case floats are the angles at those points
+	 * in our little test world, xy is actually yz
+	 */
+	
+	
+/*	
+	p0 = turds_cp[0][0];
+	for (i = 1; i < num_control-1; i++) {
+		//printf("--------------------------------------------\n");
+		p2 = turds_cp[0][i];
+				
+		
+		// calculate angle to p2 from p0, and infer P0 from difference of that to
+		// known tangent of p0, which p1 lies upon
+		P0 = fabs( fabs(atan2(p2->z - p0->z, p2->y - p0->y)) - fabs(p0->a) );
+		//P0 = fabs(p2->a - p0->a);
+		
+		// calculate P1 from raw difference of P0 and P2
+		P2 = fabs( fabs( p2->a) - fabs(atan2(p2->z - p0->z, p2->y - p0->y)));
+		
+		// gotta love triangles
+		P1 = (3.14159 - ( P0 + P2) );
+		
+		// get base distance between the two points p0 and p2
+		float p0p2 = sqrt(pow(p2->z - p0->z,2) + pow(p2->y - p0->y,2));
+		
+	  // we now know enough to use the law of sines to calculate the
+		// distance between the control point p1 and the two endpoints
+		/*
+		float p0p2_sP1 = p0p2 * sin(P1);
+		float p1p2 = ( p0p2_sP1 ) / sin(P0);
+		float p0p1 = ( p0p2_sP1 ) / sin(P2);
+		*/
+		// sin(P0) / p1p2 == sin(p1) / p0p2
+/*
+		float p1p2 = fabs((p0p2 * sin(P0) ) / sin(P1));
+		float p0p1 = fabs((p0p2 * sin(P2) ) / sin(P1));
+	
+		//printf("Sizes: p0p2: %f, p0p1:%f, p1p2: %f\n", p0p2, p0p1, p1p2);
+		//printf("Angles: P0: %f, P1: %f, P2: %f\n", P0, P1, P2);
+		
+		
+		//printf("p0x:%f p0y:%f, p2x:%f p2y:%f\n", p0->y, p0->z, p2->y, p2->z);
+		//printf("Angles: p0a: %f, p2a: %f\n", p0->a, p2->a);
+	
+		// calculate xy deltas between endpoints and the control point
+		float dp0p1x = -sin(-3.141/2.0 + p0->a) * p0p1;
+		float dp0p1y = cos(-3.141/2.0 + p0->a) * p0p1;
+		
+		float dp1p2x = -sin(p2->a - 3.141/2.0) * p1p2;
+		float dp1p2y = cos(p2->a - 3.141/2.0) * p1p2;
+		
+		int i;
+		
+		/*
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
+		glBegin(GL_LINES);
+		glVertex3f(p0->x, p0->y, p0->z);	
+		glVertex3f(p0->x, p0->y+dp0p1x, p0->z+dp0p1y);
+		glEnd();
+		
+		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
+		glBegin(GL_LINES);
+		glVertex3f(p2->x, p2->y, p2->z);	
+		glVertex3f(p2->x, p2->y-dp1p2x, p2->z-dp1p2y);		
+		glEnd();
+		*/
+
 }
 
 #define num_control		17

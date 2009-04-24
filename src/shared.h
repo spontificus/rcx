@@ -83,6 +83,8 @@ typedef struct file_3d_struct {
 typedef struct turd_struct {
 	float x,y,z;
 	float a,b,c;
+	float nx,ny,nz;
+	struct turd_struct *nxt;
 } turd_struct;
 
 //graphics_list *graphics_list_head = NULL;
