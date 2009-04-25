@@ -939,7 +939,7 @@ float *mbv(float *m, float x, float y, float z) {
 	v[1] = x*m[1] + y*m[5] + z*m[9] + m[13];
 	v[2] = x*m[2] + y*m[6] + z*m[10] + m[14];
 	
-	return &v;
+	return (float *)&v;
 }
 
 
@@ -964,17 +964,15 @@ void initSpiral() {
 	struct turd_struct *last_turd = NULL;
 
 	float mod=10;
-
-	float px,py,pz;
+//	float xmod=5;
 	
-	float *m;
 
 	int count = 0;
 	
   // hacky hacky hacky
 	glPushMatrix();		
 	glMatrixMode(GL_MODELVIEW);
-	while (ptr = fgets(&buf, 100, fp) ) {
+	while ( (ptr = fgets((char *)&buf, 100, fp)) ) {
 		count++;
 		printf("\n");
 		printf("e:%d\n", glGetError());
@@ -993,45 +991,13 @@ void initSpiral() {
 		glRotatef(a,1,0,0);
 		glRotatef(b,0,1,0);
 		glRotatef(c,0,0,1);
-		glFinish();
+
 		
 		//glMultMatrixf(tmp_turd->m);
 		// store the matrix for later conversion
 		glGetFloatv(GL_MODELVIEW_MATRIX,tmp_turd->m);
 		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);	
-		glBegin(GL_LINES);
-		glVertex3f(-5,0,0);
-		glVertex3f(5,0,0);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, yellow);	
-		glBegin(GL_LINES);
-		glVertex3f(0,0,0);
-		glVertex3f(0,1,0);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
-		glBegin(GL_LINES);
-		glVertex3f(0,0,0);
-		glVertex3f(0,0,1);
-		glEnd();
-
-		m = tmp_turd->m;
-		px = x*m[0] + y*m[4] + z*m[8] + m[12];
-		py = x*m[1] + y*m[5] + z*m[9] + m[13];
-		pz = x*m[2] + y*m[6] + z*m[10] + m[14];
-		
-		/*
-		printf("x:%f, y:%f, z:%f\n", x, y, z);
-		printf("px:%f, py:%f, pz:%f\n", px, py, pz);
-		printf("%f %f %f %f\n", m[0], m[4], m[8], m[12]);
-		printf("%f %f %f %f\n", m[1], m[5], m[9], m[13]);
-		printf("%f %f %f %f\n", m[2], m[6], m[10], m[14]);
-		printf("%f %f %f %f\n", m[3], m[7], m[11], m[15]);
-		*/
-
-
+	
 		tmp_turd->x = x;
 		tmp_turd->y = y;
 		tmp_turd->z = z;
@@ -1071,7 +1037,6 @@ void initSpiral() {
 		}
 		
 		
-		
 		last_turd = tmp_turd;
 	}
 	
@@ -1080,7 +1045,7 @@ void initSpiral() {
 		count--;
 	}
 	glPopMatrix();
-	close(fp);
+	fclose(fp);
 
 	
 	
@@ -1269,7 +1234,7 @@ void drawTurd(struct turd_struct *head) {
 		glBegin(GL_LINE_STRIP);
 		for (i=0; i<=num; i++) {
 			t = (float)i/num;
-			interpDraw( in, t, &cp );
+			interpDraw( in, t, (float *)&cp );
 			glVertex3f(cp[0], cp[1], cp[2]);
 		}
 		glEnd();
@@ -1278,79 +1243,6 @@ void drawTurd(struct turd_struct *head) {
 	}
 	
 	
-	/* use standard quadratic bezier nomenclature
-	 * p0 = starting point
-	 * p1 = control point
-	 * p2 = end point
-	 *
-	 * upper case floats are the angles at those points
-	 * in our little test world, xy is actually yz
-	 */
-	
-	
-/*	
-	p0 = turds_cp[0][0];
-	for (i = 1; i < num_control-1; i++) {
-		//printf("--------------------------------------------\n");
-		p2 = turds_cp[0][i];
-				
-		
-		// calculate angle to p2 from p0, and infer P0 from difference of that to
-		// known tangent of p0, which p1 lies upon
-		P0 = fabs( fabs(atan2(p2->z - p0->z, p2->y - p0->y)) - fabs(p0->a) );
-		//P0 = fabs(p2->a - p0->a);
-		
-		// calculate P1 from raw difference of P0 and P2
-		P2 = fabs( fabs( p2->a) - fabs(atan2(p2->z - p0->z, p2->y - p0->y)));
-		
-		// gotta love triangles
-		P1 = (3.14159 - ( P0 + P2) );
-		
-		// get base distance between the two points p0 and p2
-		float p0p2 = sqrt(pow(p2->z - p0->z,2) + pow(p2->y - p0->y,2));
-		
-	  // we now know enough to use the law of sines to calculate the
-		// distance between the control point p1 and the two endpoints
-		/*
-		float p0p2_sP1 = p0p2 * sin(P1);
-		float p1p2 = ( p0p2_sP1 ) / sin(P0);
-		float p0p1 = ( p0p2_sP1 ) / sin(P2);
-		*/
-		// sin(P0) / p1p2 == sin(p1) / p0p2
-/*
-		float p1p2 = fabs((p0p2 * sin(P0) ) / sin(P1));
-		float p0p1 = fabs((p0p2 * sin(P2) ) / sin(P1));
-	
-		//printf("Sizes: p0p2: %f, p0p1:%f, p1p2: %f\n", p0p2, p0p1, p1p2);
-		//printf("Angles: P0: %f, P1: %f, P2: %f\n", P0, P1, P2);
-		
-		
-		//printf("p0x:%f p0y:%f, p2x:%f p2y:%f\n", p0->y, p0->z, p2->y, p2->z);
-		//printf("Angles: p0a: %f, p2a: %f\n", p0->a, p2->a);
-	
-		// calculate xy deltas between endpoints and the control point
-		float dp0p1x = -sin(-3.141/2.0 + p0->a) * p0p1;
-		float dp0p1y = cos(-3.141/2.0 + p0->a) * p0p1;
-		
-		float dp1p2x = -sin(p2->a - 3.141/2.0) * p1p2;
-		float dp1p2y = cos(p2->a - 3.141/2.0) * p1p2;
-		
-		int i;
-		
-		/*
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
-		glBegin(GL_LINES);
-		glVertex3f(p0->x, p0->y, p0->z);	
-		glVertex3f(p0->x, p0->y+dp0p1x, p0->z+dp0p1y);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-		glBegin(GL_LINES);
-		glVertex3f(p2->x, p2->y, p2->z);	
-		glVertex3f(p2->x, p2->y-dp1p2x, p2->z-dp1p2y);		
-		glEnd();
-		*/
-
 }
 
 #define num_control		17
@@ -1378,9 +1270,7 @@ void initTurdTrack() {
 	float ph = 0;
 	float h = 0;
 	float nh = 0;
-	
-	float ty = dy * num_control;
-	
+		
 	for (i = 0; i < num_control; i++) {
 		float deg = ((float)(360.0/num_control)*i) ;
 		float rad = deg * (3.1415926/180.0);
@@ -1444,13 +1334,13 @@ void initTurdTrack() {
 	// draw normals
 	glBegin(GL_LINES);
 	for (i = 0; i < num_control; i++) {
-		float a,b,c;
+		float b,c;
 		tmp_turd = turds_cp[0][i];
 		b = 5*-sin(tmp_turd->a);
 		c = 5*cos(tmp_turd->a);
 		
 		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
-		glVertex3f(tmp_turd->x + a, tmp_turd->y + b, tmp_turd->z + c);
+		glVertex3f(tmp_turd->x, tmp_turd->y + b, tmp_turd->z + c);
 		
 		/*
 		tmp_turd = turds_cp[1][i];
@@ -1470,7 +1360,6 @@ void doTurdTrack() {
 	
 	int i;
 	struct turd_struct *p0;
-	struct turd_struct *p1;
 	struct turd_struct *p2;
 	
 	float P0,P1,P2;
@@ -1578,8 +1467,6 @@ void doTurdTrack() {
 			// normal? Fudge it
 			float n = t * (p2->a - p0->a);
 			
-			float b = 2*-sin(n);
-			float c = 2*cos(n);
 			glNormal3f (0,-sin(n), cos(n));
 			glVertex3f(p0->x, x, y);
 			glVertex3f(p0->x+20, x, y);	

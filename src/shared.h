@@ -2,6 +2,9 @@
 //
 //See licensing info in main.c
 
+// prototypes
+void doTurdTrack();
+
 //use a "runlevel" (enum) variable to make all threads/loops aware of status
 //(locked is used when we want to pause the loops, but still try to catch
 //up with real time when unlocked, basically: stop simulation, but do not
