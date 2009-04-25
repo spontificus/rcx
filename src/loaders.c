@@ -1079,8 +1079,7 @@ float dot(dVector3 u, dVector3 v) {
 }
 
 // creates an interpolation object from two control points
-interp_struct *interpInit( turd_struct *cur_turd, turd_struct *nxt_turd ) {
-		interp_struct *in = malloc(sizeof(interp_struct));
+interp_struct *interpInit( interp_struct *in, turd_struct *cur_turd, turd_struct *nxt_turd ) {
 		
 		in->ps0x = cur_turd->wx;
 		in->ps0y = cur_turd->wy;
@@ -1262,13 +1261,15 @@ void drawTurd(struct turd_struct *head) {
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
 	
 	float cp[3];
-		
+
+	interp_struct in;
+
 	cur_turd = head;
 	while (cur_turd->nxt) {	
 		nxt_turd = cur_turd->nxt;
 	//printf("---\n");
-		interp_struct *in = interpInit(cur_turd, nxt_turd);
-		interpGenClosestLine( in );
+		interpInit(&in, cur_turd, nxt_turd);
+		interpGenClosestLine( &in );
 		
 		int i;
 		int num=5;
@@ -1276,7 +1277,7 @@ void drawTurd(struct turd_struct *head) {
 		glBegin(GL_LINE_STRIP);
 		for (i=0; i<=num; i++) {
 			t = (float)i/num;
-			interpDraw( in, t, (float *)&cp );
+			interpDraw( &in, t, (float *)&cp );
 			glVertex3f(cp[0], cp[1], cp[2]);
 		}
 		glEnd();
@@ -1286,6 +1287,103 @@ void drawTurd(struct turd_struct *head) {
 	
 	
 }
+
+
+void drawRoad(struct turd_struct *head) {
+	struct turd_struct *cur_turd = head;
+	struct turd_struct *nxt_turd;
+	struct turd_struct *lct,*lnt, *rct,*rnt;
+	float x,y,z, a,b,c;
+	
+
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
+	
+	float ls[3];
+	float cs[3];
+	float rs[3];
+
+	interp_struct lin;
+	interp_struct cin;
+	interp_struct rin;
+
+	cur_turd = head;
+	while (cur_turd->nxt) {	
+		nxt_turd = cur_turd->nxt;
+	//printf("---\n");
+		lct = cur_turd->l;
+		lnt = nxt_turd->l;
+		rct = cur_turd->r;
+		rnt = nxt_turd->r;
+	
+		// generate 3 interpolation structs
+		// xxx - should store these for later, no?
+		interpInit(&cin, cur_turd, nxt_turd);
+		interpGenClosestLine( &cin );
+		
+		interpInit(&lin, lct, lnt);
+		interpGenClosestLine( &lin );
+		
+		interpInit(&rin, rct, rnt);
+		interpGenClosestLine( &rin );
+		
+		int i;
+		int num=5;
+		float t;
+		
+		float plx = lct->wx;
+		float ply = lct->wy;
+		float plz = lct->wz;
+		
+		float pcx = cur_turd->wx;
+		float pcy = cur_turd->wy;
+		float pcz = cur_turd->wz;
+		
+		float prx = rct->wx;
+		float pry = rct->wy;
+		float prz = rct->wz;
+		
+		for (i=0; i<=num; i++) {
+			glBegin(GL_TRIANGLE_STRIP);
+			t = (float)i/num;
+			
+			interpDraw( &lin, t, (float *)&ls );
+			interpDraw( &cin, t, (float *)&cs );
+			interpDraw( &rin, t, (float *)&rs );
+			
+			glNormal3f(lct->nx,lct->ny,lct->nz);
+			glVertex3f(plx, ply, plz);
+			glVertex3f(ls[0], ls[1], ls[2]);
+			
+			glNormal3f(cur_turd->nx,cur_turd->ny,cur_turd->nz);
+			glVertex3f(pcx, pcy, pcz);
+			glVertex3f(cs[0], cs[1], cs[2]);
+			
+			glNormal3f(rct->nx,rct->ny,rct->nz);
+			glVertex3f(prx, pry, prz);
+			glVertex3f(rs[0], rs[1], rs[2]);		
+			
+			plx = ls[0];
+			ply = ls[1];
+			plz = ls[2];
+			
+			pcx = cs[0];
+			pcy = cs[1];
+			pcz = cs[2];
+			
+			prx = rs[0];
+			pry = rs[1];
+			prz = rs[2];
+			
+			glEnd();
+		}
+		
+	
+		cur_turd = nxt_turd;
+	}
+	
+	
+}
+
 
 #define num_control		17
 #define dist_control	20
@@ -1401,6 +1499,8 @@ void doTurdTrack() {
 	drawTurd(spiral_head);
 	drawTurd(spiral_head->l);
 	drawTurd(spiral_head->r);
+	
+	drawRoad(spiral_head);
 	
 	int i;
 	struct turd_struct *p0;
