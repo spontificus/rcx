@@ -962,9 +962,10 @@ void initSpiral() {
 	struct turd_struct *tmp_turd = NULL;
 	struct turd_struct *head_turd = NULL;
 	struct turd_struct *last_turd = NULL;
+	struct turd_struct *bast_turd = NULL;
 
 	float mod=10;
-//	float xmod=5;
+	float xmod=5;
 	
 
 	int count = 0;
@@ -992,40 +993,26 @@ void initSpiral() {
 		glRotatef(b,0,1,0);
 		glRotatef(c,0,0,1);
 
+		makeTurd(tmp_turd, x,y,z, a,b,c);
 		
-		//glMultMatrixf(tmp_turd->m);
-		// store the matrix for later conversion
-		glGetFloatv(GL_MODELVIEW_MATRIX,tmp_turd->m);
+		// left-hand side of road
+		// ideally offset and orientation would be scripted
+		// but this allows for a simple/flat road for now
+		bast_turd = malloc(sizeof(turd_struct));
+		glPushMatrix();
+		glTranslatef(-xmod,0,0);
+		makeTurd( bast_turd, x-xmod,y,z, a,b,c );
+		glPopMatrix();		
+		bast_turd->r = tmp_turd;
+		tmp_turd->l = bast_turd;
 		
-	
-		tmp_turd->x = x;
-		tmp_turd->y = y;
-		tmp_turd->z = z;
-		tmp_turd->a = a;
-		tmp_turd->b = b;
-		tmp_turd->c = c;
-		
-		float *mvr = mbv(tmp_turd->m, 5,0,0);
-		tmp_turd->rerx = mvr[0];
-		tmp_turd->rery = mvr[1];
-		tmp_turd->rerz = mvr[2];
-		
-		mvr = mbv(tmp_turd->m, -5,0,0);
-		tmp_turd->relx = mvr[0];
-		tmp_turd->rely = mvr[1];
-		tmp_turd->relz = mvr[2];
-
-		// real world coords
-		mvr = mbv(tmp_turd->m, 0,0,0);
-		tmp_turd->wx = mvr[0];
-		tmp_turd->wy = mvr[1];
-		tmp_turd->wz = mvr[2];
-
-		// and finally the normal
-		mvr = mbv(tmp_turd->m, 0,1,0);
-		tmp_turd->nx = mvr[0];
-		tmp_turd->ny = mvr[1];
-		tmp_turd->nz = mvr[2];
+		bast_turd = malloc(sizeof(turd_struct));
+		glPushMatrix();
+		glTranslatef(xmod,0,0);
+		makeTurd( bast_turd, x+xmod,y,z, a,b,c );
+		glPopMatrix();
+		bast_turd->l = tmp_turd;
+		tmp_turd->r = bast_turd;
 
 		if (first == 1) {
 			first = 0;
@@ -1034,6 +1021,12 @@ void initSpiral() {
 
 		if (last_turd != NULL) {
 			last_turd->nxt = tmp_turd;
+			tmp_turd->pre = last_turd;
+			
+			last_turd->l->nxt = tmp_turd->l;
+			last_turd->r->nxt = tmp_turd->r;
+			tmp_turd->l->pre = last_turd->l;
+			tmp_turd->r->pre = last_turd->r;
 		}
 		
 		
@@ -1051,6 +1044,33 @@ void initSpiral() {
 	
 
 	spiral_head= head_turd;
+}
+
+void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c ) {
+	float *mvr;
+				
+	// store given values
+	tmp_turd->x = x;
+	tmp_turd->y = y;
+	tmp_turd->z = z;
+	tmp_turd->a = a;
+	tmp_turd->b = b;
+	tmp_turd->c = c;
+	
+	// store current matrix
+	glGetFloatv(GL_MODELVIEW_MATRIX,tmp_turd->m);
+	
+	// real world coords
+	mvr = mbv(tmp_turd->m, 0,0,0);
+	tmp_turd->wx = mvr[0];
+	tmp_turd->wy = mvr[1];
+	tmp_turd->wz = mvr[2];
+
+	// direction of travel (y-axis)
+	mvr = mbv(tmp_turd->m, 0,1,0);
+	tmp_turd->nx = mvr[0];
+	tmp_turd->ny = mvr[1];
+	tmp_turd->nz = mvr[2];
 }
 
 // inner product of two vectors
@@ -1379,6 +1399,8 @@ void initTurdTrack() {
 
 void doTurdTrack() {
 	drawTurd(spiral_head);
+	drawTurd(spiral_head->l);
+	drawTurd(spiral_head->r);
 	
 	int i;
 	struct turd_struct *p0;

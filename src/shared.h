@@ -91,6 +91,9 @@ typedef struct turd_struct {
 	float relx,rely,relz;
 	float rerx,rery,rerz;
 	GLfloat m[16];
+	struct turd_struct *l;
+	struct turd_struct *r;
+	struct turd_struct *pre;
 	struct turd_struct *nxt;
 } turd_struct;
 
