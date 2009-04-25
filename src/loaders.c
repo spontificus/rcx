@@ -1053,10 +1053,12 @@ void initSpiral() {
 	spiral_head= head_turd;
 }
 
+// inner product of two vectors
 float dot(dVector3 u, dVector3 v) {
 	return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
 }
 
+// creates an interpolation object from two control points
 interp_struct *interpInit( turd_struct *cur_turd, turd_struct *nxt_turd ) {
 		interp_struct *in = malloc(sizeof(interp_struct));
 		
@@ -1077,12 +1079,17 @@ interp_struct *interpInit( turd_struct *cur_turd, turd_struct *nxt_turd ) {
 		return in;
 }
 
+// Following function derived from:
+// http://www.softsurfer.com/Archive/algorithm_0106/algorithm_0106.htm#dist3D_Line_to_Line()
+//
+// Copyright 2001, softSurfer (www.softsurfer.com)
+// This code may be freely used and modified for any purpose
+// providing that this copyright notice is included with it.
+// SoftSurfer makes no warranty for this code, and cannot be held
+// liable for any real or imagined damage resulting from its use.
+// Users of this code must verify correctness for their application.
 void interpGenClosestLine( interp_struct *in ) {
-		
-		// first, find the closest intersection between the z-axis of 
-		// the two points
 		float sc, tc;
-
 		dVector3 u;
 		dVector3 v;
 		dVector3 w;	
@@ -1107,17 +1114,14 @@ void interpGenClosestLine( interp_struct *in ) {
 		float cD = ca*cc - cb*cb;
 		
 		if (cD < 0.01) {
-			
 			sc = 0;
 			tc = (cb>cc ? cd/cb : ce/cc);
-			//printf("almost parallel:%f\n",tc);
 		} else {
 			sc = (cb*ce - cc*cd) / cD;
 			tc = (ca*ce - cb*cd) / cD;
 		}
 	
 	  // now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
-		
 		in->scx = in->ps0x + ((in->ps1x - in->ps0x) * sc);
 		in->scy = in->ps0y + ((in->ps1y - in->ps0y) * sc);
 		in->scz = in->ps0z + ((in->ps1z - in->ps0z) * sc);
@@ -1127,8 +1131,25 @@ void interpGenClosestLine( interp_struct *in ) {
 		in->tcz = in->pe0z + ((in->pe1z - in->pe0z) * tc);
 }
 
-void interpDraw( interp_struct *in, float t, float *v ) {
 
+// inputs an interpolation struct, with a desired scale (t = 0->1), and populates
+// point 'p'
+//
+// cp[xyz] is a moving control point, which moves (with t) along the 3d line
+//   represented by the closest points the of the y-axis of each interpolation
+//   object (sc[xyz]->tc[xyz]
+//
+// sp[xyz] is the control point which moves (with t) from the starting
+//   point to cp[xyz]
+//
+// ep[xyz] moves from cp[xyz] to the end point
+//
+// The point p is derived from the line sp[xyz]->ep[xyz], scaled by t.
+//
+// Once sc[xyz]->tc[xyz] has been discovered, interpolation is equally cheap
+// for any value of 't'.
+//
+void interpDraw( interp_struct *in, float t, float *p ) {
 	in->cpx = in->scx + t * (in->tcx - in->scx);
 	in->cpy = in->scy + t * (in->tcy - in->scy);
 	in->cpz = in->scz + t * (in->tcz - in->scz);
@@ -1141,10 +1162,11 @@ void interpDraw( interp_struct *in, float t, float *v ) {
 	in->epy = in->cpy + t * (in->pe0y - in->cpy);
 	in->epz = in->cpz + t * (in->pe0z - in->cpz);
 	
-	v[0] = in->spx + t * (in->epx - in->spx);
-	v[1] = in->spy + t * (in->epy - in->spy);
-	v[2] = in->spz + t * (in->epz - in->spz);
+	p[0] = in->spx + t * (in->epx - in->spx);
+	p[1] = in->spy + t * (in->epy - in->spy);
+	p[2] = in->spz + t * (in->epz - in->spz);
 }
+
 
 void drawTurd(struct turd_struct *head) {
 	struct turd_struct *cur_turd = head;
