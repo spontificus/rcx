@@ -1039,12 +1039,12 @@ void initSpiral() {
 		tmp_turd->b = b;
 		tmp_turd->c = c;
 		
-		float *mvr = mbv(tmp_turd->m, 1,0,0);
+		float *mvr = mbv(tmp_turd->m, 5,0,0);
 		tmp_turd->rerx = mvr[0];
 		tmp_turd->rery = mvr[1];
 		tmp_turd->rerz = mvr[2];
 		
-		mvr = mbv(tmp_turd->m, -1,0,0);
+		mvr = mbv(tmp_turd->m, -5,0,0);
 		tmp_turd->relx = mvr[0];
 		tmp_turd->rely = mvr[1];
 		tmp_turd->relz = mvr[2];
@@ -1056,7 +1056,7 @@ void initSpiral() {
 		tmp_turd->wz = mvr[2];
 
 		// and finally the normal
-		mvr = mbv(tmp_turd->m, 0,0,1);
+		mvr = mbv(tmp_turd->m, 0,1,0);
 		tmp_turd->nx = mvr[0];
 		tmp_turd->ny = mvr[1];
 		tmp_turd->nz = mvr[2];
