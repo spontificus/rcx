@@ -1521,12 +1521,12 @@ void drawRoad(struct turd_struct *head) {
 		
 		plane = dCreateTriMesh(NULL, triMesh, NULL, NULL, NULL);
 		object *o = allocate_object(1,0);
-		geom_data *data = allocate_geom_data(plane, o);
+		geom_data *data = allocate_geom_data(plane, track.object);
 		
-		data->mu=1;
-		data->erp = 1;
-		data->cfm = 0;
-		data->slip = 0.0002;
+		data->mu = track.mu;
+		data->slip = track.slip;
+		data->erp = track.erp;
+		data->cfm = track.cfm;
 		
 		//data->bounce = 2.0;
 //		dGeomSetData(plane, "Plane");
@@ -1541,6 +1541,7 @@ void drawRoad(struct turd_struct *head) {
 
 struct turd_struct *spiral;
 struct turd_struct *ramp;
+struct turd_struct *loop;
 
 #define num_control		17
 #define dist_control	20
@@ -1554,6 +1555,7 @@ void initTurdTrack() {
 	 */
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
+	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 	int i;
 	 
 	float dy = dist_control;
@@ -1660,8 +1662,9 @@ void doTurdTrack() {
 	drawTurd(spiral_head->r);
 */
 	
-	drawRoad(spiral);
+	//drawRoad(spiral);
 	drawRoad(ramp);
+	//drawRoad(loop);
 	
 	int i;
 	struct turd_struct *p0;
