@@ -930,7 +930,7 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 }
 
 
-struct turd_struct *spiral_head;
+
 
 
 float *mbv(float *m, float x, float y, float z) {
@@ -944,15 +944,15 @@ float *mbv(float *m, float x, float y, float z) {
 
 
 // this _so_ should be a generic loader
-void initSpiral() {
+turd_struct *loadTurd(char *filename) {
 	FILE *fp;
 	char buf[100];
 	void *ptr;
 
 #ifdef windows
-	fp = fopen("./data/worlds/Sandbox/tracks/Box/spiral.conf", "rb");
+	fp = fopen(filename, "rb");
 #else
-	fp = fopen("./data/worlds/Sandbox/tracks/Box/spiral.conf", "r");
+	fp = fopen(filename, "r");
 #endif
 
 
@@ -1043,7 +1043,7 @@ void initSpiral() {
 	
 	
 
-	spiral_head= head_turd;
+	return head_turd;
 }
 
 void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c ) {
@@ -1295,6 +1295,9 @@ void drawRoad(struct turd_struct *head) {
 	struct turd_struct *lct,*lnt, *rct,*rnt;
 	float x,y,z, a,b,c;
 	
+	static int first=1;
+	static dReal *ode_verts = NULL;
+	static int *ode_indices = NULL;
 
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
 	
@@ -1305,6 +1308,28 @@ void drawRoad(struct turd_struct *head) {
 	interp_struct lin;
 	interp_struct cin;
 	interp_struct rin;
+	
+	int num=5;
+	int t_count=0;
+	int v_count=0;
+	int i_count=0;
+
+	// if first time round, count number of control
+	// points for ODE
+	// really should be moved to the object itself
+	if ( first == 1) {
+		cur_turd = head;
+		while (cur_turd) {	
+			cur_turd = cur_turd->nxt;
+			t_count++;
+		}
+		
+		// allocate memory
+		ode_verts = malloc( t_count * num * 4 * 3 * sizeof(dReal));
+		ode_indices = malloc( t_count * num * 4 * 4 * sizeof(int));
+		printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
+	}
+
 
 	cur_turd = head;
 	while (cur_turd->nxt) {	
@@ -1327,7 +1352,7 @@ void drawRoad(struct turd_struct *head) {
 		interpGenClosestLine( &rin );
 		
 		int i;
-		int num=5;
+		
 		float t;
 		
 		float plx = lct->wx;
@@ -1342,7 +1367,24 @@ void drawRoad(struct turd_struct *head) {
 		float pry = rct->wy;
 		float prz = rct->wz;
 		
+		// ode population
+		if ( first == 1 ) {
+				// add first three vertices
+				ode_verts[v_count++] = plx;
+				ode_verts[v_count++] = ply;
+				ode_verts[v_count++] = plz;
+				
+				ode_verts[v_count++] = pcx;
+				ode_verts[v_count++] = pcy;
+				ode_verts[v_count++] = pcz;
+				
+				ode_verts[v_count++] = prx;
+				ode_verts[v_count++] = pry;
+				ode_verts[v_count++] = prz;
+		}
+		
 		for (i=0; i<=num; i++) {
+	
 			glBegin(GL_TRIANGLE_STRIP);
 			t = (float)i/num;
 			
@@ -1374,6 +1416,39 @@ void drawRoad(struct turd_struct *head) {
 			pry = rs[1];
 			prz = rs[2];
 			
+			// ode population
+			if ( first == 1 ) {
+				ode_verts[v_count++] = plx;
+				ode_verts[v_count++] = ply;
+				ode_verts[v_count++] = plz;
+				
+				ode_verts[v_count++] = pcx;
+				ode_verts[v_count++] = pcy;
+				ode_verts[v_count++] = pcz;
+				
+				ode_verts[v_count++] = prx;
+				ode_verts[v_count++] = pry;
+				ode_verts[v_count++] = prz;
+				
+				int p_start = v_count - 18;
+				int s_start = v_count - 9;
+				ode_indices[i_count++] = p_start+1;
+				ode_indices[i_count++] = p_start;
+				ode_indices[i_count++] = s_start;
+				
+				ode_indices[i_count++] = s_start;
+				ode_indices[i_count++] = s_start+1;
+				ode_indices[i_count++] = p_start+1;
+				
+				ode_indices[i_count++] = p_start+2;
+				ode_indices[i_count++] = p_start+1;
+				ode_indices[i_count++] = s_start+1;
+				
+				ode_indices[i_count++] = s_start+1;
+				ode_indices[i_count++] = s_start+2;
+				ode_indices[i_count++] = p_start+2;
+			}
+			
 			glEnd();
 		}
 		
@@ -1381,9 +1456,30 @@ void drawRoad(struct turd_struct *head) {
 		cur_turd = nxt_turd;
 	}
 	
+	if ( first == 1 ) {
+		printf("Need: %d verts, %d indices\n", v_count, i_count);
+		printf("v1:%f\n", ode_verts[0]);
+		dGeomID plane;
+		
+		dTriMeshDataID triMesh;
+		triMesh = dGeomTriMeshDataCreate();
+		dGeomTriMeshDataBuildSimple(triMesh, ode_verts, v_count/3, ode_indices, i_count/3);
+		
+		plane = dCreateTriMesh(NULL, triMesh, NULL, NULL, NULL);
+		object *o = allocate_object(1,0);
+		allocate_geom_data(plane, o);
+//		dGeomSetData(plane, "Plane");
+//		dGeomSetPosition(plane, 0, 0, 0);
+		
+	
+		
+		first = 0;
+	}
 	
 }
 
+struct turd_struct *spiral;
+struct turd_struct *ramp;
 
 #define num_control		17
 #define dist_control	20
@@ -1395,7 +1491,8 @@ void initTurdTrack() {
 	/* control points every 20 units
 	 * interpolated points every 5 units
 	 */
-	initSpiral();
+	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
+	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp.conf");
 	int i;
 	 
 	float dy = dist_control;
@@ -1496,11 +1593,14 @@ void initTurdTrack() {
 }
 
 void doTurdTrack() {
+/*
 	drawTurd(spiral_head);
 	drawTurd(spiral_head->l);
 	drawTurd(spiral_head->r);
+*/
 	
-	drawRoad(spiral_head);
+	//drawRoad(spiral);
+	drawRoad(ramp);
 	
 	int i;
 	struct turd_struct *p0;
