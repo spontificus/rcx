@@ -1071,6 +1071,12 @@ void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,fl
 	tmp_turd->nx = mvr[0];
 	tmp_turd->ny = mvr[1];
 	tmp_turd->nz = mvr[2];
+	
+	// and the actual normal
+	mvr = mbv(tmp_turd->m, 0,0,1);
+	tmp_turd->anx = mvr[0];
+	tmp_turd->any = mvr[1];
+	tmp_turd->anz = mvr[2];
 }
 
 // inner product of two vectors
@@ -1299,7 +1305,11 @@ void drawRoad(struct turd_struct *head) {
 	static dReal *ode_verts = NULL;
 	static int *ode_indices = NULL;
 
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
+	glMaterialfv (GL_FRONT, GL_DIFFUSE, blue);
+	glMaterialfv (GL_FRONT, GL_AMBIENT, gray);
+	glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
+	//glMateriali (GL_FRONT, GL_SHININESS, 1);
+	
 	
 	float ls[3];
 	float cs[3];
@@ -1387,6 +1397,18 @@ void drawRoad(struct turd_struct *head) {
 				
 		}
 		
+		float dlnx = nxt_turd->l->anx - cur_turd->l->anx;
+		float dlny = nxt_turd->l->any - cur_turd->l->any;
+		float dlnz = nxt_turd->l->anz - cur_turd->l->anz;
+		
+		float dcnx = nxt_turd->anx - cur_turd->anx;
+		float dcny = nxt_turd->any - cur_turd->any;
+		float dcnz = nxt_turd->anz - cur_turd->anz;
+		
+		float drnx = nxt_turd->r->anx - cur_turd->r->anx;
+		float drny = nxt_turd->r->any - cur_turd->r->any;
+		float drnz = nxt_turd->r->anz - cur_turd->r->anz;
+		
 		for (i=0; i<=num; i++) {
 	
 			glBegin(GL_TRIANGLE_STRIP);
@@ -1396,15 +1418,15 @@ void drawRoad(struct turd_struct *head) {
 			interpDraw( &cin, t, (float *)&cs );
 			interpDraw( &rin, t, (float *)&rs );
 			
-			glNormal3f(lct->nx,lct->ny,lct->nz);
+			glNormal3f(dlnx*t, dlny*t, dlnz*t);
 			glVertex3f(plx, ply, plz);
 			glVertex3f(ls[0], ls[1], ls[2]);
 			
-			glNormal3f(cur_turd->nx,cur_turd->ny,cur_turd->nz);
+			glNormal3f(dcnx*t, dcny*t, dcnz*t);
 			glVertex3f(pcx, pcy, pcz);
 			glVertex3f(cs[0], cs[1], cs[2]);
 			
-			glNormal3f(rct->nx,rct->ny,rct->nz);
+			glNormal3f(drnx*t, drny*t, drnz*t);
 			glVertex3f(prx, pry, prz);
 			glVertex3f(rs[0], rs[1], rs[2]);		
 			glEnd();
@@ -1638,7 +1660,7 @@ void doTurdTrack() {
 	drawTurd(spiral_head->r);
 */
 	
-	//drawRoad(spiral);
+	drawRoad(spiral);
 	drawRoad(ramp);
 	
 	int i;
