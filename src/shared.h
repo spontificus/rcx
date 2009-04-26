@@ -2,8 +2,7 @@
 //
 //See licensing info in main.c
 
-// prototypes
-void doTurdTrack();
+
 
 //use a "runlevel" (enum) variable to make all threads/loops aware of status
 //(locked is used when we want to pause the loops, but still try to catch
@@ -483,3 +482,7 @@ data_index track_index = {
 
 //TODO: weapons
 
+
+// function prototypes
+void doTurdTrack();
+void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c );

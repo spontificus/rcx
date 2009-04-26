@@ -1299,11 +1299,11 @@ void drawRoad(struct turd_struct *head) {
 	struct turd_struct *cur_turd = head;
 	struct turd_struct *nxt_turd;
 	struct turd_struct *lct,*lnt, *rct,*rnt;
-	float x,y,z, a,b,c;
+	
 	
 	static int first=1;
 	static dReal *ode_verts = NULL;
-	static int *ode_indices = NULL;
+	static unsigned int *ode_indices = NULL;
 
 	glMaterialfv (GL_FRONT, GL_DIFFUSE, blue);
 	glMaterialfv (GL_FRONT, GL_AMBIENT, gray);
@@ -1510,9 +1510,6 @@ void drawRoad(struct turd_struct *head) {
 	}
 	
 	if ( first == 1 ) {
-		printf("d:%d r:%d\n", sizeof(dVector3), sizeof(dReal));
-		printf("Need: %d verts, %d indices\n", v_count, i_count);
-		printf("v1:%f\n", ode_verts[0]);
 		dGeomID plane;
 		
 		dTriMeshDataID triMesh;
@@ -1520,7 +1517,6 @@ void drawRoad(struct turd_struct *head) {
 		dGeomTriMeshDataBuildSimple(triMesh, ode_verts, v_count, ode_indices, i_count);
 		
 		plane = dCreateTriMesh(NULL, triMesh, NULL, NULL, NULL);
-		object *o = allocate_object(1,0);
 		geom_data *data = allocate_geom_data(plane, track.object);
 		
 		data->mu = track.mu;
