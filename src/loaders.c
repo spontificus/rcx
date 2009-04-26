@@ -1325,7 +1325,7 @@ void drawRoad(struct turd_struct *head) {
 		}
 		
 		// allocate memory
-		ode_verts = malloc( t_count * num * 4 * 3 * sizeof(dReal));
+		ode_verts = malloc( t_count * num * 4 * 4 * sizeof(dVector3));
 		ode_indices = malloc( t_count * num * 4 * 4 * sizeof(int));
 		printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
 	}
@@ -1373,14 +1373,18 @@ void drawRoad(struct turd_struct *head) {
 				ode_verts[v_count++] = plx;
 				ode_verts[v_count++] = ply;
 				ode_verts[v_count++] = plz;
+				v_count++;
 				
 				ode_verts[v_count++] = pcx;
 				ode_verts[v_count++] = pcy;
 				ode_verts[v_count++] = pcz;
+				v_count++;
 				
 				ode_verts[v_count++] = prx;
 				ode_verts[v_count++] = pry;
 				ode_verts[v_count++] = prz;
+				v_count++;			
+				
 		}
 		
 		for (i=0; i<=num; i++) {
@@ -1403,6 +1407,7 @@ void drawRoad(struct turd_struct *head) {
 			glNormal3f(rct->nx,rct->ny,rct->nz);
 			glVertex3f(prx, pry, prz);
 			glVertex3f(rs[0], rs[1], rs[2]);		
+			glEnd();
 			
 			plx = ls[0];
 			ply = ls[1];
@@ -1421,35 +1426,61 @@ void drawRoad(struct turd_struct *head) {
 				ode_verts[v_count++] = plx;
 				ode_verts[v_count++] = ply;
 				ode_verts[v_count++] = plz;
+				v_count++;
 				
 				ode_verts[v_count++] = pcx;
 				ode_verts[v_count++] = pcy;
 				ode_verts[v_count++] = pcz;
+				v_count++;
 				
 				ode_verts[v_count++] = prx;
 				ode_verts[v_count++] = pry;
 				ode_verts[v_count++] = prz;
+				v_count++;
 				
-				int p_start = v_count - 18;
-				int s_start = v_count - 9;
-				ode_indices[i_count++] = p_start+1;
-				ode_indices[i_count++] = p_start;
-				ode_indices[i_count++] = s_start;
+				int p_start = (v_count / 4) - 6;
+				int s_start = (v_count / 4) - 3;
 				
-				ode_indices[i_count++] = s_start;
-				ode_indices[i_count++] = s_start+1;
-				ode_indices[i_count++] = p_start+1;
 				
-				ode_indices[i_count++] = p_start+2;
-				ode_indices[i_count++] = p_start+1;
-				ode_indices[i_count++] = s_start+1;
-				
-				ode_indices[i_count++] = s_start+1;
-				ode_indices[i_count++] = s_start+2;
-				ode_indices[i_count++] = p_start+2;
+								
+				if (1) {
+					// clockwise winding
+					ode_indices[i_count++] = p_start+1;
+					ode_indices[i_count++] = p_start;
+					ode_indices[i_count++] = s_start;
+					
+					ode_indices[i_count++] = s_start;
+					ode_indices[i_count++] = s_start+1;
+					ode_indices[i_count++] = p_start+1;
+					
+					ode_indices[i_count++] = p_start+2;
+					ode_indices[i_count++] = p_start+1;
+					ode_indices[i_count++] = s_start+1;
+					
+					ode_indices[i_count++] = s_start+1;
+					ode_indices[i_count++] = s_start+2;
+					ode_indices[i_count++] = p_start+2;
+				} else {
+					// anti-clockwise winding
+					ode_indices[i_count++] = s_start;
+					ode_indices[i_count++] = p_start;
+					ode_indices[i_count++] = p_start+1;
+					
+					ode_indices[i_count++] = p_start+1;
+					ode_indices[i_count++] = s_start+1;
+					ode_indices[i_count++] = s_start;
+					
+					ode_indices[i_count++] = s_start+1;
+					ode_indices[i_count++] = p_start+1;
+					ode_indices[i_count++] = p_start+2;
+
+					ode_indices[i_count++] = p_start+2;
+					ode_indices[i_count++] = s_start+2;
+					ode_indices[i_count++] = s_start+1;
+				}
 			}
 			
-			glEnd();
+
 		}
 		
 	
@@ -1457,17 +1488,25 @@ void drawRoad(struct turd_struct *head) {
 	}
 	
 	if ( first == 1 ) {
+		printf("d:%d r:%d\n", sizeof(dVector3), sizeof(dReal));
 		printf("Need: %d verts, %d indices\n", v_count, i_count);
 		printf("v1:%f\n", ode_verts[0]);
 		dGeomID plane;
 		
 		dTriMeshDataID triMesh;
 		triMesh = dGeomTriMeshDataCreate();
-		dGeomTriMeshDataBuildSimple(triMesh, ode_verts, v_count/3, ode_indices, i_count/3);
+		dGeomTriMeshDataBuildSimple(triMesh, ode_verts, v_count, ode_indices, i_count);
 		
 		plane = dCreateTriMesh(NULL, triMesh, NULL, NULL, NULL);
 		object *o = allocate_object(1,0);
-		allocate_geom_data(plane, o);
+		geom_data *data = allocate_geom_data(plane, o);
+		
+		data->mu=1;
+		data->erp = 1;
+		data->cfm = 0;
+		data->slip = 0.0002;
+		
+		//data->bounce = 2.0;
 //		dGeomSetData(plane, "Plane");
 //		dGeomSetPosition(plane, 0, 0, 0);
 		
@@ -1492,7 +1531,7 @@ void initTurdTrack() {
 	 * interpolated points every 5 units
 	 */
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
-	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp.conf");
+	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
 	int i;
 	 
 	float dy = dist_control;
