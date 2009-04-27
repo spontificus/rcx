@@ -1477,10 +1477,10 @@ void initTurdTrack() {
 
 void doTurdTrack() {
 	
-	//drawRoad(spiral);
+	drawRoad(spiral);
 	//drawRoad(ramp);
 	//drawRoad(loop);
-	drawRoad(helix);
+	//drawRoad(helix);
 }
 
 
