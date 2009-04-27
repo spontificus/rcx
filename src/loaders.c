@@ -1189,106 +1189,6 @@ void interpDraw( interp_struct *in, float t, float *p ) {
 }
 
 
-void drawTurd(struct turd_struct *head) {
-	struct turd_struct *cur_turd = head;
-	struct turd_struct *nxt_turd;
-	float x,y,z, a,b,c;
-	
-
-	// text matricies + draw axis
-	while (cur_turd) {
-		glPushMatrix();
-		nxt_turd = cur_turd->nxt;
-	
-		x = cur_turd->x;
-		y = cur_turd->y;
-		z = cur_turd->z;
-		a = cur_turd->a;
-		b = cur_turd->b;
-		c = cur_turd->c;
-		
-		//printf("x:%f, y:%f, z:%f\n", x, y, z);
-		//printf("a:%f, b:%f, c:%f\n", a, b, c);
-		//glLoadIdentity();
-		glMultMatrixf(cur_turd->m);
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);	
-		glBegin(GL_LINES);
-		glVertex3f(-1,0,0);
-		glVertex3f(1,0,0);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, yellow);	
-		glBegin(GL_LINES);
-		glVertex3f(0,0,0);
-		glVertex3f(0,1,0);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
-		glBegin(GL_LINES);
-		glVertex3f(0,0,0);
-		glVertex3f(0,0,1);
-		glEnd();
-
-		
-
-		cur_turd = nxt_turd;
-		glPopMatrix();
-	}
-	
-	// draw left+right sides
-	//
-	cur_turd = head;
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);	
-	glBegin(GL_LINE_STRIP);
-	while (cur_turd) {	
-		nxt_turd = cur_turd->nxt;
-		
-		glVertex3f(cur_turd->rerx, cur_turd->rery, cur_turd->rerz);
-		
-		cur_turd = nxt_turd;
-	}
-	glEnd();
-	
-	cur_turd = head;
-	glBegin(GL_LINE_STRIP);
-	while (cur_turd) {	
-		nxt_turd = cur_turd->nxt;
-		
-		glVertex3f(cur_turd->relx, cur_turd->rely, cur_turd->relz);
-		
-		cur_turd = nxt_turd;
-	}
-	glEnd();
-	
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
-	
-	float cp[3];
-
-	interp_struct in;
-
-	cur_turd = head;
-	while (cur_turd->nxt) {	
-		nxt_turd = cur_turd->nxt;
-	//printf("---\n");
-		interpInit(&in, cur_turd, nxt_turd);
-		interpGenClosestLine( &in );
-		
-		int i;
-		int num=5;
-		float t;
-		glBegin(GL_LINE_STRIP);
-		for (i=0; i<=num; i++) {
-			t = (float)i/num;
-			interpDraw( &in, t, (float *)&cp );
-			glVertex3f(cp[0], cp[1], cp[2]);
-		}
-		glEnd();
-	
-		cur_turd = nxt_turd;
-	}
-	
-	
-}
 
 
 void drawRoad(struct turd_struct *head) {
@@ -1538,6 +1438,11 @@ void initTurdTrack() {
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
+
+	glBegin(GL_LINES);
+		glVertex3f(0,0,0);
+		glVertex3f(0,0,0);
+	glEnd();
 	
 }
 
