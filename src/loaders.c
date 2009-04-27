@@ -1215,7 +1215,7 @@ void drawRoad(struct turd_struct *head) {
 	interp_struct cin;
 	interp_struct rin;
 	
-	int num=5;
+	int num=10;
 	int t_count=0;
 	int v_count=0;
 	int i_count=0;
