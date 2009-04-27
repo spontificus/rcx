@@ -975,12 +975,8 @@ turd_struct *loadTurd(char *filename) {
 	glMatrixMode(GL_MODELVIEW);
 	while ( (ptr = fgets((char *)&buf, 100, fp)) ) {
 		count++;
-		printf("\n");
-		printf("e:%d\n", glGetError());
-		printf("s:%s", buf);
 		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
-		printf("%f %f %f %f %f %f\n", x, y, z, a, b, c);
-		
+			
 		tmp_turd = malloc(sizeof(turd_struct));
 
 		x *= mod;
