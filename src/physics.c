@@ -164,6 +164,11 @@ void car_physics_step(void)
 			dJointSetHinge2Param (carp->joint[1],dParamFMax2,dInfinity);
 			dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
 			dJointSetHinge2Param (carp->joint[2],dParamFMax2,dInfinity);
+			
+			dJointSetHinge2Param (carp->joint[0],dParamVel2,0);
+			dJointSetHinge2Param (carp->joint[0],dParamFMax2,dInfinity);
+			dJointSetHinge2Param (carp->joint[3],dParamVel2,0);
+			dJointSetHinge2Param (carp->joint[3],dParamFMax2,dInfinity);
 		}
 		else if (carp->breaks)
 		{
@@ -171,29 +176,52 @@ void car_physics_step(void)
 			dJointSetHinge2Param (carp->joint[1],dParamFMax2,carp->max_break);
 			dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
 			dJointSetHinge2Param (carp->joint[2],dParamFMax2,carp->max_break);
+			
+			dJointSetHinge2Param (carp->joint[0],dParamVel2,0);
+			dJointSetHinge2Param (carp->joint[0],dParamFMax2,carp->max_break);
+			dJointSetHinge2Param (carp->joint[0],dParamVel2,0);
+			dJointSetHinge2Param (carp->joint[0],dParamFMax2,carp->max_break);
 		}
 		else
 		{
 			//disable motor (used for breaks...)
 			dJointSetHinge2Param (carp->joint[1],dParamFMax2,0);
 			dJointSetHinge2Param (carp->joint[2],dParamFMax2,0);
+			
+			dJointSetHinge2Param (carp->joint[0],dParamFMax2,0);
+			dJointSetHinge2Param (carp->joint[3],dParamFMax2,0);
 
 			//add torques directly (no "motor")
 			dReal wheel1 = dJointGetHinge2Angle2Rate (carp->joint[1]);
 			dReal wheel2 = dJointGetHinge2Angle2Rate (carp->joint[2]);
+			
+			dReal fwheell = dJointGetHinge2Angle2Rate (carp->joint[0]);
+			dReal fwheelr = dJointGetHinge2Angle2Rate (carp->joint[3]);
+			
 			if (wheel1 < 0)
 				wheel1 = -wheel1;
 			if (wheel2 < 0)
 				wheel2 = -wheel2;
+				
+		  if (fwheell < 0)
+				fwheell = -fwheell;
+			if (fwheelr < 0)
+				fwheelr = -fwheelr;
 
 			dReal torque1=carp->max_torque/(1+wheel1*carp->motor_tweak);
 			dReal torque2=carp->max_torque/(1+wheel2*carp->motor_tweak);
+					
+			dReal ftorquel=carp->max_torque/(1+fwheell*carp->motor_tweak);
+			dReal ftorquer=carp->max_torque/(1+fwheelr*carp->motor_tweak);
 
-			dJointAddHinge2Torques (carp->joint[1],0,torque1*carp->throttle*carp->dir);
-			dJointAddHinge2Torques (carp->joint[2],0,torque2*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[1],0,0.5*torque1*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[2],0,0.5*torque2*carp->throttle*carp->dir);
 			
+			dJointAddHinge2Torques (carp->joint[0],0,1.5*ftorquel*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[3],0,1.5*ftorquer*carp->throttle*carp->dir);
+
 			// add a 'fan'
-			dBodyAddRelTorque(carp->bodyid, -350000*carp->throttle*carp->dir, 0, 0);
+			dBodyAddRelTorque(carp->bodyid, -100000*carp->throttle*carp->dir, 0, 0);
 		}
 
 		dJointSetHinge2Param (carp->joint[0],dParamLoStop,carp->steering*carp->dir);
@@ -201,6 +229,10 @@ void car_physics_step(void)
 		dJointSetHinge2Param (carp->joint[3],dParamLoStop,carp->steering*carp->dir);
 		dJointSetHinge2Param (carp->joint[3],dParamHiStop,carp->steering*carp->dir);
 
+		dJointSetHinge2Param (carp->joint[1],dParamLoStop,-carp->steering*carp->dir);
+		dJointSetHinge2Param (carp->joint[1],dParamHiStop,-carp->steering*carp->dir);
+		dJointSetHinge2Param (carp->joint[2],dParamLoStop,-carp->steering*carp->dir);
+		dJointSetHinge2Param (carp->joint[2],dParamHiStop,-carp->steering*carp->dir);
 
 		//set finite rotation axis (to prevent bending of rear axes)
 		if (internal.finite_rotation)
@@ -209,8 +241,9 @@ void car_physics_step(void)
 
 			dBodySetFiniteRotationAxis (carp->wheel_body[1],-rot[0],-rot[4],-rot[8]);
 			dBodySetFiniteRotationAxis (carp->wheel_body[2],-rot[0],-rot[4],-rot[8]);
-				
 			
+			dBodySetFiniteRotationAxis (carp->wheel_body[0],-rot[0],-rot[4],-rot[8]);
+			dBodySetFiniteRotationAxis (carp->wheel_body[3],-rot[0],-rot[4],-rot[8]);
 		}
 
 		//done, next car...
