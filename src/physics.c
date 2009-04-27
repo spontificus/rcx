@@ -191,6 +191,9 @@ void car_physics_step(void)
 
 			dJointAddHinge2Torques (carp->joint[1],0,torque1*carp->throttle*carp->dir);
 			dJointAddHinge2Torques (carp->joint[2],0,torque2*carp->throttle*carp->dir);
+			
+			// add a 'fan'
+			dBodyAddRelTorque(carp->bodyid, -350000*carp->throttle*carp->dir, 0, 0);
 		}
 
 		dJointSetHinge2Param (carp->joint[0],dParamLoStop,carp->steering*carp->dir);
@@ -206,6 +209,8 @@ void car_physics_step(void)
 
 			dBodySetFiniteRotationAxis (carp->wheel_body[1],-rot[0],-rot[4],-rot[8]);
 			dBodySetFiniteRotationAxis (carp->wheel_body[2],-rot[0],-rot[4],-rot[8]);
+				
+			
 		}
 
 		//done, next car...
