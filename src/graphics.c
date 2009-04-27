@@ -83,7 +83,7 @@ int graphics_init(void)
 	// wireframe hack
 	// just using GL_BACK as wireframe would be nice, but half the objects
 	// are incorrectly ordered!
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT, GL_LINE);
 
 	graphics_resize (screen->w, screen->h);
 
@@ -118,7 +118,7 @@ void graphics_step (Uint32 step)
 	else
 		gpos = dBodyGetPosition(focused_car->bodyid);
 
-	gluLookAt (cpos[0]+gpos[0],cpos[1]+gpos[1]-50,cpos[2]+gpos[2]+100, gpos[0],gpos[1],gpos[2], 0,0,1);
+	gluLookAt (cpos[0]+gpos[0],cpos[1]+gpos[1]-50,cpos[2]+gpos[2]+50, gpos[0],gpos[1],gpos[2], 0,0,1);
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);

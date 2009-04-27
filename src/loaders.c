@@ -975,12 +975,8 @@ turd_struct *loadTurd(char *filename) {
 	glMatrixMode(GL_MODELVIEW);
 	while ( (ptr = fgets((char *)&buf, 100, fp)) ) {
 		count++;
-		printf("\n");
-		printf("e:%d\n", glGetError());
-		printf("s:%s", buf);
 		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
-		printf("%f %f %f %f %f %f\n", x, y, z, a, b, c);
-		
+			
 		tmp_turd = malloc(sizeof(turd_struct));
 
 		x *= mod;
@@ -1193,106 +1189,6 @@ void interpDraw( interp_struct *in, float t, float *p ) {
 }
 
 
-void drawTurd(struct turd_struct *head) {
-	struct turd_struct *cur_turd = head;
-	struct turd_struct *nxt_turd;
-	float x,y,z, a,b,c;
-	
-
-	// text matricies + draw axis
-	while (cur_turd) {
-		glPushMatrix();
-		nxt_turd = cur_turd->nxt;
-	
-		x = cur_turd->x;
-		y = cur_turd->y;
-		z = cur_turd->z;
-		a = cur_turd->a;
-		b = cur_turd->b;
-		c = cur_turd->c;
-		
-		//printf("x:%f, y:%f, z:%f\n", x, y, z);
-		//printf("a:%f, b:%f, c:%f\n", a, b, c);
-		//glLoadIdentity();
-		glMultMatrixf(cur_turd->m);
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, blue);	
-		glBegin(GL_LINES);
-		glVertex3f(-1,0,0);
-		glVertex3f(1,0,0);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, yellow);	
-		glBegin(GL_LINES);
-		glVertex3f(0,0,0);
-		glVertex3f(0,1,0);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
-		glBegin(GL_LINES);
-		glVertex3f(0,0,0);
-		glVertex3f(0,0,1);
-		glEnd();
-
-		
-
-		cur_turd = nxt_turd;
-		glPopMatrix();
-	}
-	
-	// draw left+right sides
-	//
-	cur_turd = head;
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);	
-	glBegin(GL_LINE_STRIP);
-	while (cur_turd) {	
-		nxt_turd = cur_turd->nxt;
-		
-		glVertex3f(cur_turd->rerx, cur_turd->rery, cur_turd->rerz);
-		
-		cur_turd = nxt_turd;
-	}
-	glEnd();
-	
-	cur_turd = head;
-	glBegin(GL_LINE_STRIP);
-	while (cur_turd) {	
-		nxt_turd = cur_turd->nxt;
-		
-		glVertex3f(cur_turd->relx, cur_turd->rely, cur_turd->relz);
-		
-		cur_turd = nxt_turd;
-	}
-	glEnd();
-	
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
-	
-	float cp[3];
-
-	interp_struct in;
-
-	cur_turd = head;
-	while (cur_turd->nxt) {	
-		nxt_turd = cur_turd->nxt;
-	//printf("---\n");
-		interpInit(&in, cur_turd, nxt_turd);
-		interpGenClosestLine( &in );
-		
-		int i;
-		int num=5;
-		float t;
-		glBegin(GL_LINE_STRIP);
-		for (i=0; i<=num; i++) {
-			t = (float)i/num;
-			interpDraw( &in, t, (float *)&cp );
-			glVertex3f(cp[0], cp[1], cp[2]);
-		}
-		glEnd();
-	
-		cur_turd = nxt_turd;
-	}
-	
-	
-}
 
 
 void drawRoad(struct turd_struct *head) {
@@ -1537,249 +1433,24 @@ struct turd_struct *spiral;
 struct turd_struct *ramp;
 struct turd_struct *loop;
 
-#define num_control		17
-#define dist_control	20
-#define dist_interp		4
-struct turd_struct *turds_cp[2][num_control];
-
 void initTurdTrack() {
-	// ugly hard-coded etc
-	/* control points every 20 units
-	 * interpolated points every 5 units
-	 */
+
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
-	int i;
-	 
-	float dy = dist_control;
-	float dz = dist_control;
-	
-	float road_r=10;
-	float bx = 0;
-	float by = 100;
-	struct turd_struct *tmp_turd;
-	
-	// construct road edges
-	float ph = 0;
-	float h = 0;
-	float nh = 0;
-		
-	for (i = 0; i < num_control; i++) {
-		float deg = ((float)(360.0/num_control)*i) ;
-		float rad = deg * (3.1415926/180.0);
-		
-		float px = i*dy;
-		
-		float pdi = (px - 1)/dy;
-		float ndi = (px + 1)/dy;
-		
-		float pdeg = ((float)(360.0/num_control)*pdi) ;
-		float ndeg = ((float)(360.0/num_control)*ndi) ;
-		float prad = pdeg * (3.1415926/180.0);
-		float nrad = ndeg * (3.1415926/180.0);
-		
-		
-		ph = dz * sin( prad );
-		h = dz * sin( rad );
-		nh = dz * sin( nrad );
-		
-		tmp_turd = malloc(sizeof(turd_struct));		
-		tmp_turd->x = bx - road_r;
-		tmp_turd->y = by + px;
-		tmp_turd->z = h-3;
-		/* set x-axis rotation angle as 
-		 *  the tangent of the sin curve,
-		 *  placed in the range of +/- pi/4 to get the minimal and maximal rotational values in radians,
-		 *  then scaled over the projected height and length of the curve
-		 */
-		
-		tmp_turd->a = atan2(nh-ph, 2) ;
-		turds_cp[0][i] = tmp_turd;
-		
-		//printf("ph:%f, nh:%f, d:%f, a:%f\n", ph, nh, nh-ph, tmp_turd->a);
-		
-		tmp_turd = malloc(sizeof(turd_struct));
-		tmp_turd->x = bx + road_r;
-		tmp_turd->y = by + i*dy;
-		tmp_turd->z = dz * sin( rad );
-		tmp_turd->a = (cos(rad) * (3.14159/4.0)) / (1.0/(dz/dy));
-		turds_cp[1][i] = tmp_turd;
-	}
-	
-/*
-	// draw road edges
-	glBegin(GL_LINE_STRIP);
-	for (i = 0; i < num_control; i++) {
-		tmp_turd = turds_cp[0][i];
-		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);
-	}
-  glEnd();
-	
-	
-	glBegin(GL_LINE_STRIP);
-	for (i = 0; i < num_control; i++) {
-		tmp_turd = turds_cp[1][i];
-		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);
-	}
-  glEnd();
-*/
-	
-	// draw normals
+
 	glBegin(GL_LINES);
-	for (i = 0; i < num_control; i++) {
-		float b,c;
-		tmp_turd = turds_cp[0][i];
-		b = 5*-sin(tmp_turd->a);
-		c = 5*cos(tmp_turd->a);
-		
-		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
-		glVertex3f(tmp_turd->x, tmp_turd->y + b, tmp_turd->z + c);
-		
-		/*
-		tmp_turd = turds_cp[1][i];
-		b = 5*-sin(tmp_turd->a);
-		c = 5*cos(tmp_turd->a);
-		glVertex3f(tmp_turd->x, tmp_turd->y, tmp_turd->z);	
-		glVertex3f(tmp_turd->x + a, tmp_turd->y + b, tmp_turd->z + c);
-		*/
-		
-	}
+		glVertex3f(0,0,0);
+		glVertex3f(0,0,0);
 	glEnd();
 	
 }
 
 void doTurdTrack() {
-/*
-	drawTurd(spiral_head);
-	drawTurd(spiral_head->l);
-	drawTurd(spiral_head->r);
-*/
 	
 	drawRoad(spiral);
 	//drawRoad(ramp);
 	//drawRoad(loop);
-	
-	int i;
-	struct turd_struct *p0;
-	struct turd_struct *p2;
-	
-	float P0,P1,P2;
-	
-	/* use standard quadratic bezier nomenclature
-	 * p0 = starting point
-	 * p1 = control point
-	 * p2 = end point
-	 *
-	 * upper case floats are the angles at those points
-	 * in our little test world, xy is actually yz
-	 */
-	
-	
-	
-	p0 = turds_cp[0][0];
-	for (i = 1; i < num_control-1; i++) {
-		//printf("--------------------------------------------\n");
-		p2 = turds_cp[0][i];
-				
-		
-		// calculate angle to p2 from p0, and infer P0 from difference of that to
-		// known tangent of p0, which p1 lies upon
-		P0 = fabs( fabs(atan2(p2->z - p0->z, p2->y - p0->y)) - fabs(p0->a) );
-		//P0 = fabs(p2->a - p0->a);
-		
-		// calculate P1 from raw difference of P0 and P2
-		P2 = fabs( fabs( p2->a) - fabs(atan2(p2->z - p0->z, p2->y - p0->y)));
-		
-		// gotta love triangles
-		P1 = (3.14159 - ( P0 + P2) );
-		
-		// get base distance between the two points p0 and p2
-		float p0p2 = sqrt(pow(p2->z - p0->z,2) + pow(p2->y - p0->y,2));
-		
-	  // we now know enough to use the law of sines to calculate the
-		// distance between the control point p1 and the two endpoints
-		/*
-		float p0p2_sP1 = p0p2 * sin(P1);
-		float p1p2 = ( p0p2_sP1 ) / sin(P0);
-		float p0p1 = ( p0p2_sP1 ) / sin(P2);
-		*/
-		// sin(P0) / p1p2 == sin(p1) / p0p2
-		float p1p2 = fabs((p0p2 * sin(P0) ) / sin(P1));
-		float p0p1 = fabs((p0p2 * sin(P2) ) / sin(P1));
-	
-		//printf("Sizes: p0p2: %f, p0p1:%f, p1p2: %f\n", p0p2, p0p1, p1p2);
-		//printf("Angles: P0: %f, P1: %f, P2: %f\n", P0, P1, P2);
-		
-		
-		//printf("p0x:%f p0y:%f, p2x:%f p2y:%f\n", p0->y, p0->z, p2->y, p2->z);
-		//printf("Angles: p0a: %f, p2a: %f\n", p0->a, p2->a);
-	
-		// calculate xy deltas between endpoints and the control point
-		float dp0p1x = -sin(-3.141/2.0 + p0->a) * p0p1;
-		float dp0p1y = cos(-3.141/2.0 + p0->a) * p0p1;
-		
-		float dp1p2x = -sin(p2->a - 3.141/2.0) * p1p2;
-		float dp1p2y = cos(p2->a - 3.141/2.0) * p1p2;
-		
-		int i;
-		/*
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
-		glBegin(GL_LINES);
-		glVertex3f(p0->x, p0->y, p0->z);	
-		glVertex3f(p0->x, p0->y+dp0p1x, p0->z+dp0p1y);
-		glEnd();
-		
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-		glBegin(GL_LINES);
-		glVertex3f(p2->x, p2->y, p2->z);	
-		glVertex3f(p2->x, p2->y-dp1p2x, p2->z-dp1p2y);		
-		glEnd();
-		*/
-		
-		glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-		glMaterialfv (GL_FRONT, GL_DIFFUSE, white);
-		glMaterialfv (GL_FRONT, GL_AMBIENT, black);
-		glMateriali (GL_FRONT, GL_SHININESS, .30);
-		glBegin(GL_LINES);
-		for (i = 0; i < (dist_control/dist_interp); i++) {
-		  // t scales between 0-1, and represents how far along the curve we are
-		  // i want a float dammit
-			float t = (1.0 / ((float)dist_control/(float)dist_interp)) * (float)(i+1);
-			
-			//printf("t:%f\n", t);
-			
-			// get the in-transit offsets
-			float p0p1tx = p0->y + (t * dp0p1x);
-			float p0p1ty = p0->z + (t * dp0p1y);
-			
-			//printf("p0p1tx: %f, p0p1ty:%f\n", p0p1tx, p0p1ty);
-			
-			float p1p2tx = p2->y - ((1-t) * dp1p2x);
-			float p1p2ty = p2->z - ((1-t) * dp1p2y);
-			
-			// the line segment between p0p1t and p1p2t
-			float dp1p2_p0p1x = p1p2tx - p0p1tx;
-			float dp1p2_p0p1y = p1p2ty - p0p1ty;
-			
-			// and finally the quadratic bezier coords
-			float x = p0p1tx + (t * dp1p2_p0p1x);
-			float y = p0p1ty + (t * dp1p2_p0p1y);
-			
-			// normal? Fudge it
-			float n = t * (p2->a - p0->a);
-			
-			glNormal3f (0,-sin(n), cos(n));
-			glVertex3f(p0->x, x, y);
-			glVertex3f(p0->x+20, x, y);	
-			//glVertex3f(p0->x, x + b, y + c);
-			//printf("x: %f, y:%f\n", x, y);
-		}
-		
-		glEnd();
-		p0 = p2;
-	}
-	
 	
 }
 
