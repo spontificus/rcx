@@ -214,11 +214,11 @@ void car_physics_step(void)
 			dReal ftorquel=carp->max_torque/(1+fwheell*carp->motor_tweak);
 			dReal ftorquer=carp->max_torque/(1+fwheelr*carp->motor_tweak);
 
-			dJointAddHinge2Torques (carp->joint[1],0,0.5*torque1*carp->throttle*carp->dir);
-			dJointAddHinge2Torques (carp->joint[2],0,0.5*torque2*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[1],0,torque1*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[2],0,torque2*carp->throttle*carp->dir);
 			
-			dJointAddHinge2Torques (carp->joint[0],0,1.5*ftorquel*carp->throttle*carp->dir);
-			dJointAddHinge2Torques (carp->joint[3],0,1.5*ftorquer*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[0],0,ftorquel*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[3],0,ftorquer*carp->throttle*carp->dir);
 
 			// add a 'fan'
 			dBodyAddRelTorque(carp->bodyid, -100000*carp->throttle*carp->dir, 0, 0);
