@@ -118,7 +118,7 @@ void graphics_step (Uint32 step)
 	else
 		gpos = dBodyGetPosition(focused_car->bodyid);
 
-	gluLookAt (cpos[0],cpos[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
+	gluLookAt (cpos[0]+gpos[0],cpos[1]+gpos[1]-50,cpos[2]+gpos[2]+100, gpos[0],gpos[1],gpos[2], 0,0,1);
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);

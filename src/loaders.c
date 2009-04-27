@@ -964,8 +964,8 @@ turd_struct *loadTurd(char *filename) {
 	struct turd_struct *last_turd = NULL;
 	struct turd_struct *bast_turd = NULL;
 
-	float mod=10;
-	float xmod=5;
+	float mod=15;
+	float xmod=10;
 	
 
 	int count = 0;
@@ -1074,9 +1074,9 @@ void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,fl
 	
 	// and the actual normal
 	mvr = mbv(tmp_turd->m, 0,0,1);
-	tmp_turd->anx = mvr[0];
-	tmp_turd->any = mvr[1];
-	tmp_turd->anz = mvr[2];
+	tmp_turd->anx = mvr[0] - tmp_turd->wx;
+	tmp_turd->any = mvr[1] - tmp_turd->wy;
+	tmp_turd->anz = mvr[2] - tmp_turd->wz;
 }
 
 // inner product of two vectors
@@ -1138,7 +1138,7 @@ void interpGenClosestLine( interp_struct *in ) {
 		float ce = dot(v,w);
 		float cD = ca*cc - cb*cb;
 		
-		if (cD < 0.01) {
+		if (cD < 0.00000001) {
 			sc = 0;
 			tc = (cb>cc ? cd/cb : ce/cc);
 		} else {
@@ -1305,8 +1305,8 @@ void drawRoad(struct turd_struct *head) {
 	static dReal *ode_verts = NULL;
 	static unsigned int *ode_indices = NULL;
 
-	glMaterialfv (GL_FRONT, GL_DIFFUSE, blue);
-	glMaterialfv (GL_FRONT, GL_AMBIENT, gray);
+	glMaterialfv (GL_FRONT, GL_DIFFUSE, gray);
+	glMaterialfv (GL_FRONT, GL_AMBIENT, black);
 	glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
 	//glMateriali (GL_FRONT, GL_SHININESS, 1);
 	
@@ -1397,17 +1397,6 @@ void drawRoad(struct turd_struct *head) {
 				
 		}
 		
-		float dlnx = nxt_turd->l->anx - cur_turd->l->anx;
-		float dlny = nxt_turd->l->any - cur_turd->l->any;
-		float dlnz = nxt_turd->l->anz - cur_turd->l->anz;
-		
-		float dcnx = nxt_turd->anx - cur_turd->anx;
-		float dcny = nxt_turd->any - cur_turd->any;
-		float dcnz = nxt_turd->anz - cur_turd->anz;
-		
-		float drnx = nxt_turd->r->anx - cur_turd->r->anx;
-		float drny = nxt_turd->r->any - cur_turd->r->any;
-		float drnz = nxt_turd->r->anz - cur_turd->r->anz;
 		
 		for (i=0; i<=num; i++) {
 	
@@ -1418,15 +1407,21 @@ void drawRoad(struct turd_struct *head) {
 			interpDraw( &cin, t, (float *)&cs );
 			interpDraw( &rin, t, (float *)&rs );
 			
-			glNormal3f(dlnx*t, dlny*t, dlnz*t);
+			glNormal3f(	cur_turd->l->anx*(1-t) + nxt_turd->l->anx * t,
+									cur_turd->l->any*(1-t) + nxt_turd->l->any * t,
+									cur_turd->l->anz*(1-t) + nxt_turd->l->anz * t);
 			glVertex3f(plx, ply, plz);
 			glVertex3f(ls[0], ls[1], ls[2]);
 			
-			glNormal3f(dcnx*t, dcny*t, dcnz*t);
+			glNormal3f(	cur_turd->anx*(1-t) + nxt_turd->anx * t,
+									cur_turd->any*(1-t) + nxt_turd->any * t,
+									cur_turd->anz*(1-t) + nxt_turd->anz * t);
 			glVertex3f(pcx, pcy, pcz);
 			glVertex3f(cs[0], cs[1], cs[2]);
 			
-			glNormal3f(drnx*t, drny*t, drnz*t);
+			glNormal3f(	cur_turd->r->anx*(1-t) + nxt_turd->r->anx * t,
+									cur_turd->r->any*(1-t) + nxt_turd->r->any * t,
+									cur_turd->r->anz*(1-t) + nxt_turd->r->anz * t);
 			glVertex3f(prx, pry, prz);
 			glVertex3f(rs[0], rs[1], rs[2]);		
 			glEnd();
@@ -1464,8 +1459,10 @@ void drawRoad(struct turd_struct *head) {
 				int s_start = (v_count / 4) - 3;
 				
 				
-								
-				if (1) {
+				// should be clockwise, according to manual,
+				// but wheels don't interact with it
+				// are they wound the wrong way?
+				if (0) {
 					// clockwise winding
 					ode_indices[i_count++] = p_start+1;
 					ode_indices[i_count++] = p_start;
@@ -1523,6 +1520,7 @@ void drawRoad(struct turd_struct *head) {
 		data->slip = track.slip;
 		data->erp = track.erp;
 		data->cfm = track.cfm;
+		data->collide=1;
 		
 		//data->bounce = 2.0;
 //		dGeomSetData(plane, "Plane");
@@ -1658,8 +1656,8 @@ void doTurdTrack() {
 	drawTurd(spiral_head->r);
 */
 	
-	//drawRoad(spiral);
-	drawRoad(ramp);
+	drawRoad(spiral);
+	//drawRoad(ramp);
 	//drawRoad(loop);
 	
 	int i;
