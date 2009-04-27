@@ -1134,22 +1134,36 @@ void interpGenClosestLine( interp_struct *in ) {
 		float ce = dot(v,w);
 		float cD = ca*cc - cb*cb;
 		
-		if (cD < 0.00000001) {
-			sc = 0;
-			tc = (cb>cc ? cd/cb : ce/cc);
+		if (cD < 0.01) {
+			// if almost parallel, then we want to return the midpoint
+			if ( 1 ) {
+				//printf("parallel\n");
+				in->scx = in->ps0x - (w[0] / 2.0);
+				in->scy = in->ps0y - (w[1] / 2.0);
+				in->scz = in->ps0z - (w[2] / 2.0);
+				
+				in->tcx = in->scx;
+				in->tcy = in->scy;
+				in->tcz = in->scz;
+			} else {
+				sc = 0;
+				tc = (cb>cc ? cd/cb : ce/cc);
+			}
 		} else {
 			sc = (cb*ce - cc*cd) / cD;
 			tc = (ca*ce - cb*cd) / cD;
+			
+			// now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
+			in->scx = in->ps0x + ((in->ps1x - in->ps0x) * sc);
+			in->scy = in->ps0y + ((in->ps1y - in->ps0y) * sc);
+			in->scz = in->ps0z + ((in->ps1z - in->ps0z) * sc);
+		
+			in->tcx = in->pe0x + ((in->pe1x - in->pe0x) * tc);
+			in->tcy = in->pe0y + ((in->pe1y - in->pe0y) * tc);
+			in->tcz = in->pe0z + ((in->pe1z - in->pe0z) * tc);
 		}
 	
-	  // now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
-		in->scx = in->ps0x + ((in->ps1x - in->ps0x) * sc);
-		in->scy = in->ps0y + ((in->ps1y - in->ps0y) * sc);
-		in->scz = in->ps0z + ((in->ps1z - in->ps0z) * sc);
-		
-		in->tcx = in->pe0x + ((in->pe1x - in->pe0x) * tc);
-		in->tcy = in->pe0y + ((in->pe1y - in->pe0y) * tc);
-		in->tcz = in->pe0z + ((in->pe1z - in->pe0z) * tc);
+
 }
 
 
