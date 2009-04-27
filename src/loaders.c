@@ -1229,7 +1229,7 @@ void drawRoad(struct turd_struct *head) {
 	interp_struct cin;
 	interp_struct rin;
 	
-	int num=5;
+	int num=10;
 	int t_count=0;
 	int v_count=0;
 	int i_count=0;
@@ -1459,12 +1459,14 @@ void drawRoad(struct turd_struct *head) {
 struct turd_struct *spiral;
 struct turd_struct *ramp;
 struct turd_struct *loop;
+struct turd_struct *helix;
 
 void initTurdTrack() {
 
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
+	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
 
 	glBegin(GL_LINES);
 		glVertex3f(0,0,0);
@@ -1475,10 +1477,10 @@ void initTurdTrack() {
 
 void doTurdTrack() {
 	
-	drawRoad(spiral);
+	//drawRoad(spiral);
 	//drawRoad(ramp);
 	//drawRoad(loop);
-	
+	drawRoad(helix);
 }
 
 
