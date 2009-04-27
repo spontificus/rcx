@@ -1303,10 +1303,20 @@ void drawRoad(struct turd_struct *head) {
 			interpDraw( &cin, t, (float *)&cs );
 			interpDraw( &rin, t, (float *)&rs );
 			
-			glNormal3f(	cur_turd->l->anx*(1-t) + nxt_turd->l->anx * t,
-									cur_turd->l->any*(1-t) + nxt_turd->l->any * t,
-									cur_turd->l->anz*(1-t) + nxt_turd->l->anz * t);
+			// Current Mormal MOD Near/Far
+			float cnmodn = (1.0-t);
+			float cnmodf = t;
+			
+			float nnmodn = (1.0-(i+1.0)/num);
+			float nnmodf = (i+1.0)/num;
+			
+			glNormal3f(	cur_turd->l->anx*cnmodn + nxt_turd->l->anx * cnmodf,
+									cur_turd->l->any*cnmodn + nxt_turd->l->any * cnmodf,
+									cur_turd->l->anz*cnmodn + nxt_turd->l->anz * cnmodf);
 			glVertex3f(plx, ply, plz);
+			glNormal3f(	cur_turd->l->anx*nnmodn + nxt_turd->l->anx * nnmodf,
+						cur_turd->l->any*nnmodn + nxt_turd->l->any * nnmodf,
+						cur_turd->l->anz*nnmodn + nxt_turd->l->anz * nnmodf);
 			glVertex3f(ls[0], ls[1], ls[2]);
 			
 			glNormal3f(	cur_turd->anx*(1-t) + nxt_turd->anx * t,
@@ -1315,10 +1325,13 @@ void drawRoad(struct turd_struct *head) {
 			glVertex3f(pcx, pcy, pcz);
 			glVertex3f(cs[0], cs[1], cs[2]);
 			
-			glNormal3f(	cur_turd->r->anx*(1-t) + nxt_turd->r->anx * t,
-									cur_turd->r->any*(1-t) + nxt_turd->r->any * t,
-									cur_turd->r->anz*(1-t) + nxt_turd->r->anz * t);
+			glNormal3f(	cur_turd->r->anx*cnmodn + nxt_turd->r->anx * cnmodf,
+									cur_turd->r->any*cnmodn + nxt_turd->r->any * cnmodf,
+									cur_turd->r->anz*cnmodn + nxt_turd->r->anz * cnmodf);
 			glVertex3f(prx, pry, prz);
+			glNormal3f(	cur_turd->r->anx*nnmodn + nxt_turd->r->anx * nnmodf,
+						cur_turd->r->any*nnmodn + nxt_turd->r->any * nnmodf,
+						cur_turd->r->anz*nnmodn + nxt_turd->r->anz * nnmodf);
 			glVertex3f(rs[0], rs[1], rs[2]);		
 			glEnd();
 			
