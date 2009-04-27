@@ -1463,7 +1463,7 @@ struct turd_struct *helix;
 
 void initTurdTrack() {
 
-	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
+	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral2.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");

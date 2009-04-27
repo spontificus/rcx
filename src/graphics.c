@@ -86,7 +86,6 @@ int graphics_init(void)
 	glPolygonMode(GL_FRONT, GL_LINE);
 	//glPolygonMode(GL_BACK, GL_LINE);
 
-
 	graphics_resize (screen->w, screen->h);
 
 	char *name = calloc(10+strlen(VERSION)+1, sizeof(char));
