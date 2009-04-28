@@ -329,18 +329,6 @@ profile *load_profile (char *path)
 }
 
 
-//the following a some basic color definitions (used for lights and materials)
-GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
-GLfloat dgray[]     = {0.2f, 0.2f, 0.2f, 1.0f};
-GLfloat gray[]      = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lgray[]     = {0.8f, 0.8f, 0.8f, 1.0f};
-GLfloat white[]     = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat red[]       = {1.0f, 0.0f, 0.0f, 1.0f};
-GLfloat green[]     = {0.0f, 1.0f, 0.0f, 1.0f};
-GLfloat lgreen[]    = {0.4f, 1.0f, 0.4f, 1.0f};
-GLfloat blue[]      = {0.0f, 0.0f, 1.0f, 1.0f};
-GLfloat lblue[]     = {0.6f, 0.6f, 1.0f, 1.0f};
-GLfloat yellow[]    = {1.0f, 1.0f, 0.0f, 1.0f};
 
 
 void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
@@ -1091,6 +1079,23 @@ turd_struct *loadTurd(char *filename) {
 
 	calcTurd( head_turd );
 	
+	/*
+	// yeach - a holder for the global list
+	tmp_turd = malloc(sizeof(turd_struct));
+	*/
+	if ( turd_head == NULL ) {
+		// i kan coed gud
+		turd_head = head_turd;
+		edit_t = head_turd;
+		edit_h = head_turd;
+	}
+	/*
+	tmp_turd->nxt = head_turd;
+	tmp_turd->
+	turd_head
+	*/
+	
+
 
 	return head_turd;
 }
@@ -1236,12 +1241,23 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	
 	if ( head->tri ) {
 		// clear out old data
-		dGeomTriMeshDataDestroy(head->tri->dataid);
+		//dGeomTriMeshDataDestroy(head->tri->dataid);
+		//dSpaceRemove(space, head->tri->meshid);
+		
+		// is this automatic?
 		free(head->tri->ode_verts);
 		free(head->tri->ode_indices);
-		// destroy mesh?!
 	} else {
 		head->tri = malloc(sizeof(trimesh_struct));
+		head->tri->dataid = dGeomTriMeshDataCreate();
+		head->tri->meshid = dCreateTriMesh(NULL, head->tri->dataid, NULL, NULL, NULL);
+		
+		geom_data *data = allocate_geom_data(head->tri->meshid, track.object);
+		data->mu = track.mu;
+		data->slip = track.slip;
+		data->erp = track.erp;
+		data->cfm = track.cfm;
+		data->collide=1;
 	}
 
 	struct trimesh_struct *tri = head->tri;
@@ -1408,17 +1424,10 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 		cur_turd = nxt_turd;
 	}
 	
-	tri->dataid = dGeomTriMeshDataCreate();
-	dGeomTriMeshDataBuildSimple(tri->dataid, ode_verts, v_count, ode_indices, i_count);
+	dGeomTriMeshDataBuildSimple( tri->dataid, ode_verts, v_count, ode_indices, i_count );
+	dGeomTriMeshSetData( tri->meshid, tri->dataid );
 	
-	tri->meshid = dCreateTriMesh(NULL, tri->dataid, NULL, NULL, NULL);
-	geom_data *data = allocate_geom_data(tri->meshid, track.object);
 	
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-	data->collide=1;
 	
 	return tri;
 }
@@ -1430,8 +1439,7 @@ void drawRoad(struct turd_struct *head) {
 	struct turd_struct *nxt_turd;
 	struct turd_struct *lct,*lnt, *rct,*rnt;
 	
-	static dReal *ode_verts = NULL;
-	static unsigned int *ode_indices = NULL;
+
 
 	glMaterialfv (GL_FRONT, GL_DIFFUSE, gray);
 	glMaterialfv (GL_FRONT, GL_AMBIENT, black);
@@ -1442,15 +1450,13 @@ void drawRoad(struct turd_struct *head) {
 	float ls[3];
 	float cs[3];
 	float rs[3];
-
+// 
 	interp_struct lin;
 	interp_struct cin;
 	interp_struct rin;
 	
 	int num=10;
-	int t_count=0;
-	int v_count=0;
-	int i_count=0;
+
 
 	cur_turd = head;
 	while (cur_turd->nxt) {	
@@ -1551,6 +1557,10 @@ void drawRoad(struct turd_struct *head) {
 	}
 }
 
+void recalcTurd( turd_struct *t ) {
+	calcTurd( t );
+	calcTrimesh( t );
+}
 
 
 struct turd_struct *spiral;
@@ -1560,8 +1570,8 @@ struct turd_struct *helix;
 
 void initTurdTrack() {
 
-	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
+	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
 
@@ -1574,8 +1584,8 @@ void initTurdTrack() {
 
 void doTurdTrack() {
 	
-	drawRoad(spiral);
-	//drawRoad(ramp);
+	//drawRoad(spiral);
+	drawRoad(ramp);
 	//drawRoad(loop);
 	//drawRoad(helix);
 }
