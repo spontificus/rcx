@@ -209,7 +209,7 @@ void event_step(Uint32 step)
 					case SDLK_KP_ENTER:
 						t = edit_h;
 						while (t) {
-							printf("%f %f %f %f %f %f\n", t->x, t->y, t->z, t->a, t->b, t->c);
+							printf("%f %f %f %f %f %f\n", t->x/15, t->y/15, t->z/15, t->a, t->b, t->c);
 							t = t->nxt;
 						}
 						break;
