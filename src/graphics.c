@@ -119,7 +119,43 @@ void graphics_step (Uint32 step)
 	else
 		gpos = dBodyGetPosition(focused_car->bodyid);
 
-	gluLookAt (cpos[0]+gpos[0],cpos[1]+gpos[1]-50,cpos[2]+gpos[2]+50, gpos[0],gpos[1],gpos[2], 0,0,1);
+	if ( editing == 0 ) {
+		glPolygonMode(GL_BACK, GL_FILL);
+		gluLookAt (cpos[0]+gpos[0],cpos[1]+gpos[1]-50,cpos[2]+gpos[2]+100, gpos[0],gpos[1],gpos[2], 0,0,1);
+	} else {
+		glPolygonMode(GL_BACK, GL_LINE);
+		gluLookAt (cpos[0]+edit_t->wx,cpos[1]+edit_t->wy-50,cpos[2]+edit_t->wz+100, edit_t->wx,edit_t->wy,edit_t->wz, 0,0,1);
+		
+		// hacky axis
+		glPushMatrix();
+		glMultMatrixf(edit_t->m);
+		
+		
+		glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, white);	
+		
+		int s = 3;
+		
+		glBegin(GL_LINES);
+		glNormal3f(0,0,1);
+		glVertex3f(-s,0,0);
+		glVertex3f(s,0,0);
+		glEnd();
+		
+//		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, yellow);	
+		glBegin(GL_LINES);
+		glNormal3f(0,0,1);
+		glVertex3f(0,-s,0);
+		glVertex3f(0,s,0);
+		glEnd();
+		
+//		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
+		glBegin(GL_LINES);
+		glNormal3f(0,0,1);
+		glVertex3f(0,0,-s);
+		glVertex3f(0,0,s);
+		glEnd();
+		glPopMatrix();
+	}
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);

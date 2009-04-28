@@ -597,3 +597,21 @@ void free_all (void)
 
 	//no need to destroy track, since it's not allocated by program
 }
+
+void t_backup( turd_struct *t ) {
+	edit_b.x = t->x;
+	edit_b.y = t->y;
+	edit_b.z = t->z;
+	edit_b.a = t->a;
+	edit_b.b = t->b;
+	edit_b.c = t->c;
+}
+
+void t_restore( turd_struct *t ) {
+	t->x = edit_b.x;
+	t->y = edit_b.y;
+	t->z = edit_b.z;
+	t->a = edit_b.a;
+	t->b = edit_b.b;
+	t->c = edit_b.c;
+}

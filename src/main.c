@@ -170,7 +170,9 @@ int main (int argc, char *argv[])
 	{
 		event_step(stepsize_ms); //always check for events
 
-		physics_step();
+		if ( editing == 0 ) {
+			physics_step();
+		}
 
 		simtime += stepsize_ms;
 

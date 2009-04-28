@@ -10,6 +10,24 @@
 //reset "simulated time" variables... Use it when building objects)
 enum {running, done, paused, locked, error} runlevel;
 
+// editing flag - should most likely be absorbed into the enum above.
+int editing = 0;
+
+
+//the following a some basic color definitions (used for lights and materials)
+GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
+GLfloat dgray[]     = {0.2f, 0.2f, 0.2f, 1.0f};
+GLfloat gray[]      = {0.5f, 0.5f, 0.5f, 1.0f};
+GLfloat lgray[]     = {0.8f, 0.8f, 0.8f, 1.0f};
+GLfloat white[]     = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat red[]       = {1.0f, 0.0f, 0.0f, 1.0f};
+GLfloat green[]     = {0.0f, 1.0f, 0.0f, 1.0f};
+GLfloat lgreen[]    = {0.4f, 1.0f, 0.4f, 1.0f};
+GLfloat blue[]      = {0.0f, 0.0f, 1.0f, 1.0f};
+GLfloat lblue[]     = {0.6f, 0.6f, 1.0f, 1.0f};
+GLfloat yellow[]    = {1.0f, 1.0f, 0.0f, 1.0f};
+
+
 //to make the conf loader able to find variable names in structs, use indexes
 typedef const struct {
 	char *name;
@@ -82,6 +100,17 @@ typedef struct file_3d_struct {
 	struct file_3d_struct *next;
 } file_3d;
 
+typedef struct trimesh_struct {
+	dGeomID meshid;
+	dTriMeshDataID dataid;
+	
+	dReal *ode_verts;
+	unsigned int *ode_indices;
+	struct geom_data *data;
+	int v_count;
+	int i_count;
+} trimesh_struct;
+
 typedef struct turd_struct {
 	float x,y,z;
 	float a,b,c;
@@ -95,7 +124,16 @@ typedef struct turd_struct {
 	struct turd_struct *r;
 	struct turd_struct *pre;
 	struct turd_struct *nxt;
+	
+	// should be elsewhere
+	struct trimesh_struct *tri;
 } turd_struct;
+
+turd_struct *turd_head = NULL;
+turd_struct *edit_t = NULL;
+turd_struct *edit_h = NULL;
+turd_struct edit_b;
+int edit_m = 1;
 
 typedef struct interp_stuct {
 		float ps0x,ps0y,ps0z;
