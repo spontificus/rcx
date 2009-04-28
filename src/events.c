@@ -88,6 +88,11 @@ void event_step(Uint32 step)
 					
 					case SDLK_TAB:
 						editing = 1 - editing;
+						if ( editing == 0 ) {
+							// leaving editing mode, update ODE
+							calcTrimesh( edit_h );
+						}
+						
 						break;
 						
 					// switch between editing angles and position

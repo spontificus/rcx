@@ -1559,7 +1559,11 @@ void drawRoad(struct turd_struct *head) {
 
 void recalcTurd( turd_struct *t ) {
 	calcTurd( t );
-	calcTrimesh( t );
+	
+	// technically we don't need to do this if nothing is running
+	if ( editing == 0 ) {
+		calcTrimesh( t );
+	}
 }
 
 
