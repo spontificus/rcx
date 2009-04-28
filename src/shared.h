@@ -82,6 +82,17 @@ typedef struct file_3d_struct {
 	struct file_3d_struct *next;
 } file_3d;
 
+typedef struct trimesh_struct {
+	dGeomID meshid;
+	dTriMeshDataID dataid;
+	
+	dReal *ode_verts;
+	unsigned int *ode_indices;
+	struct geom_data *data;
+	int v_count;
+	int i_count;
+} trimesh_struct;
+
 typedef struct turd_struct {
 	float x,y,z;
 	float a,b,c;
@@ -95,6 +106,9 @@ typedef struct turd_struct {
 	struct turd_struct *r;
 	struct turd_struct *pre;
 	struct turd_struct *nxt;
+	
+	// should be elsewhere
+	struct trimesh_struct *tri;
 } turd_struct;
 
 typedef struct interp_stuct {

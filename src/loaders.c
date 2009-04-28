@@ -943,6 +943,81 @@ float *mbv(float *m, float x, float y, float z) {
 }
 
 
+void makeTurdMatricies( struct turd_struct *tmp_turd ) {
+	float *mvr;
+	
+	// store current matrix
+	glGetFloatv(GL_MODELVIEW_MATRIX,tmp_turd->m);
+	
+	// real world coords
+	mvr = mbv(tmp_turd->m, 0,0,0);
+	tmp_turd->wx = mvr[0];
+	tmp_turd->wy = mvr[1];
+	tmp_turd->wz = mvr[2];
+
+	// direction of travel (y-axis)
+	mvr = mbv(tmp_turd->m, 0,1,0);
+	tmp_turd->nx = mvr[0];
+	tmp_turd->ny = mvr[1];
+	tmp_turd->nz = mvr[2];
+	
+	// and the actual normal
+	mvr = mbv(tmp_turd->m, 0,0,1);
+	tmp_turd->anx = mvr[0] - tmp_turd->wx;
+	tmp_turd->any = mvr[1] - tmp_turd->wy;
+	tmp_turd->anz = mvr[2] - tmp_turd->wz;
+}
+
+void setupTurdValues( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c ) {
+	tmp_turd->x = x;
+	tmp_turd->y = y;
+	tmp_turd->z = z;
+	tmp_turd->a = a;
+	tmp_turd->b = b;
+	tmp_turd->c = c;
+}
+
+
+void calcTurd( struct turd_struct *t ) {
+	glPushMatrix();		
+	glMatrixMode(GL_MODELVIEW);
+	
+	// go through entire list, using gl to process the relational
+	// offsets, and store the matrix for each node, which we'll
+	// use later. It would perhaps be nicer to use our own matrix
+	// math library, rather than invoking gl, but i don't know how
+	// to do that, and this works for now.
+	//
+	while ( t ) {
+		glTranslatef(t->x,t->y,t->z);
+		glRotatef(t->a,1,0,0);
+		glRotatef(t->b,0,1,0);
+		glRotatef(t->c,0,0,1);
+		makeTurdMatricies( t );
+		
+		glPushMatrix();
+		glTranslatef(t->l->x, t->l->y, t->l->z);
+		glRotatef(t->l->a,1,0,0);
+		glRotatef(t->l->b,0,1,0);
+		glRotatef(t->l->c,0,0,1);
+		makeTurdMatricies( t->l );
+		glPopMatrix();		
+				
+		glPushMatrix();
+		glTranslatef(t->r->x, t->r->y, t->r->z);
+		glRotatef(t->r->a,1,0,0);
+		glRotatef(t->r->b,0,1,0);
+		glRotatef(t->r->c,0,0,1);
+		makeTurdMatricies( t->r );
+		glPopMatrix();
+			
+		t = t->nxt;
+	}
+	glPopMatrix();
+}
+
+
+
 // this _so_ should be a generic loader
 turd_struct *loadTurd(char *filename) {
 	FILE *fp;
@@ -970,9 +1045,6 @@ turd_struct *loadTurd(char *filename) {
 
 	int count = 0;
 	
-  // hacky hacky hacky
-	glPushMatrix();		
-	glMatrixMode(GL_MODELVIEW);
 	while ( (ptr = fgets((char *)&buf, 100, fp)) ) {
 		count++;
 		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
@@ -983,30 +1055,16 @@ turd_struct *loadTurd(char *filename) {
 		y *= mod;
 		z *= mod;
 
-
-		glTranslatef(x,y,z);
-		glRotatef(a,1,0,0);
-		glRotatef(b,0,1,0);
-		glRotatef(c,0,0,1);
-
-		makeTurd(tmp_turd, x,y,z, a,b,c);
+		setupTurdValues(tmp_turd, x,y,z, a,b,c);
 		
-		// left-hand side of road
-		// ideally offset and orientation would be scripted
-		// but this allows for a simple/flat road for now
+		// left and right side of road are offset from center
 		bast_turd = malloc(sizeof(turd_struct));
-		glPushMatrix();
-		glTranslatef(-xmod,0,0);
-		makeTurd( bast_turd, x-xmod,y,z, a,b,c );
-		glPopMatrix();		
+		setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
 		bast_turd->r = tmp_turd;
 		tmp_turd->l = bast_turd;
 		
 		bast_turd = malloc(sizeof(turd_struct));
-		glPushMatrix();
-		glTranslatef(xmod,0,0);
-		makeTurd( bast_turd, x+xmod,y,z, a,b,c );
-		glPopMatrix();
+		setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
 		bast_turd->l = tmp_turd;
 		tmp_turd->r = bast_turd;
 
@@ -1029,51 +1087,15 @@ turd_struct *loadTurd(char *filename) {
 		last_turd = tmp_turd;
 	}
 	
-	int i = 0;
-	for (i=0; i<count; i++) {
-		count--;
-	}
-	glPopMatrix();
 	fclose(fp);
 
-	
+	calcTurd( head_turd );
 	
 
 	return head_turd;
 }
 
-void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c ) {
-	float *mvr;
-				
-	// store given values
-	tmp_turd->x = x;
-	tmp_turd->y = y;
-	tmp_turd->z = z;
-	tmp_turd->a = a;
-	tmp_turd->b = b;
-	tmp_turd->c = c;
-	
-	// store current matrix
-	glGetFloatv(GL_MODELVIEW_MATRIX,tmp_turd->m);
-	
-	// real world coords
-	mvr = mbv(tmp_turd->m, 0,0,0);
-	tmp_turd->wx = mvr[0];
-	tmp_turd->wy = mvr[1];
-	tmp_turd->wz = mvr[2];
 
-	// direction of travel (y-axis)
-	mvr = mbv(tmp_turd->m, 0,1,0);
-	tmp_turd->nx = mvr[0];
-	tmp_turd->ny = mvr[1];
-	tmp_turd->nz = mvr[2];
-	
-	// and the actual normal
-	mvr = mbv(tmp_turd->m, 0,0,1);
-	tmp_turd->anx = mvr[0] - tmp_turd->wx;
-	tmp_turd->any = mvr[1] - tmp_turd->wy;
-	tmp_turd->anz = mvr[2] - tmp_turd->wz;
-}
 
 // inner product of two vectors
 float dot(dVector3 u, dVector3 v) {
@@ -1205,13 +1227,209 @@ void interpDraw( interp_struct *in, float t, float *p ) {
 
 
 
+trimesh_struct *calcTrimesh(struct turd_struct *head) {
+	struct turd_struct *cur_turd = head;
+	struct turd_struct *nxt_turd;
+	struct turd_struct *lct,*lnt, *rct,*rnt;
+	int i;	
+	float t;
+	
+	if ( head->tri ) {
+		// clear out old data
+		dGeomTriMeshDataDestroy(head->tri->dataid);
+		free(head->tri->ode_verts);
+		free(head->tri->ode_indices);
+		// destroy mesh?!
+	} else {
+		head->tri = malloc(sizeof(trimesh_struct));
+	}
+
+	struct trimesh_struct *tri = head->tri;
+
+	dReal *ode_verts = tri->ode_verts;
+	unsigned int *ode_indices = tri->ode_indices;
+	
+	
+	float ls[3];
+	float cs[3];
+	float rs[3];
+
+	interp_struct lin;
+	interp_struct cin;
+	interp_struct rin;
+	
+	int num=10;
+	int t_count=0;
+	int v_count=0;
+	int i_count=0;
+
+	cur_turd = head;
+	while (cur_turd) {	
+		cur_turd = cur_turd->nxt;
+		t_count++;
+	}
+		
+	// allocate memory
+	ode_verts = malloc( t_count * num * 4 * 4 * sizeof(dVector3));
+	ode_indices = malloc( t_count * num * 4 * 4 * sizeof(int));
+	printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
+
+	cur_turd = head;
+	while (cur_turd->nxt) {	
+		nxt_turd = cur_turd->nxt;
+	//printf("---\n");
+		lct = cur_turd->l;
+		lnt = nxt_turd->l;
+		rct = cur_turd->r;
+		rnt = nxt_turd->r;
+	
+		// generate 3 interpolation structs
+		// xxx - should store these for later, no?
+		interpInit(&cin, cur_turd, nxt_turd);
+		interpGenClosestLine( &cin );
+		
+		interpInit(&lin, lct, lnt);
+		interpGenClosestLine( &lin );
+		
+		interpInit(&rin, rct, rnt);
+		interpGenClosestLine( &rin );
+		
+
+		
+		float plx = lct->wx;
+		float ply = lct->wy;
+		float plz = lct->wz;
+		
+		float pcx = cur_turd->wx;
+		float pcy = cur_turd->wy;
+		float pcz = cur_turd->wz;
+		
+		float prx = rct->wx;
+		float pry = rct->wy;
+		float prz = rct->wz;
+		
+		// add first three vertices
+		ode_verts[v_count++] = plx;
+		ode_verts[v_count++] = ply;
+		ode_verts[v_count++] = plz;
+		v_count++;
+		
+		ode_verts[v_count++] = pcx;
+		ode_verts[v_count++] = pcy;
+		ode_verts[v_count++] = pcz;
+		v_count++;
+		
+		ode_verts[v_count++] = prx;
+		ode_verts[v_count++] = pry;
+		ode_verts[v_count++] = prz;
+		v_count++;			
+				
+		
+		for (i=0; i<=num; i++) {
+			t = (float)i/num;
+			
+			interpDraw( &lin, t, (float *)&ls );
+			interpDraw( &cin, t, (float *)&cs );
+			interpDraw( &rin, t, (float *)&rs );
+					
+			plx = ls[0];
+			ply = ls[1];
+			plz = ls[2];
+			
+			pcx = cs[0];
+			pcy = cs[1];
+			pcz = cs[2];
+			
+			prx = rs[0];
+			pry = rs[1];
+			prz = rs[2];
+			
+			ode_verts[v_count++] = plx;
+			ode_verts[v_count++] = ply;
+			ode_verts[v_count++] = plz;
+			v_count++;
+			
+			ode_verts[v_count++] = pcx;
+			ode_verts[v_count++] = pcy;
+			ode_verts[v_count++] = pcz;
+			v_count++;
+			
+			ode_verts[v_count++] = prx;
+			ode_verts[v_count++] = pry;
+			ode_verts[v_count++] = prz;
+			v_count++;
+			
+			int p_start = (v_count / 4) - 6;
+			int s_start = (v_count / 4) - 3;
+			
+			
+			// should be clockwise, according to manual,
+			// but wheels don't interact with it
+			// are they wound the wrong way?
+			if (0) {
+				// clockwise winding
+				ode_indices[i_count++] = p_start+1;
+				ode_indices[i_count++] = p_start;
+				ode_indices[i_count++] = s_start;
+				
+				ode_indices[i_count++] = s_start;
+				ode_indices[i_count++] = s_start+1;
+				ode_indices[i_count++] = p_start+1;
+				
+				ode_indices[i_count++] = p_start+2;
+				ode_indices[i_count++] = p_start+1;
+				ode_indices[i_count++] = s_start+1;
+				
+				ode_indices[i_count++] = s_start+1;
+				ode_indices[i_count++] = s_start+2;
+				ode_indices[i_count++] = p_start+2;
+			} else {
+				// anti-clockwise winding
+				ode_indices[i_count++] = s_start;
+				ode_indices[i_count++] = p_start;
+				ode_indices[i_count++] = p_start+1;
+				
+				ode_indices[i_count++] = p_start+1;
+				ode_indices[i_count++] = s_start+1;
+				ode_indices[i_count++] = s_start;
+				
+				ode_indices[i_count++] = s_start+1;
+				ode_indices[i_count++] = p_start+1;
+				ode_indices[i_count++] = p_start+2;
+
+				ode_indices[i_count++] = p_start+2;
+				ode_indices[i_count++] = s_start+2;
+				ode_indices[i_count++] = s_start+1;
+			}
+		}
+			
+	
+	
+		cur_turd = nxt_turd;
+	}
+	
+	tri->dataid = dGeomTriMeshDataCreate();
+	dGeomTriMeshDataBuildSimple(tri->dataid, ode_verts, v_count, ode_indices, i_count);
+	
+	tri->meshid = dCreateTriMesh(NULL, tri->dataid, NULL, NULL, NULL);
+	geom_data *data = allocate_geom_data(tri->meshid, track.object);
+	
+	data->mu = track.mu;
+	data->slip = track.slip;
+	data->erp = track.erp;
+	data->cfm = track.cfm;
+	data->collide=1;
+	
+	return tri;
+}
+
+
+
 void drawRoad(struct turd_struct *head) {
 	struct turd_struct *cur_turd = head;
 	struct turd_struct *nxt_turd;
 	struct turd_struct *lct,*lnt, *rct,*rnt;
 	
-	
-	static int first=1;
 	static dReal *ode_verts = NULL;
 	static unsigned int *ode_indices = NULL;
 
@@ -1233,23 +1451,6 @@ void drawRoad(struct turd_struct *head) {
 	int t_count=0;
 	int v_count=0;
 	int i_count=0;
-
-	// if first time round, count number of control
-	// points for ODE
-	// really should be moved to the object itself
-	if ( first == 1) {
-		cur_turd = head;
-		while (cur_turd) {	
-			cur_turd = cur_turd->nxt;
-			t_count++;
-		}
-		
-		// allocate memory
-		ode_verts = malloc( t_count * num * 4 * 4 * sizeof(dVector3));
-		ode_indices = malloc( t_count * num * 4 * 4 * sizeof(int));
-		printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
-	}
-
 
 	cur_turd = head;
 	while (cur_turd->nxt) {	
@@ -1286,27 +1487,7 @@ void drawRoad(struct turd_struct *head) {
 		float prx = rct->wx;
 		float pry = rct->wy;
 		float prz = rct->wz;
-		
-		// ode population
-		if ( first == 1 ) {
-				// add first three vertices
-				ode_verts[v_count++] = plx;
-				ode_verts[v_count++] = ply;
-				ode_verts[v_count++] = plz;
-				v_count++;
-				
-				ode_verts[v_count++] = pcx;
-				ode_verts[v_count++] = pcy;
-				ode_verts[v_count++] = pcz;
-				v_count++;
-				
-				ode_verts[v_count++] = prx;
-				ode_verts[v_count++] = pry;
-				ode_verts[v_count++] = prz;
-				v_count++;			
-				
-		}
-		
+			
 		
 		for (i=0; i<=num; i++) {
 	
@@ -1360,101 +1541,17 @@ void drawRoad(struct turd_struct *head) {
 			prx = rs[0];
 			pry = rs[1];
 			prz = rs[2];
-			
-			// ode population
-			if ( first == 1 ) {
-				ode_verts[v_count++] = plx;
-				ode_verts[v_count++] = ply;
-				ode_verts[v_count++] = plz;
-				v_count++;
-				
-				ode_verts[v_count++] = pcx;
-				ode_verts[v_count++] = pcy;
-				ode_verts[v_count++] = pcz;
-				v_count++;
-				
-				ode_verts[v_count++] = prx;
-				ode_verts[v_count++] = pry;
-				ode_verts[v_count++] = prz;
-				v_count++;
-				
-				int p_start = (v_count / 4) - 6;
-				int s_start = (v_count / 4) - 3;
-				
-				
-				// should be clockwise, according to manual,
-				// but wheels don't interact with it
-				// are they wound the wrong way?
-				if (0) {
-					// clockwise winding
-					ode_indices[i_count++] = p_start+1;
-					ode_indices[i_count++] = p_start;
-					ode_indices[i_count++] = s_start;
-					
-					ode_indices[i_count++] = s_start;
-					ode_indices[i_count++] = s_start+1;
-					ode_indices[i_count++] = p_start+1;
-					
-					ode_indices[i_count++] = p_start+2;
-					ode_indices[i_count++] = p_start+1;
-					ode_indices[i_count++] = s_start+1;
-					
-					ode_indices[i_count++] = s_start+1;
-					ode_indices[i_count++] = s_start+2;
-					ode_indices[i_count++] = p_start+2;
-				} else {
-					// anti-clockwise winding
-					ode_indices[i_count++] = s_start;
-					ode_indices[i_count++] = p_start;
-					ode_indices[i_count++] = p_start+1;
-					
-					ode_indices[i_count++] = p_start+1;
-					ode_indices[i_count++] = s_start+1;
-					ode_indices[i_count++] = s_start;
-					
-					ode_indices[i_count++] = s_start+1;
-					ode_indices[i_count++] = p_start+1;
-					ode_indices[i_count++] = p_start+2;
-
-					ode_indices[i_count++] = p_start+2;
-					ode_indices[i_count++] = s_start+2;
-					ode_indices[i_count++] = s_start+1;
-				}
-			}
-			
 
 		}
-		
-	
 		cur_turd = nxt_turd;
 	}
-	
-	if ( first == 1 ) {
-		dGeomID plane;
 		
-		dTriMeshDataID triMesh;
-		triMesh = dGeomTriMeshDataCreate();
-		dGeomTriMeshDataBuildSimple(triMesh, ode_verts, v_count, ode_indices, i_count);
-		
-		plane = dCreateTriMesh(NULL, triMesh, NULL, NULL, NULL);
-		geom_data *data = allocate_geom_data(plane, track.object);
-		
-		data->mu = track.mu;
-		data->slip = track.slip;
-		data->erp = track.erp;
-		data->cfm = track.cfm;
-		data->collide=1;
-		
-		//data->bounce = 2.0;
-//		dGeomSetData(plane, "Plane");
-//		dGeomSetPosition(plane, 0, 0, 0);
-		
-	
-		
-		first = 0;
+	if ( head->tri == NULL ) {
+		head->tri = calcTrimesh( head );
 	}
-	
 }
+
+
 
 struct turd_struct *spiral;
 struct turd_struct *ramp;
@@ -1463,7 +1560,7 @@ struct turd_struct *helix;
 
 void initTurdTrack() {
 
-	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral2.conf");
+	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
