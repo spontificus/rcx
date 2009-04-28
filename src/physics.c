@@ -217,11 +217,13 @@ void car_physics_step(void)
 			dJointAddHinge2Torques (carp->joint[1],0,torque1*carp->throttle*carp->dir);
 			dJointAddHinge2Torques (carp->joint[2],0,torque2*carp->throttle*carp->dir);
 			
-			dJointAddHinge2Torques (carp->joint[0],0,ftorquel*carp->throttle*carp->dir);
-			dJointAddHinge2Torques (carp->joint[3],0,ftorquer*carp->throttle*carp->dir);
+			if ( carp->fw_drive == 1 ) {
+				dJointAddHinge2Torques (carp->joint[0],0,ftorquel*carp->throttle*carp->dir);
+				dJointAddHinge2Torques (carp->joint[3],0,ftorquer*carp->throttle*carp->dir);
+			}
 
 			// add a 'fan'
-			dBodyAddRelTorque(carp->bodyid, -100000*carp->throttle*carp->dir, 0, 0);
+			dBodyAddRelTorque(carp->bodyid, carp->body_downforce*carp->throttle*carp->dir, 0, 0);
 		}
 
 		dJointSetHinge2Param (carp->joint[0],dParamLoStop,carp->steering*carp->dir);
@@ -229,10 +231,12 @@ void car_physics_step(void)
 		dJointSetHinge2Param (carp->joint[3],dParamLoStop,carp->steering*carp->dir);
 		dJointSetHinge2Param (carp->joint[3],dParamHiStop,carp->steering*carp->dir);
 
-		dJointSetHinge2Param (carp->joint[1],dParamLoStop,-carp->steering*carp->dir);
-		dJointSetHinge2Param (carp->joint[1],dParamHiStop,-carp->steering*carp->dir);
-		dJointSetHinge2Param (carp->joint[2],dParamLoStop,-carp->steering*carp->dir);
-		dJointSetHinge2Param (carp->joint[2],dParamHiStop,-carp->steering*carp->dir);
+		if ( carp->fw_steering ) {
+			dJointSetHinge2Param (carp->joint[1],dParamLoStop,-carp->steering*carp->dir);
+			dJointSetHinge2Param (carp->joint[1],dParamHiStop,-carp->steering*carp->dir);
+			dJointSetHinge2Param (carp->joint[2],dParamLoStop,-carp->steering*carp->dir);
+			dJointSetHinge2Param (carp->joint[2],dParamHiStop,-carp->steering*carp->dir);
+		}
 
 		//set finite rotation axis (to prevent bending of rear axes)
 		if (internal.finite_rotation)

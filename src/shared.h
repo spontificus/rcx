@@ -287,6 +287,11 @@ typedef struct car_struct {
 	dReal suspension_erp, suspension_cfm;
 	dReal wheel_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
 	dReal body_mu, body_slip, body_erp, body_cfm;
+	
+	dReal body_downforce;
+	
+	int fw_drive, fw_steering;
+	
 
 	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
 
@@ -336,6 +341,10 @@ data_index car_index = {
 	{"body_slip",		'f',1, offsetof(struct car_struct, body_slip)},
 	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp)},
 	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm)},
+	
+	{"body_downforce",		'f',1, offsetof(struct car_struct, body_downforce)},
+	{"4w_drive",		'i',1, offsetof(struct car_struct, fw_drive)},
+	{"4w_steering",		'i',1, offsetof(struct car_struct, fw_steering)},	
 
 	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag)},
 	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag)},
