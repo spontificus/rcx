@@ -1,6 +1,9 @@
-RollCageX 0.04
+﻿ - = [ { RollCageX 0.05 } ] = -
 
-This is a really short readme trying to answear any question you might have.
+Welcome to a new version of rcx, featuring many different improvements (compared
+to the earlier version).
+
+
 
 [LICENSING]
 ---
@@ -18,50 +21,94 @@ This is a really short readme trying to answear any question you might have.
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ---
 
-[CONTROLLS]
-First, you must chose an active car, to switch between the available cars, use:
- F1 - car with 1m wheel diameter
- F2 - car with 2m wheel diameter
- F3 - car with 3m wheel diameter
- F4 - car with 4m wheel diameter
 
-Arrow keys for accelerating/reversing and steering, space for drifting breaks
-Ctrl and Alt keys controlls non-locking breaks (should be easier than the
-drifting breaks which will act similar to the breaks in the original games)
+[RUNNING]
+In order to run a compiled binary of this version of rcx, make sure "rcx" (or
+"rcx.exe" for windows) binary is located inside the directory containing the
+"data" directory. If you extracted one of the official archives (0.05.tgz or
+0.05.win.zip) that should not be a problem (if you compiled it from the source
+available inside "src" in the archive "0.05.tgz", the binary is still placed
+inside the correct directory). Simply speaking: Always keep the program
+together with its “data” directory.
 
-You can also spawn extra "debug" boxes, which will be dropped above the mark on
-the ground, using F5 anf F6 (F6 dropps it at a distance which should take it
-exactly 10 seconds to reach the ground - good for realitim/simtime comparision)
+The src directory is only needed if you want/need to compile the program. It
+can be removed if you do not need it.
+
+
+[CONTROLS]
+It is now possible to change keys by modifying the key list in the default
+profile (data/profiles/default/keys.lst). The following is the default keys:
+
+Arrow keys for accelerating/reversing and steering, space for drifting breaks,
+Left Alt controls non-locking breaks (should be easier than the drifting breaks
+which will act similar to the breaks in the original games). It is also possible
+to move the camera along the X, Y and Z axes by pressing A/D , W/S and Q/E
+respectively.
+
+You can also spawn extra "debug" boxes, which will be dropped above the center
+of the ground, using F5 and F6 - these keys can not be changed in the key list.
+(F6 drops a box at a distance which should take it exactly 10 seconds to reach
+the ground - this is good for reality/simulation time comparison)
+
+
+[CONFIGURATION]
+Most things in the game can now be configured using normal text files, but what
+you might be most interested in is most likely specified in “data/internal.conf”.
+It provides many ways of tweaking the performance, and also is the place where
+you will be able to select resolution, fullscreen toggling, and eye_distance.
+
+If you are wondering about the last one, the viewing angle in the game is
+calculated based on your eye distance from the screen, in pixels: You can
+determine how many pixels a normal length unit is by dividing your screen height
+(or width) resolution with your physical screen height (or width). And you can
+then multiply the resulting value with the distance you have measured between
+your eyes and screen.
+
+This system got the advantage of always providing a realistic viewing angle for
+all resolutions. But if you don't like this, you can force a viewing angle in the
+configuration file (internal.conf).
+
 
 [REQUIREMENTS]
-Shouldn't take to much computer power, any modern system will be enough.
+The current version shouldn't take to much computer power, any modern
+system should be enough.
 
-Running the game requires the following extra runtime libraries (unless if you
-are running a static binary)
+Running the game requires the following extra runtime libraries (unless you
+are running a static binary, such as the official windows binary)
 
-Library dependenies:
+Library dependencies:
 	Open Dynamics Engine		(ODE)
 	Simple Directmedia Layer	(SDL)
-	OpenGL implementation		(os or graphics server specific)
+	OpenGL implementation		(OS or graphics server specific)
 
-You should compile the game yourself if you can, you will need the dev
-libraries (if your distro/os package them sepparately)
+If you need (or want) to compile rcx, you will need the dev version of
+the libraries (but only if your distro/os provide them separately)
+
 
 [INSTALLING]
-Just run the program, there is no need to move it
+Just run the program, there is no reason to install it (just make sure it's
+in the same directory as "data").
+
 
 [COMPILING]
-Running "make" in the directory containing the sourcecode should be enough,
-if you are running windows, you should install MinGW (a minimalistic GNU port
-running under windows) and the libraries, you are probably going to want to
-compile a static binary by typing "make win32-static". If you are not running
-a dev friendly os (GNU, BSD), or windows, you might have to look into changing
-the normal compilation arguments in the Makefile to make compilation work.
+Running "make" in the directory containing the sourcecode should be enough.
+If you are running windows, you should install MinGW (a minimalistic GNU port
+running under windows) and the libraries (requiring compilation). You are
+probably going to want to compile a static binary by typing "make win32-static".
+If you are not running a dev friendly os (such as GNU or BSD), or windows (which
+got a separate make option), you might have to look into changing the normal
+compilation arguments in the Makefile to get compilation to work.
+
 
 [CREDITS]
-(people refered to by their nickname on the gorcx.net forum)
-"MeAkaJon" - the creator of the project
-"Soul Slinger" - coder (me, the creator of all current ersions of rcx)
+(people referred to by their nickname on the gorcx.net forum)
+
+"MeAkaJon"	- the creator of the project
+"Soul Slinger"	- me, coder (the creator of the current versions of rcx)
+
+Finally a special thanks to the whole rollcage community!
+
 
 [LINKS]
 http://www.gorcx.net
+http://www.planetrollcage.com
