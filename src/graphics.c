@@ -126,9 +126,21 @@ void graphics_step (Uint32 step)
 		glPolygonMode(GL_BACK, GL_LINE);
 		gluLookAt (cpos[0]+edit_t->wx,cpos[1]+edit_t->wy-50,cpos[2]+edit_t->wz+100, edit_t->wx,edit_t->wy,edit_t->wz, 0,0,1);
 		
+		float x = 0;
+		float y = 0;
+		float z = 0;
+		
 		// hacky axis
 		glPushMatrix();
-		glMultMatrixf(edit_t->m);
+		if ( edit_m == 1 && edit_t->pre != NULL ) {
+			// position offsets are specified by the parent
+			glMultMatrixf(edit_t->pre->m);
+			x = edit_t->x;
+			y = edit_t->y;
+			z = edit_t->z;
+		} else {
+			glMultMatrixf(edit_t->m);
+		}
 		
 		
 		glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, white);	
@@ -137,22 +149,22 @@ void graphics_step (Uint32 step)
 		
 		glBegin(GL_LINES);
 		glNormal3f(0,0,1);
-		glVertex3f(-s,0,0);
-		glVertex3f(s,0,0);
+		glVertex3f(x-s,y,z);
+		glVertex3f(x+s,y,z);
 		glEnd();
 		
 //		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, yellow);	
 		glBegin(GL_LINES);
 		glNormal3f(0,0,1);
-		glVertex3f(0,-s,0);
-		glVertex3f(0,s,0);
+		glVertex3f(x,y-s,z);
+		glVertex3f(x,y+s,z);
 		glEnd();
 		
 //		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);	
 		glBegin(GL_LINES);
 		glNormal3f(0,0,1);
-		glVertex3f(0,0,-s);
-		glVertex3f(0,0,s);
+		glVertex3f(x,y,z-s);
+		glVertex3f(x,y,z+s);
 		glEnd();
 		glPopMatrix();
 	}
