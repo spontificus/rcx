@@ -113,6 +113,7 @@ void event_step(Uint32 step)
 						} else {
 							edit_t->a += 15;
 						}
+						print_matrix( edit_t->m );
 						recalcTurd( edit_h );
 						break;
 						
@@ -122,6 +123,7 @@ void event_step(Uint32 step)
 						} else {
 							edit_t->a -= 15;
 						}
+						print_matrix( edit_t->m );
 						recalcTurd( edit_h );
 						break;
 					

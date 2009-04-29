@@ -598,6 +598,13 @@ void free_all (void)
 	//no need to destroy track, since it's not allocated by program
 }
 
+void print_matrix( float *m ) {
+	printf("%f %f %f %f\n", m[0], m[4], m[8], m[12]);
+	printf("%f %f %f %f\n", m[1], m[5], m[9], m[13]);
+	printf("%f %f %f %f\n", m[2], m[6], m[10], m[14]);
+	printf("%f %f %f %f\n", m[3], m[7], m[11], m[15]);
+}
+
 void t_backup( turd_struct *t ) {
 	edit_b.x = t->x;
 	edit_b.y = t->y;
