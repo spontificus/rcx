@@ -119,6 +119,7 @@ typedef struct turd_struct {
 	float wx,wy,wz;
 	float relx,rely,relz;
 	float rerx,rery,rerz;
+	float m00,m01,m02, m10,m11,m12, m20,m21,m22;
 	GLfloat m[16];
 	struct turd_struct *l;
 	struct turd_struct *r;
@@ -141,8 +142,8 @@ typedef struct interp_stuct {
 		float pe0x,pe0y,pe0z;
 		float pe1x,pe1y,pe1z;
 
-		float scx,scy,scz;	// closest start
-		float tcx,tcy,tcz;  // closest term
+		float scx,scy,scz;	// closest line start
+		float tcx,tcy,tcz;  // closest line term
 
 		float cpx,cpy,cpz;  // moving pivot
 		float spx,spy,spz;  
