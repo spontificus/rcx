@@ -3,7 +3,7 @@ SDL = `sdl-config --cflags --libs`
 ODE = `ode-config --cflags --libs`
 OGL = `pkg-config --cflags --libs glu`
 LIBS   = $(SDL) $(ODE) $(OGL) -lm
-ARGS   = -O2 -pipe -Wall -march=native -mtune=native
+ARGS   = -O2 -pipe -Wall
 
 normal: $(SOURCE)
 	gcc -o ../rcx main.c $(LIBS) $(ARGS)
