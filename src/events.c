@@ -13,6 +13,7 @@ void event_step(Uint32 step)
 	geom_data *geom = geom_data_head;
 	struct turd_struct *t;
 	struct turd_struct *nt;
+	FILE *fp;
 	
 	while (geom)
 	{
@@ -296,12 +297,19 @@ void event_step(Uint32 step)
 					
 					// printout current file
 					case SDLK_KP_ENTER:
+#ifdef windows
+	fp = fopen("tmptrack", "wb");
+#else
+	fp = fopen("tmptrack", "w");
+#endif
 						t = edit_h;
 						while (t) {
-							printf("%f %f %f %f %f %f\n", t->x/15, t->y/15, t->z/15, t->a, t->b, t->c);
+							fprintf(fp, "%f %f %f %f %f %f\n", t->x/15, t->y/15, t->z/15, t->a, t->b, t->c);
 							t = t->nxt;
 						}
+						fclose(fp);
 						break;
+						
 
 					default:
 						break;
