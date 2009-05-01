@@ -97,6 +97,7 @@ void event_step(Uint32 step)
 						break;
 						
 					// switch between editing angles and position
+					case SDLK_8:
 					case SDLK_KP_MULTIPLY:
 						if ( edit_m == 0 ) {
 							edit_m = 1;
@@ -108,6 +109,7 @@ void event_step(Uint32 step)
 						break;
 					
 					// x movement and rotation
+					case SDLK_k:
 					case SDLK_KP6:
 						if (edit_m) {
 							edit_t->x++;
@@ -118,6 +120,7 @@ void event_step(Uint32 step)
 						recalcTurd( edit_h );
 						break;
 						
+					case SDLK_h:
 					case SDLK_KP4:
 						if (edit_m) {
 							edit_t->x--;
@@ -129,6 +132,7 @@ void event_step(Uint32 step)
 						break;
 					
 					// y movement and rotation
+					case SDLK_u:
 					case SDLK_KP8:
 						if (edit_m) {
 							edit_t->y++;
@@ -137,7 +141,8 @@ void event_step(Uint32 step)
 						}
 						recalcTurd( edit_h );
 						break;
-						
+					
+					case SDLK_m:
 					case SDLK_KP2:
 						if (edit_m) {
 							edit_t->y--;
@@ -148,6 +153,7 @@ void event_step(Uint32 step)
 						break;
 					
 					// z movement and rotation
+					case SDLK_y:
 					case SDLK_KP7:
 						if (edit_m) {
 							edit_t->z++;
@@ -157,6 +163,7 @@ void event_step(Uint32 step)
 						recalcTurd( edit_h );
 						break;
 						
+					case SDLK_n:
 					case SDLK_KP1:
 						if (edit_m) {
 							edit_t->z--;
@@ -167,6 +174,7 @@ void event_step(Uint32 step)
 						break;
 						
 					// backup option
+					case SDLK_j:
 					case SDLK_KP5:
 						t_restore( edit_t );
 						recalcTurd( edit_h );
