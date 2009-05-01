@@ -80,6 +80,8 @@ int graphics_init(void)
 	glEnable (GL_DEPTH_TEST);
 	glShadeModel (GL_SMOOTH); //by default, can be changed
 
+	glPolygonMode(GL_BACK, GL_LINE);
+
 	graphics_resize (screen->w, screen->h);
 
 	char *name = calloc(10+strlen(VERSION)+1, sizeof(char));

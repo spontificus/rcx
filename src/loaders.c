@@ -356,10 +356,10 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 
 	glBegin (GL_QUADS);
 	glNormal3f (0.0f, 0.0f, 1.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
 	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
+	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
+	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
+	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
 
 	glNormal3f (0.0f, 0.0f, -1.0f);
 	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
@@ -368,10 +368,10 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
 
 	glNormal3f (0.0f, -1.0f, 0.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
 	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
+	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
+	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
+	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
 
 	glNormal3f (0.0f, 1.0f, 0.0f);
 	glVertex3f (-(x/2.0f), (y/2.0f), -(z/2.0f));
@@ -380,10 +380,10 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
 
 	glNormal3f (1.0f, 0.0f, 0.0f);
-	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
 	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
+	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
+	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
+	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
 
 	glNormal3f (-1.0f, 0.0f, 0.0f);
 	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
@@ -397,23 +397,6 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 	glEndList();
 }
 
-void debug_draw_sphere_part(GLfloat x, GLfloat y, GLfloat z)
-{
-	glNormal3f (1.0f*x, -0.8f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-}
 
 void debug_draw_sphere (GLuint list, GLfloat d, GLfloat colour[],
 		GLfloat specular[], GLint shininess)
@@ -428,16 +411,39 @@ void debug_draw_sphere (GLuint list, GLfloat d, GLfloat colour[],
 	glMaterialfv (GL_FRONT, GL_SPECULAR, specular);
 	glMateriali (GL_FRONT, GL_SHININESS, shininess);
 
-	glBegin (GL_TRIANGLES);
-	debug_draw_sphere_part(-radius	,radius		,radius);
-	debug_draw_sphere_part(radius	,radius		,radius);
-	debug_draw_sphere_part(-radius	,-radius	,radius);
-	debug_draw_sphere_part(radius	,-radius	,radius);
-	debug_draw_sphere_part(-radius	,radius		,-radius);
-	debug_draw_sphere_part(radius	,radius		,-radius);
-	debug_draw_sphere_part(-radius	,-radius	,-radius);
-	debug_draw_sphere_part(radius	,-radius	,-radius);
-	glEnd();
+	// normals still not perfect, but then it's an imperfect algorithm
+	int slices = 10;
+	int divisions = 10;
+	int i,j,ii,jj;
+
+	float slp = M_PI/slices;
+	float sld = 2.0*M_PI/divisions;
+	float dx,dy,dz;
+
+	for (i = 0; i < slices; i++ ) {
+		ii = i + 1;
+		glBegin (GL_TRIANGLE_STRIP);
+		for (j = 0; j <= divisions; j++ ) {
+			jj = j + 1;
+			
+			dx = sin(slp * i) * sin (sld * j);
+			dy = sin(slp * i) * cos (sld * j);
+			dz = -cos(slp*i);
+			//printf("dx:%f dy:%f dz:%f\n", dx, dy, dz);
+			glNormal3f(dx, dy, dz);
+			glVertex3f( radius * dx, radius * dy, radius * dz );
+			
+			dx = sin(slp * ii) * sin (sld * jj);
+			dy = sin(slp * ii) * cos (sld * jj);
+			dz = -cos(slp*ii);
+			//printf("2dx:%f dy:%f dz:%f\n", dx, dy, dz);
+			glNormal3f(dx, dy, dz);
+			glVertex3f( radius * dx, radius * dy, radius * dz );
+			
+		}
+		glEnd();
+	}
+	
 
 	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
 
@@ -1012,37 +1018,37 @@ int load_track (char *path)
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
 	glNormal3f (0.0f, 0.0f, 1.0f);
 	glBegin (GL_QUADS);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
 	glVertex3f (100.0f, -100.0f, 0.0f);
+	glVertex3f (100.0f, 100.0f, 0.0f);
+	glVertex3f (-100.0f, 100.0f, 0.0f);
+	glVertex3f (-100.0f, -100.0f, 0.0f);
 	glEnd();
 
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, gray);
 	glBegin (GL_QUADS);
 	glNormal3f (1.0f, 0.0f, 0.0f);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glVertex3f (-100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, 100.0f, 10.0f);
 	glVertex3f (-100.0f, 100.0f, 0.0f);
+	glVertex3f (-100.0f, 100.0f, 10.0f);
+	glVertex3f (-100.0f, -100.0f, 10.0f);
+	glVertex3f (-100.0f, -100.0f, 0.0f);
 
 	glNormal3f (0.0f, -1.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, 100.0f, 10.0f);
 	glVertex3f (100.0f, 100.0f, 0.0f);
+	glVertex3f (100.0f, 100.0f, 10.0f);
+	glVertex3f (-100.0f, 100.0f, 10.0f);
+	glVertex3f (-100.0f, 100.0f, 0.0f);
 
 	glNormal3f (-1.0f, 0.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, -100.0f, 10.0f);
 	glVertex3f (100.0f, -100.0f, 0.0f);
+	glVertex3f (100.0f, -100.0f, 10.0f);
+	glVertex3f (100.0f, 100.0f, 10.0f);
+	glVertex3f (100.0f, 100.0f, 0.0f);
 
 	glNormal3f (0.0f, 1.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, -100.0f, 10.0f);
 	glVertex3f (-100.0f, -100.0f, 0.0f);
+	glVertex3f (-100.0f, -100.0f, 10.0f);
+	glVertex3f (100.0f, -100.0f, 10.0f);
+	glVertex3f (100.0f, -100.0f, 0.0f);
 	glEnd();
 
 	glEndList();
@@ -1209,23 +1215,48 @@ car *load_car (char *path)
 		glVertex3f(w_r*sin(v), w_r*cos(v), -w_w/2.0f);
 		glVertex3f(w_r*sin(v), w_r*cos(v), w_w/2.0f);
 	}
-
+	glEnd();
+	
+	// draw tyre in reverse too
+	glBegin (GL_QUAD_STRIP);
 	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
+	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, dgray);
+	for (v=0; v<=2*M_PI; v+=2*M_PI/10)
+	{
+		glNormal3f (-sin(v), -cos(v), 0.0f);
+		glVertex3f(w_r*sin(v), w_r*cos(v), w_w/2.0f);
+		glVertex3f(w_r*sin(v), w_r*cos(v), -w_w/2.0f);
+	}
 
 	glEnd();
+	
 	//rim
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, lgray);
-	glNormal3f (0.0f, 0.0f, 1.0f);
-	glBegin (GL_QUADS);
-		glVertex3f(w_r*0.9f, w_r/5, w_w/3.0f);
-		glVertex3f(w_r*0.9f, -w_r/5, w_w/3.0f);
-		glVertex3f(-w_r*0.9f, -w_r/5, w_w/3.0f);
-		glVertex3f(-w_r*0.9f, w_r/5, w_w/3.0f);
 
-		glVertex3f(w_r/5, w_r*0.9f, w_w/3.0f);
-		glVertex3f(w_r/5, -w_r*0.9f, w_w/3.0f);
-		glVertex3f(-w_r/5, -w_r*0.9f, w_w/3.0f);
+	glBegin (GL_QUADS);
+		glNormal3f (0.0f, 0.0f, 1.0f);
+		glVertex3f(-w_r*0.9f, w_r/5, w_w/3.0f);
+		glVertex3f(-w_r*0.9f, -w_r/5, w_w/3.0f);
+		glVertex3f(w_r*0.9f, -w_r/5, w_w/3.0f);
+		glVertex3f(w_r*0.9f, w_r/5, w_w/3.0f);
+
 		glVertex3f(-w_r/5, w_r*0.9f, w_w/3.0f);
+		glVertex3f(-w_r/5, -w_r*0.9f, w_w/3.0f);
+		glVertex3f(w_r/5, -w_r*0.9f, w_w/3.0f);
+		glVertex3f(w_r/5, w_r*0.9f, w_w/3.0f);
+	glEnd();
+
+	glBegin (GL_QUADS);
+		glNormal3f (0.0f, 0.0f, -1.0f);
+		glVertex3f(w_r*0.9f, w_r/5, w_w/3.1f);
+		glVertex3f(w_r*0.9f, -w_r/5, w_w/3.1f);
+		glVertex3f(-w_r*0.9f, -w_r/5, w_w/3.1f);
+		glVertex3f(-w_r*0.9f, w_r/5, w_w/3.1f);
+
+		glVertex3f(w_r/5, w_r*0.9f, w_w/3.1f);
+		glVertex3f(w_r/5, -w_r*0.9f, w_w/3.1f);
+		glVertex3f(-w_r/5, -w_r*0.9f, w_w/3.1f);
+		glVertex3f(-w_r/5, w_r*0.9f, w_w/3.1f);
 	glEnd();
 
 	glEndList();
