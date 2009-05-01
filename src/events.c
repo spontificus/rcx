@@ -12,6 +12,7 @@ void event_step(Uint32 step)
 	//loop geoms to see if any event
 	geom_data *geom = geom_data_head;
 	struct turd_struct *t;
+	struct turd_struct *nt;
 	
 	while (geom)
 	{
@@ -202,9 +203,87 @@ void event_step(Uint32 step)
 					
 					// insert and delete
 					case SDLK_INSERT:
+						// go to central node
+						if ( edit_t->l == NULL ) {
+							edit_t = edit_t->r;
+						} else if ( edit_t->r == NULL ) {
+							edit_t = edit_t->l;
+						}
+						
+						nt = malloc(sizeof(turd_struct));
+						setupTurdValues(nt, 0,15,0, 0,0,0);
+
+						nt->l = malloc(sizeof(turd_struct));
+						nt->r = malloc(sizeof(turd_struct));
+						setupTurdValues(nt->l, -10,0,0, 0,0,0);					
+						setupTurdValues(nt->r, 10,0,0, 0,0,0);
+						
+						
+						nt->pre = edit_t;
+						nt->l->pre = edit_t->l;
+						nt->r->pre = edit_t->r;
+						
+						nt->nxt = edit_t->nxt;
+						if ( nt->nxt != NULL ) {
+							nt->nxt->l->pre = nt->l;
+							nt->nxt->r->pre = nt->r;
+							
+							nt->l->nxt = nt->nxt->l;
+							nt->r->nxt = nt->nxt->r;
+							
+							nt->nxt->pre = nt;
+						}
+						
+						edit_t->nxt = nt;
+						edit_t->l->nxt = nt->l;
+						edit_t->r->nxt = nt->r;
+						
+						edit_t = nt;
+						
+						
+						recalcTurd(edit_h);
+						
 						break;
 						
 					case SDLK_DELETE:
+						// go to central node
+						if ( edit_t->l == NULL ) {
+							edit_t = edit_t->r;
+						} else if ( edit_t->r == NULL ) {
+							edit_t = edit_t->l;
+						}
+						
+						
+						
+						if ( edit_t == edit_h ) {
+			
+							printf("Can't destroy first node!\n");
+							break;
+			
+						} else if ( edit_t->nxt == NULL ) {
+							nt = edit_t->pre;
+							nt->nxt = NULL;
+							nt->l->nxt = NULL;
+							nt->r->nxt = NULL;
+						} else {
+							nt = edit_t->nxt;
+							
+							nt->pre = edit_t->pre;
+							nt->l->pre = edit_t->pre->l;
+							nt->r->pre = edit_t->pre->r;
+							
+							edit_t->pre->nxt = nt;
+							edit_t->pre->l->nxt = nt->l;
+							edit_t->pre->r->nxt = nt->r;	
+						}
+								
+						free(edit_t->l);
+						free(edit_t->r);
+						free(edit_t);
+						
+						edit_t = nt;
+						recalcTurd(edit_h);
+						
 						break;
 					
 					// printout current file
