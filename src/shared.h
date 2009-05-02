@@ -121,6 +121,8 @@ typedef struct turd_struct {
 	float rerx,rery,rerz;
 	float m00,m01,m02, m10,m11,m12, m20,m21,m22;
 	GLfloat m[16];
+	struct surfaces *shadow;
+	
 	struct turd_struct *l;
 	struct turd_struct *r;
 	struct turd_struct *pre;

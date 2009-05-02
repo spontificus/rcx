@@ -1424,10 +1424,14 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 		cur_turd = nxt_turd;
 	}
 	
+
+	// for shadows
+	head->shadow = new_tri( ode_verts, v_count, ode_indices, i_count );
+
 	dGeomTriMeshDataBuildSimple( tri->dataid, ode_verts, v_count, ode_indices, i_count );
 	dGeomTriMeshSetData( tri->meshid, tri->dataid );
 	
-	
+
 	
 	return tri;
 }
@@ -1439,8 +1443,6 @@ void drawRoad(struct turd_struct *head) {
 	struct turd_struct *nxt_turd;
 	struct turd_struct *lct,*lnt, *rct,*rnt;
 	
-
-
 	glMaterialfv (GL_FRONT, GL_DIFFUSE, gray);
 	glMaterialfv (GL_FRONT, GL_AMBIENT, black);
 	glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
@@ -1555,6 +1557,42 @@ void drawRoad(struct turd_struct *head) {
 	if ( head->tri == NULL ) {
 		head->tri = calcTrimesh( head );
 	}
+	
+	float mm[16];
+	const dReal *pos, *rot;
+	glPushMatrix();
+	
+	glLoadMatrixf(head->m);
+	glGetFloatv(GL_MODELVIEW_MATRIX,mm);
+	
+//	glLoadMatrixf(head->m);
+			pos = dGeomGetPosition (head->tri->meshid);
+			rot = dGeomGetRotation (head->tri->meshid);
+
+
+			//create transformation matrix to render correct position
+			//and rotation (float)
+			GLfloat matrix[16];
+			matrix[0]=rot[0];
+			matrix[1]=rot[4];
+			matrix[2]=rot[8];
+			matrix[3]=0;
+			matrix[4]=rot[1];
+			matrix[5]=rot[5];
+			matrix[6]=rot[9];
+			matrix[7]=0;
+			matrix[8]=rot[2];
+			matrix[9]=rot[6];
+			matrix[10]=rot[10];
+			matrix[11]=0;
+			matrix[12]=pos[0];
+			matrix[13]=pos[1];
+			matrix[14]=pos[2];
+			matrix[15]=1;
+
+
+	render_gen_shadow(head->shadow, matrix);
+	glPopMatrix();	
 }
 
 void recalcTurd( turd_struct *t ) {

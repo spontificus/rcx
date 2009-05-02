@@ -98,6 +98,57 @@ new_surface(float vertices[4][3])
 	return surf;
 }
 
+// take triangles from an ODE trimesh surface..
+struct surfaces *new_tri( dReal *ode_verts, int v_count, unsigned int *ode_indices, int i_count )
+{
+	// not sure how to easily convert this into using triangles rather than quads..
+	// so I'll just create triangle shaped quads from the input triangle data
+	float v[4][3];
+	int t;
+	
+	struct surface *ns;
+  struct surfaces *nsc;
+	struct surfaces *mys = NULL;
+	
+	for ( t = 0; t < i_count / 3; t++ ) {
+		int i1 = ode_indices[ 0 + (t * 3) ];
+		int i2 = ode_indices[ 1 + (t * 3) ];
+		int i3 = ode_indices[ 2 + (t * 3) ];
+		
+		v[0][0] = ode_verts[0 + 4 * i1];
+		v[0][1] = ode_verts[1 + 4 * i1];
+		v[0][2] = ode_verts[2 + 4 * i1];
+		
+		v[1][0] = ode_verts[0 + 4 * i2];
+		v[1][1] = ode_verts[1 + 4 * i2];
+		v[1][2] = ode_verts[2 + 4 * i2];
+		
+		v[2][0] = ode_verts[0 + 4 * i3];
+		v[2][1] = ode_verts[1 + 4 * i3];
+		v[2][2] = ode_verts[2 + 4 * i3];
+		
+		v[3][0] = (v[2][0] + v[0][0] ) / 2.0;
+		v[3][1] = (v[2][1] + v[0][1] ) / 2.0;
+		v[3][2] = (v[2][2] + v[0][2] ) / 2.0;
+		
+/*	
+		printf("tri--------\n");
+		printf(" x:%f y:%f z:%f\n", v[0][0], v[0][1], v[0][2]);
+		printf(" x:%f y:%f z:%f\n", v[1][0], v[1][1], v[1][2]);
+		printf(" x:%f y:%f z:%f\n", v[2][0], v[2][1], v[2][2]);
+		printf(" x:%f y:%f z:%f\n", v[3][0], v[3][1], v[3][2]);
+*/
+		
+		ns = new_surface(v);
+    nsc = malloc(sizeof(surfaces));;
+    nsc->s = ns;
+    nsc->nxt = mys;
+    mys = nsc;
+	}
+	
+	return mys;
+}
+
 static void
 render_surface_shadow_volume(struct surface *surf,
                              GLfloat matrix[16], float *light_pos)
@@ -108,22 +159,29 @@ render_surface_shadow_volume(struct surface *surf,
         GLfloat X;
         GLfloat Y;
         GLfloat Z;
-
+printf("---\n");
 	for(i = 0; i < 4; i++) {
-                X = surf->vertices[i][0];
-                Y = surf->vertices[i][1];
-                Z = surf->vertices[i][2];
-        
-                GLfloat NewX = X * matrix[0] + Y * matrix[4] + Z * matrix[8] + matrix[12];
-                GLfloat NewY = X * matrix[1] + Y * matrix[5] + Z * matrix[9] + matrix[13];
-                GLfloat NewZ = X * matrix[2] + Y * matrix[6] + Z * matrix[10] + matrix[14];
-                //GLfloat NewX = X * matrix[0][0] + Y * matrix[1][0] + Z * matrix[2][0];
-                //GLfloat NewY = X * matrix[0][1] + Y * matrix[1][1] + Z * matrix[2][1];
-                //GLfloat NewZ = X * matrix[0][2] + Y * matrix[1][2] + Z * matrix[2][2];
+		X = surf->vertices[i][0];
+		Y = surf->vertices[i][1];
+		Z = surf->vertices[i][2];
+
+		GLfloat NewX = X * matrix[0] + Y * matrix[4] + Z * matrix[8] + matrix[12];
+		GLfloat NewY = X * matrix[1] + Y * matrix[5] + Z * matrix[9] + matrix[13];
+		GLfloat NewZ = X * matrix[2] + Y * matrix[6] + Z * matrix[10] + matrix[14];
+		//GLfloat NewX = X * matrix[0][0] + Y * matrix[1][0] + Z * matrix[2][0];
+		//GLfloat NewY = X * matrix[0][1] + Y * matrix[1][1] + Z * matrix[2][1];
+		//GLfloat NewZ = X * matrix[0][2] + Y * matrix[1][2] + Z * matrix[2][2];
 
 		sv[i][0] = NewX;
 		sv[i][1] = NewY;
 		sv[i][2] = NewZ;
+		
+		printf("x:%f y:%f z:%f\n", X, Y, Z);
+/*
+		sv[i][0] = X;
+		sv[i][1] = Y;
+		sv[i][2] = Z;
+*/
 
 		v[i][0] = (sv[i][0] - light_pos[0]);
 		v[i][1] = (sv[i][1] - light_pos[1]);
@@ -136,6 +194,8 @@ render_surface_shadow_volume(struct surface *surf,
 		v[i][1] += light_pos[1];
 		v[i][2] += light_pos[2];
 	}
+
+		
 
 	/* back cap */
 	glBegin(GL_QUADS);
@@ -405,7 +465,7 @@ static void
 render_gen_shadow(struct surfaces *sc, GLfloat matrix[16])
 {
         
-        while (sc != NULL) {
+        while (sc != NULL) {				
                 glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
                 glDepthMask(GL_FALSE);
                 glEnable(GL_CULL_FACE);
