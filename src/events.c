@@ -214,20 +214,26 @@ void event_step(Uint32 step)
 					case SDLK_INSERT:
 						// go to central node
 						if ( edit_t->l == NULL ) {
+							//printf("Left\n");
 							edit_t = edit_t->r;
 						} else if ( edit_t->r == NULL ) {
+							//printf("Right\n");
 							edit_t = edit_t->l;
 						}
 						
-						nt = malloc(sizeof(turd_struct));
+						nt = calloc(1, sizeof(turd_struct));
 						setupTurdValues(nt, 0,15,0, 0,0,0);
 
-						nt->l = malloc(sizeof(turd_struct));
-						nt->r = malloc(sizeof(turd_struct));
+						nt->l = calloc(1, sizeof(turd_struct));
+						nt->r = calloc(1, sizeof(turd_struct));
 						setupTurdValues(nt->l, -10,0,0, 0,0,0);					
 						setupTurdValues(nt->r, 10,0,0, 0,0,0);
+						nt->l->r = nt;
+						nt->r->l = nt;
 						
 						
+						//printf("nt: %p, edit_t: %p\n", nt, edit_t);
+						//printf("nt->l: %p, nt->r: %p\n", nt->l, nt->r);
 						nt->pre = edit_t;
 						nt->l->pre = edit_t->l;
 						nt->r->pre = edit_t->r;
@@ -249,9 +255,8 @@ void event_step(Uint32 step)
 						
 						edit_t = nt;
 						
-						
 						recalcTurd(edit_h);
-						
+						t_backup(edit_t);
 						break;
 						
 					case SDLK_DELETE:
@@ -292,15 +297,16 @@ void event_step(Uint32 step)
 						
 						edit_t = nt;
 						recalcTurd(edit_h);
-						
+						t_backup(edit_t);
 						break;
 					
 					// printout current file
+					case SDLK_RETURN:
 					case SDLK_KP_ENTER:
 #ifdef windows
-	fp = fopen("tmptrack", "wb");
+	fp = fopen("./tmptrack", "wb");
 #else
-	fp = fopen("tmptrack", "w");
+	fp = fopen("./tmptrack", "w");
 #endif
 						t = edit_h;
 						while (t) {

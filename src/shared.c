@@ -606,6 +606,7 @@ void print_matrix( float *m ) {
 }
 
 void t_backup( turd_struct *t ) {
+	//printf("t:%p t->l:%p t->r:%p t->nxt:%p t->pre:%p\n", t, t->l, t->r, t->nxt, t->pre);
 	edit_b.x = t->x;
 	edit_b.y = t->y;
 	edit_b.z = t->z;

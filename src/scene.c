@@ -69,7 +69,7 @@ new_surface(float vertices[4][3])
 	int i, j;
 	struct surface *surf;
 
-	surf = malloc(sizeof(struct surface));
+	surf = calloc(1, sizeof(struct surface));
 	if(!surf) {
 		fprintf(stderr, "Error: Couldn't allocate memory for surface\n");
 		return NULL;
@@ -174,7 +174,7 @@ new_cube(float size)
 	float v[4][3];
 	int error = 0;
 
-	c = malloc(sizeof(struct cube));
+	c = calloc(1, sizeof(struct cube));
 	if(!c)
 		return NULL;
 
