@@ -1026,6 +1026,7 @@ turd_struct *loadTurd(char *filename) {
 
 
 	float x,y,z,a,b,c;
+	char sec;
 
   int first = 1;
 	struct turd_struct *tmp_turd = NULL;
@@ -1035,50 +1036,91 @@ turd_struct *loadTurd(char *filename) {
 
 	float mod=15;
 	float xmod=10;
-	
 
 	int count = 0;
-	
+	int res;
+
+	printlog(0, "Loading Trackfile: %s\n", filename);
+
 	while ( (ptr = fgets((char *)&buf, 100, fp)) ) {
 		count++;
-		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
-			
-		tmp_turd = calloc(1,sizeof(turd_struct));
+		res = sscanf(buf, "%f %f %f %f %f %f %c", &x, &y, &z, &a, &b, &c, &sec);
+//		printf("res:%d\n", res);
+		if ( res != 7 ) {
+			res = sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
+			if ( res != 6 ) {
+				printlog(0, "Track format not recognised\n");
+				exit(1);
+			}
+		
+			printlog(0, "add track section type (c,l,r) to end of line\n");
+			sec = 'c';
+		}
 
 		x *= mod;
 		y *= mod;
 		z *= mod;
 
-		setupTurdValues(tmp_turd, x,y,z, a,b,c);
-		
-		// left and right side of road are offset from center
-		bast_turd = calloc(1,sizeof(turd_struct));
-		setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
-		bast_turd->r = tmp_turd;
-		tmp_turd->l = bast_turd;
-		
-		bast_turd = calloc(1,sizeof(turd_struct));
-		setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
-		bast_turd->l = tmp_turd;
-		tmp_turd->r = bast_turd;
+		switch ( sec ) {
+			case 'c':
+//				printf("c\n");
+				tmp_turd = calloc(1,sizeof(turd_struct));		
 
-		if (first == 1) {
-			first = 0;
-			head_turd = tmp_turd;
-		}
+				setupTurdValues(tmp_turd, x,y,z, a,b,c);
 
-		if (last_turd != NULL) {
-			last_turd->nxt = tmp_turd;
-			tmp_turd->pre = last_turd;
+				// left and right side of road are offset from center
+				bast_turd = calloc(1,sizeof(turd_struct));
+				setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
+				bast_turd->r = tmp_turd;
+				tmp_turd->l = bast_turd;
+
+				bast_turd = calloc(1,sizeof(turd_struct));
+				setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
+				bast_turd->l = tmp_turd;
+				tmp_turd->r = bast_turd;
+
+				if (first == 1) {
+					first = 0;
+					head_turd = tmp_turd;
+				}
+
+				if (last_turd != NULL) {
+					last_turd->nxt = tmp_turd;
+					tmp_turd->pre = last_turd;
+					
+					last_turd->l->nxt = tmp_turd->l;
+					last_turd->r->nxt = tmp_turd->r;
+					tmp_turd->l->pre = last_turd->l;
+					tmp_turd->r->pre = last_turd->r;
+				}
+
+				last_turd = tmp_turd;
+				break;
+				
+			case 'l':
+//				printf("l\n");
+				tmp_turd->l->x = x;
+				tmp_turd->l->y = y;
+				tmp_turd->l->z = z;
+				tmp_turd->l->a = a;
+				tmp_turd->l->b = b;
+				tmp_turd->l->c = c;
+				break;
 			
-			last_turd->l->nxt = tmp_turd->l;
-			last_turd->r->nxt = tmp_turd->r;
-			tmp_turd->l->pre = last_turd->l;
-			tmp_turd->r->pre = last_turd->r;
+			case 'r':
+//				printf("r\n");
+				tmp_turd->r->x = x;
+				tmp_turd->r->y = y;
+				tmp_turd->r->z = z;
+				tmp_turd->r->a = a;
+				tmp_turd->r->b = b;
+				tmp_turd->r->c = c;
+				break;
+				
+			default:
+				printf("Shouldn't be here (%c)\n", sec);
+				break;
 		}
-		
-		
-		last_turd = tmp_turd;
 	}
 	
 	fclose(fp);

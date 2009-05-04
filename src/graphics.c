@@ -134,12 +134,20 @@ void graphics_step (Uint32 step)
 		
 		// hacky axis
 		glPushMatrix();
+		
 		if ( edit_m == 1 && edit_t->pre != NULL ) {
 			// position offsets are specified by the parent
-			glMultMatrixf(edit_t->pre->m);
-			x = edit_t->x;
-			y = edit_t->y;
-			z = edit_t->z;
+			if ( edit_t->l == NULL ) {
+				glMultMatrixf(edit_t->r->m);
+			} else if ( edit_t->r == NULL ) {
+				glMultMatrixf(edit_t->l->m);
+			} else {
+				glMultMatrixf(edit_t->pre->m);
+			}	
+				x = edit_t->x;
+				y = edit_t->y;
+				z = edit_t->z;
+		
 		} else {
 			glMultMatrixf(edit_t->m);
 		}
