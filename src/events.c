@@ -310,7 +310,9 @@ void event_step(Uint32 step)
 #endif
 						t = edit_h;
 						while (t) {
-							printf("%f %f %f %f %f %f\n", t->x/15, t->y/15, t->z/15, t->a, t->b, t->c);
+							fprintf(fp,"%f %f %f %f %f %f c\n", t->x/15, t->y/15, t->z/15, t->a, t->b, t->c);
+							fprintf(fp,"%f %f %f %f %f %f l\n", t->l->x/15, t->l->y/15, t->l->z/15, t->l->a, t->l->b, t->l->c);
+							fprintf(fp,"%f %f %f %f %f %f r\n", t->r->x/15, t->r->y/15, t->r->z/15, t->r->a, t->r->b, t->r->c);
 							t = t->nxt;
 						}
 						break;
