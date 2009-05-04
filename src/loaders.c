@@ -473,7 +473,7 @@ script *load_object(char *path)
 		printlog(1, " (hard-coded box)\n");
 
 		script = allocate_script();
-		script->name = calloc(strlen(path), sizeof(char));
+		script->name = calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		//the debug box will only spawn one component - one "3D file"
@@ -486,7 +486,7 @@ script *load_object(char *path)
 		printlog(1, " (hard-coded flipper)\n");
 
 		script = allocate_script();
-		script->name = calloc(strlen(path), sizeof(char));
+		script->name = calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		script->graphics_debug1 = allocate_file_3d();
@@ -501,7 +501,7 @@ script *load_object(char *path)
 		printlog(1, " (hard-coded \"molecule\")\n");
 
 		script = allocate_script();
-		script->name = calloc(strlen(path), sizeof(char));
+		script->name = calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		//draw approximate sphere
@@ -518,7 +518,7 @@ script *load_object(char *path)
 
 		//name
 		script = allocate_script();
-		script->name = calloc(strlen(path), sizeof(char));
+		script->name = calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		//create graphics
@@ -1177,7 +1177,7 @@ car *load_car (char *path)
 	printlog(1, "\n");
 	//apparently not
 	car *target = allocate_car();
-	target->name = calloc(strlen(path), sizeof(char));
+	target->name = calloc(strlen(path) + 1, sizeof(char));
 	strcpy (target->name, path);
 
 	char *conf=calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
