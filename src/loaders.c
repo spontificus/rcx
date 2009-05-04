@@ -1037,7 +1037,7 @@ turd_struct *loadTurd(char *filename) {
 		count++;
 		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
 			
-		tmp_turd = malloc(sizeof(turd_struct));
+		tmp_turd = calloc(1,sizeof(turd_struct));
 
 		x *= mod;
 		y *= mod;
@@ -1046,12 +1046,12 @@ turd_struct *loadTurd(char *filename) {
 		setupTurdValues(tmp_turd, x,y,z, a,b,c);
 		
 		// left and right side of road are offset from center
-		bast_turd = malloc(sizeof(turd_struct));
+		bast_turd = calloc(1,sizeof(turd_struct));
 		setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
 		bast_turd->r = tmp_turd;
 		tmp_turd->l = bast_turd;
 		
-		bast_turd = malloc(sizeof(turd_struct));
+		bast_turd = calloc(1,sizeof(turd_struct));
 		setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
 		bast_turd->l = tmp_turd;
 		tmp_turd->r = bast_turd;
@@ -1248,7 +1248,7 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 		free(head->tri->ode_verts);
 		free(head->tri->ode_indices);
 	} else {
-		head->tri = malloc(sizeof(trimesh_struct));
+		head->tri = calloc(1, sizeof(trimesh_struct));
 		head->tri->dataid = dGeomTriMeshDataCreate();
 		head->tri->meshid = dCreateTriMesh(NULL, head->tri->dataid, NULL, NULL, NULL);
 		
@@ -1286,8 +1286,8 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	}
 		
 	// allocate memory
-	ode_verts = malloc( t_count * num * 4 * 4 * sizeof(dVector3));
-	ode_indices = malloc( t_count * num * 4 * 4 * sizeof(int));
+	ode_verts = calloc(1, t_count * num * 4 * 4 * sizeof(dVector3));
+	ode_indices = calloc(1, t_count * num * 4 * 4 * sizeof(int));
 	printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
 
 	cur_turd = head;
@@ -1574,7 +1574,7 @@ struct turd_struct *helix;
 
 void initTurdTrack() {
 
-	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
+	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
