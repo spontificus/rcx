@@ -1580,9 +1580,11 @@ struct turd_struct *spiral;
 struct turd_struct *ramp;
 struct turd_struct *loop;
 struct turd_struct *helix;
+struct turd_struct *test;
 
 void initTurdTrack() {
 
+	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");	
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
@@ -1597,8 +1599,9 @@ void initTurdTrack() {
 
 void doTurdTrack() {
 	
+	drawRoad(test);
 	//drawRoad(spiral);
-	drawRoad(ramp);
+	//drawRoad(ramp);
 	//drawRoad(loop);
 	//drawRoad(helix);
 }
