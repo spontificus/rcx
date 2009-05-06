@@ -1020,6 +1020,7 @@ turd_struct *loadTurd(char *filename) {
 
 
 	float x,y,z,a,b,c;
+	char sec;
 
   int first = 1;
 	struct turd_struct *tmp_turd = NULL;
@@ -1029,50 +1030,91 @@ turd_struct *loadTurd(char *filename) {
 
 	float mod=15;
 	float xmod=10;
-	
 
 	int count = 0;
-	
+	int res;
+
+	printlog(0, "Loading Trackfile: %s\n", filename);
+
 	while ( (ptr = fgets((char *)&buf, 100, fp)) ) {
 		count++;
-		sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
-			
-		tmp_turd = malloc(sizeof(turd_struct));
+		res = sscanf(buf, "%f %f %f %f %f %f %c", &x, &y, &z, &a, &b, &c, &sec);
+//		printf("res:%d\n", res);
+		if ( res != 7 ) {
+			res = sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
+			if ( res != 6 ) {
+				printlog(0, "Track format not recognised\n");
+				exit(1);
+			}
+		
+			printlog(0, "add track section type (c,l,r) to end of line\n");
+			sec = 'c';
+		}
 
 		x *= mod;
 		y *= mod;
 		z *= mod;
 
-		setupTurdValues(tmp_turd, x,y,z, a,b,c);
-		
-		// left and right side of road are offset from center
-		bast_turd = malloc(sizeof(turd_struct));
-		setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
-		bast_turd->r = tmp_turd;
-		tmp_turd->l = bast_turd;
-		
-		bast_turd = malloc(sizeof(turd_struct));
-		setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
-		bast_turd->l = tmp_turd;
-		tmp_turd->r = bast_turd;
+		switch ( sec ) {
+			case 'c':
+//				printf("c\n");
+				tmp_turd = calloc(1,sizeof(turd_struct));		
 
-		if (first == 1) {
-			first = 0;
-			head_turd = tmp_turd;
-		}
+				setupTurdValues(tmp_turd, x,y,z, a,b,c);
 
-		if (last_turd != NULL) {
-			last_turd->nxt = tmp_turd;
-			tmp_turd->pre = last_turd;
+				// left and right side of road are offset from center
+				bast_turd = calloc(1,sizeof(turd_struct));
+				setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
+				bast_turd->r = tmp_turd;
+				tmp_turd->l = bast_turd;
+
+				bast_turd = calloc(1,sizeof(turd_struct));
+				setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
+				bast_turd->l = tmp_turd;
+				tmp_turd->r = bast_turd;
+
+				if (first == 1) {
+					first = 0;
+					head_turd = tmp_turd;
+				}
+
+				if (last_turd != NULL) {
+					last_turd->nxt = tmp_turd;
+					tmp_turd->pre = last_turd;
+					
+					last_turd->l->nxt = tmp_turd->l;
+					last_turd->r->nxt = tmp_turd->r;
+					tmp_turd->l->pre = last_turd->l;
+					tmp_turd->r->pre = last_turd->r;
+				}
+
+				last_turd = tmp_turd;
+				break;
+				
+			case 'l':
+//				printf("l\n");
+				tmp_turd->l->x = x;
+				tmp_turd->l->y = y;
+				tmp_turd->l->z = z;
+				tmp_turd->l->a = a;
+				tmp_turd->l->b = b;
+				tmp_turd->l->c = c;
+				break;
 			
-			last_turd->l->nxt = tmp_turd->l;
-			last_turd->r->nxt = tmp_turd->r;
-			tmp_turd->l->pre = last_turd->l;
-			tmp_turd->r->pre = last_turd->r;
+			case 'r':
+//				printf("r\n");
+				tmp_turd->r->x = x;
+				tmp_turd->r->y = y;
+				tmp_turd->r->z = z;
+				tmp_turd->r->a = a;
+				tmp_turd->r->b = b;
+				tmp_turd->r->c = c;
+				break;
+				
+			default:
+				printf("Shouldn't be here (%c)\n", sec);
+				break;
 		}
-		
-		
-		last_turd = tmp_turd;
 	}
 	
 	fclose(fp);
@@ -1113,84 +1155,32 @@ interp_struct *interpInit( interp_struct *in, turd_struct *cur_turd, turd_struct
 		in->ps0x = cur_turd->wx;
 		in->ps0y = cur_turd->wy;
 		in->ps0z = cur_turd->wz;
-		in->ps1x = cur_turd->nx;
-		in->ps1y = cur_turd->ny;
-		in->ps1z = cur_turd->nz;
-
+		
 		in->pe0x = nxt_turd->wx;
 		in->pe0y = nxt_turd->wy;
 		in->pe0z = nxt_turd->wz;
-		in->pe1x = nxt_turd->nx;
-		in->pe1y = nxt_turd->ny;
-		in->pe1z = nxt_turd->nz;
+		
+		float xydist = pow( in->pe0x - in->ps0x, 2 ) + pow( in->pe0y - in->pe0y, 2 );
+		float dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.0;
+		
+		// generate bezier control points as half distance along normal vectors
+		float psdx = cur_turd->nx - in->ps0x;
+		float psdy = cur_turd->ny - in->ps0y;
+		float psdz = cur_turd->nz - in->ps0z;
+		
+		float pedx = nxt_turd->nx - in->pe0x;
+		float pedy = nxt_turd->ny - in->pe0y;
+		float pedz = nxt_turd->nz - in->pe0z;
+		
+		in->scx = in->ps0x + psdx * dist;
+		in->scy = in->ps0y + psdy * dist;
+		in->scz = in->ps0z + psdz * dist;
+		
+		in->tcx = in->pe0x - pedx * dist;
+		in->tcy = in->pe0y - pedy * dist;
+		in->tcz = in->pe0z - pedz * dist;
 		
 		return in;
-}
-
-// Following function derived from:
-// http://www.softsurfer.com/Archive/algorithm_0106/algorithm_0106.htm#dist3D_Line_to_Line()
-//
-// Copyright 2001, softSurfer (www.softsurfer.com)
-// This code may be freely used and modified for any purpose
-// providing that this copyright notice is included with it.
-// SoftSurfer makes no warranty for this code, and cannot be held
-// liable for any real or imagined damage resulting from its use.
-// Users of this code must verify correctness for their application.
-void interpGenClosestLine( interp_struct *in ) {
-		float sc, tc;
-		dVector3 u;
-		dVector3 v;
-		dVector3 w;	
-		
-		u[0] = in->ps1x - in->ps0x;
-		u[1] = in->ps1y - in->ps0y;
-		u[2] = in->ps1z - in->ps0z;
-		
-		v[0] = in->pe1x - in->pe0x;
-		v[1] = in->pe1y - in->pe0y;
-		v[2] = in->pe1z - in->pe0z;
-		
-		w[0] = in->ps0x - in->pe0x;
-		w[1] = in->ps0y - in->pe0y;
-		w[2] = in->ps0z - in->pe0z;
-		
-		float ca = dot(u,u);
-		float cb = dot(u,v);
-		float cc = dot(v,v);
-		float cd = dot(u,w);
-		float ce = dot(v,w);
-		float cD = ca*cc - cb*cb;
-		
-		if (cD < 0.01) {
-			// if almost parallel, then we want to return the midpoint
-			if ( 1 ) {
-				//printf("parallel\n");
-				in->scx = in->ps0x - (w[0] / 2.0);
-				in->scy = in->ps0y - (w[1] / 2.0);
-				in->scz = in->ps0z - (w[2] / 2.0);
-				
-				in->tcx = in->scx;
-				in->tcy = in->scy;
-				in->tcz = in->scz;
-			} else {
-				sc = 0;
-				tc = (cb>cc ? cd/cb : ce/cc);
-			}
-		} else {
-			sc = (cb*ce - cc*cd) / cD;
-			tc = (ca*ce - cb*cd) / cD;
-			
-			// now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
-			in->scx = in->ps0x + ((in->ps1x - in->ps0x) * sc);
-			in->scy = in->ps0y + ((in->ps1y - in->ps0y) * sc);
-			in->scz = in->ps0z + ((in->ps1z - in->ps0z) * sc);
-		
-			in->tcx = in->pe0x + ((in->pe1x - in->pe0x) * tc);
-			in->tcy = in->pe0y + ((in->pe1y - in->pe0y) * tc);
-			in->tcz = in->pe0z + ((in->pe1z - in->pe0z) * tc);
-		}
-	
-
 }
 
 
@@ -1248,7 +1238,7 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 		free(head->tri->ode_verts);
 		free(head->tri->ode_indices);
 	} else {
-		head->tri = malloc(sizeof(trimesh_struct));
+		head->tri = calloc(1, sizeof(trimesh_struct));
 		head->tri->dataid = dGeomTriMeshDataCreate();
 		head->tri->meshid = dCreateTriMesh(NULL, head->tri->dataid, NULL, NULL, NULL);
 		
@@ -1286,8 +1276,8 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	}
 		
 	// allocate memory
-	ode_verts = malloc( t_count * num * 4 * 4 * sizeof(dVector3));
-	ode_indices = malloc( t_count * num * 4 * 4 * sizeof(int));
+	ode_verts = calloc(1, t_count * num * 4 * 4 * sizeof(dVector3));
+	ode_indices = calloc(1, t_count * num * 4 * 4 * sizeof(int));
 	printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
 
 	cur_turd = head;
@@ -1302,15 +1292,8 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 		// generate 3 interpolation structs
 		// xxx - should store these for later, no?
 		interpInit(&cin, cur_turd, nxt_turd);
-		interpGenClosestLine( &cin );
-		
 		interpInit(&lin, lct, lnt);
-		interpGenClosestLine( &lin );
-		
 		interpInit(&rin, rct, rnt);
-		interpGenClosestLine( &rin );
-		
-
 		
 		float plx = lct->wx;
 		float ply = lct->wy;
@@ -1472,13 +1455,8 @@ void drawRoad(struct turd_struct *head) {
 		// generate 3 interpolation structs
 		// xxx - should store these for later, no?
 		interpInit(&cin, cur_turd, nxt_turd);
-		interpGenClosestLine( &cin );
-		
 		interpInit(&lin, lct, lnt);
-		interpGenClosestLine( &lin );
-		
 		interpInit(&rin, rct, rnt);
-		interpGenClosestLine( &rin );
 		
 		int i;
 		
@@ -1612,7 +1590,7 @@ struct turd_struct *helix;
 
 void initTurdTrack() {
 
-	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp2.conf");
+	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
