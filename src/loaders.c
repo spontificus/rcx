@@ -1467,7 +1467,7 @@ void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_str
 		int xn = 5;
 		int yn = 10;
 		glEnable(GL_NORMALIZE);
-		for (yloop=0; yloop<=yn; yloop++) {
+		for (yloop=0; yloop<yn; yloop++) {
 			yt = (float)yloop/yn;
 			yti = (float)(1.0 - yt);
 			
