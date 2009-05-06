@@ -442,13 +442,12 @@ void
 scene_render()
 {
 	static struct cube *room;
-	static unsigned int surface_tex_num;
+
 	static GLUquadricObj *sphere;
 	int i;
 
 	if(!cubes[0]) {
-		unsigned char *data;
-		unsigned int width, height;
+
 
 
 		/* create objects */
