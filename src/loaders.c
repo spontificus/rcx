@@ -1421,11 +1421,119 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	return tri;
 }
 
+void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
+		interp_struct lin;
+		interp_struct rin;
+		interp_struct bin;
+		interp_struct tin;
+			
+		float vbl[3];
+		float vbr[3];
+		float vtl[3];
+		float vtr[3];
+		
+		
+		// generate 3 interpolation structs
+		// xxx - should store these for later, no?
+		
+		interpInit(&lin, bl, tl);
+		interpInit(&rin, br, tr);
+		interpInit(&bin, bl, br);
+		interpInit(&tin, tl, tr);
+		
+		int xloop,yloop;
+		
+		float xt,yt;
+		float xti,yti;
+		float xtn,ytn;
+		float xtni, ytni;
+		
+		float nbl[3];
+		float nbr[3];
+		float ntl[3];
+		float ntr[3];
+			
+		float nmx,nmy,nmz;
+/*		
+		glNormal3f(	cur_turd->l->anx*cnmodn + nxt_turd->l->anx * cnmodf,
+									cur_turd->l->any*cnmodn + nxt_turd->l->any * cnmodf,
+									cur_turd->l->anz*cnmodn + nxt_turd->l->anz * cnmodf);
+			glVertex3f(plx, ply, plz);
+			glNormal3f(	cur_turd->l->anx*nnmodn + nxt_turd->l->anx * nnmodf,
+						cur_turd->l->any*nnmodn + nxt_turd->l->any * nnmodf,
+						cur_turd->l->anz*nnmodn + nxt_turd->l->anz * nnmodf);
+			// Current Mormal MOD Near/Far
+			float cnmodn = (1.0-t);
+			float cnmodf = t;
+			
+			float nnmodn = (1.0-(i+1.0)/num);
+			float nnmodf = (i+1.0)/num;
+*/
+			
+		int xn = 5;
+		int yn = 10;
+		glEnable(GL_NORMALIZE);
+		for (yloop=0; yloop<yn; yloop++) {
+			yt = (float)yloop/yn;
+			yti = (float)(1.0 - yt);
+			
+			ytn = (float)(yloop + 1.0)/yn;
+			ytni = (float)(1.0 - ytn);
+						
+			glBegin(GL_TRIANGLE_STRIP);
+			
+			// create interpolated grid points
+			interpDraw( &lin, yt, (float *)&vbl);
+			interpDraw( &lin, ytn, (float *)&vtl);
+			interpDraw( &rin, yt, (float *)&vbr);
+			interpDraw( &rin, ytn, (float *)&vtr);
+			
+
+			glVertex3f(vbl[0], vbl[1], vbl[2]);
+			glVertex3f(vtl[0], vtl[1], vtl[2]);
+			
+					
+			for (xloop=0; xloop<=xn; xloop++) {
+				xt = (float)xloop/xn;
+				xtn = (float)(xloop + 1.0)/xn;
+				xti = (float)(1.0 - xt);
+				
+
+				nmx = ((bl->anx * xti + br->anx * xt) * yti) + ((tl->anx * xti + tr->anx * xt) * yt);
+				nmy = ((bl->any * xti + br->any * xt) * yti) + ((tl->any * xti + tr->any * xt) * yt);
+				nmz = ((bl->anz * xti + br->anz * xt) * yti) + ((tl->anz * xti + tr->anz * xt) * yt);
+				glNormal3f( nmx, nmy, nmz );
+				//printf("nx:%f ny:%f nz:%f\n", nmx, nmy, nmz);
+
+				float cx = vbl[0] * xti + vbr[0] * xt;
+				float cy = vbl[1] * xti + vbr[1] * xt;
+				float cz = vbl[2] * xti + vbr[2] * xt;
+				glVertex3f(cx, cy, cz);
+
+				nmx = ((bl->anx * xti + br->anx * xt) * ytni) + ((tl->anx * xti + tr->anx * xt) * ytn);
+				nmy = ((bl->any * xti + br->any * xt) * ytni) + ((tl->any * xti + tr->any * xt) * ytn);
+				nmz = ((bl->anz * xti + br->anz * xt) * ytni) + ((tl->anz * xti + tr->anz * xt) * ytn);
+				glNormal3f( nmx, nmy, nmz );
+			
+				float nx = vtl[0] * xti + vtr[0] * xt;
+				float ny = vtl[1] * xti + vtr[1] * xt;
+				float nz = vtl[2] * xti + vtr[2] * xt;
+				glVertex3f(nx, ny, nz);
+				
+			}
+			
+			//glVertex3f(vbr[0], vbr[1], vbr[2]);
+			//glVertex3f(vtr[0], vtr[1], vtr[2]);
+			glEnd();
+		}
+		glDisable(GL_NORMALIZE);
+}
 
 
 void drawRoad(struct turd_struct *head) {
 	struct turd_struct *cur_turd = head;
 	struct turd_struct *nxt_turd;
+	struct turd_struct *tmp_turd;
 	struct turd_struct *lct,*lnt, *rct,*rnt;
 	
 
@@ -1435,16 +1543,6 @@ void drawRoad(struct turd_struct *head) {
 	glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
 	//glMateriali (GL_FRONT, GL_SHININESS, 1);
 	
-	
-	float ls[3];
-	float cs[3];
-	float rs[3];
-// 
-	interp_struct lin;
-	interp_struct cin;
-	interp_struct rin;
-	
-	int num=10;
 
 
 	cur_turd = head;
@@ -1455,84 +1553,11 @@ void drawRoad(struct turd_struct *head) {
 		lnt = nxt_turd->l;
 		rct = cur_turd->r;
 		rnt = nxt_turd->r;
+		
+		doRoadPatch(lct,cur_turd, lnt,nxt_turd);
+		doRoadPatch(cur_turd,rct, nxt_turd,rnt);
 	
-		// generate 3 interpolation structs
-		// xxx - should store these for later, no?
-		interpInit(&cin, cur_turd, nxt_turd);
-		interpInit(&lin, lct, lnt);
-		interpInit(&rin, rct, rnt);
-		
-		int i;
-		
-		float t;
-		
-		float plx = lct->wx;
-		float ply = lct->wy;
-		float plz = lct->wz;
-		
-		float pcx = cur_turd->wx;
-		float pcy = cur_turd->wy;
-		float pcz = cur_turd->wz;
-		
-		float prx = rct->wx;
-		float pry = rct->wy;
-		float prz = rct->wz;
-			
-		
-		for (i=0; i<=num; i++) {
-	
-			glBegin(GL_TRIANGLE_STRIP);
-			t = (float)i/num;
-			
-			interpDraw( &lin, t, (float *)&ls );
-			interpDraw( &cin, t, (float *)&cs );
-			interpDraw( &rin, t, (float *)&rs );
-			
-			// Current Mormal MOD Near/Far
-			float cnmodn = (1.0-t);
-			float cnmodf = t;
-			
-			float nnmodn = (1.0-(i+1.0)/num);
-			float nnmodf = (i+1.0)/num;
-			
-			glNormal3f(	cur_turd->l->anx*cnmodn + nxt_turd->l->anx * cnmodf,
-									cur_turd->l->any*cnmodn + nxt_turd->l->any * cnmodf,
-									cur_turd->l->anz*cnmodn + nxt_turd->l->anz * cnmodf);
-			glVertex3f(plx, ply, plz);
-			glNormal3f(	cur_turd->l->anx*nnmodn + nxt_turd->l->anx * nnmodf,
-						cur_turd->l->any*nnmodn + nxt_turd->l->any * nnmodf,
-						cur_turd->l->anz*nnmodn + nxt_turd->l->anz * nnmodf);
-			glVertex3f(ls[0], ls[1], ls[2]);
-			
-			glNormal3f(	cur_turd->anx*(1-t) + nxt_turd->anx * t,
-									cur_turd->any*(1-t) + nxt_turd->any * t,
-									cur_turd->anz*(1-t) + nxt_turd->anz * t);
-			glVertex3f(pcx, pcy, pcz);
-			glVertex3f(cs[0], cs[1], cs[2]);
-			
-			glNormal3f(	cur_turd->r->anx*cnmodn + nxt_turd->r->anx * cnmodf,
-									cur_turd->r->any*cnmodn + nxt_turd->r->any * cnmodf,
-									cur_turd->r->anz*cnmodn + nxt_turd->r->anz * cnmodf);
-			glVertex3f(prx, pry, prz);
-			glNormal3f(	cur_turd->r->anx*nnmodn + nxt_turd->r->anx * nnmodf,
-						cur_turd->r->any*nnmodn + nxt_turd->r->any * nnmodf,
-						cur_turd->r->anz*nnmodn + nxt_turd->r->anz * nnmodf);
-			glVertex3f(rs[0], rs[1], rs[2]);		
-			glEnd();
-			
-			plx = ls[0];
-			ply = ls[1];
-			plz = ls[2];
-			
-			pcx = cs[0];
-			pcy = cs[1];
-			pcz = cs[2];
-			
-			prx = rs[0];
-			pry = rs[1];
-			prz = rs[2];
 
-		}
 		cur_turd = nxt_turd;
 	}
 		
