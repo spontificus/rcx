@@ -38,7 +38,7 @@ car *focused_car = NULL;
 
 void printlog (int, char*, ...); //prototype (for included functions
 
-#include "scene.c"
+//#include "scene.c"
 #include "graphics.c"
 #include "physics.c"
 #include "shared.c" //functions for handling custom data
