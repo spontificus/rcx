@@ -1155,84 +1155,32 @@ interp_struct *interpInit( interp_struct *in, turd_struct *cur_turd, turd_struct
 		in->ps0x = cur_turd->wx;
 		in->ps0y = cur_turd->wy;
 		in->ps0z = cur_turd->wz;
-		in->ps1x = cur_turd->nx;
-		in->ps1y = cur_turd->ny;
-		in->ps1z = cur_turd->nz;
-
+		
 		in->pe0x = nxt_turd->wx;
 		in->pe0y = nxt_turd->wy;
 		in->pe0z = nxt_turd->wz;
-		in->pe1x = nxt_turd->nx;
-		in->pe1y = nxt_turd->ny;
-		in->pe1z = nxt_turd->nz;
+		
+		float xydist = pow( in->pe0x - in->ps0x, 2 ) + pow( in->pe0y - in->pe0y, 2 );
+		float dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.0;
+		
+		// generate bezier control points as half distance along normal vectors
+		float psdx = cur_turd->nx - in->ps0x;
+		float psdy = cur_turd->ny - in->ps0y;
+		float psdz = cur_turd->nz - in->ps0z;
+		
+		float pedx = nxt_turd->nx - in->pe0x;
+		float pedy = nxt_turd->ny - in->pe0y;
+		float pedz = nxt_turd->nz - in->pe0z;
+		
+		in->scx = in->ps0x + psdx * dist;
+		in->scy = in->ps0y + psdy * dist;
+		in->scz = in->ps0z + psdz * dist;
+		
+		in->tcx = in->pe0x - pedx * dist;
+		in->tcy = in->pe0y - pedy * dist;
+		in->tcz = in->pe0z - pedz * dist;
 		
 		return in;
-}
-
-// Following function derived from:
-// http://www.softsurfer.com/Archive/algorithm_0106/algorithm_0106.htm#dist3D_Line_to_Line()
-//
-// Copyright 2001, softSurfer (www.softsurfer.com)
-// This code may be freely used and modified for any purpose
-// providing that this copyright notice is included with it.
-// SoftSurfer makes no warranty for this code, and cannot be held
-// liable for any real or imagined damage resulting from its use.
-// Users of this code must verify correctness for their application.
-void interpGenClosestLine( interp_struct *in ) {
-		float sc, tc;
-		dVector3 u;
-		dVector3 v;
-		dVector3 w;	
-		
-		u[0] = in->ps1x - in->ps0x;
-		u[1] = in->ps1y - in->ps0y;
-		u[2] = in->ps1z - in->ps0z;
-		
-		v[0] = in->pe1x - in->pe0x;
-		v[1] = in->pe1y - in->pe0y;
-		v[2] = in->pe1z - in->pe0z;
-		
-		w[0] = in->ps0x - in->pe0x;
-		w[1] = in->ps0y - in->pe0y;
-		w[2] = in->ps0z - in->pe0z;
-		
-		float ca = dot(u,u);
-		float cb = dot(u,v);
-		float cc = dot(v,v);
-		float cd = dot(u,w);
-		float ce = dot(v,w);
-		float cD = ca*cc - cb*cb;
-		
-		if (cD < 0.01) {
-			// if almost parallel, then we want to return the midpoint
-			if ( 1 ) {
-				//printf("parallel\n");
-				in->scx = in->ps0x - (w[0] / 2.0);
-				in->scy = in->ps0y - (w[1] / 2.0);
-				in->scz = in->ps0z - (w[2] / 2.0);
-				
-				in->tcx = in->scx;
-				in->tcy = in->scy;
-				in->tcz = in->scz;
-			} else {
-				sc = 0;
-				tc = (cb>cc ? cd/cb : ce/cc);
-			}
-		} else {
-			sc = (cb*ce - cc*cd) / cD;
-			tc = (ca*ce - cb*cd) / cD;
-			
-			// now the line should be defined by ( (ps1-ps0) * sc, (pe1-pe0) * tc )
-			in->scx = in->ps0x + ((in->ps1x - in->ps0x) * sc);
-			in->scy = in->ps0y + ((in->ps1y - in->ps0y) * sc);
-			in->scz = in->ps0z + ((in->ps1z - in->ps0z) * sc);
-		
-			in->tcx = in->pe0x + ((in->pe1x - in->pe0x) * tc);
-			in->tcy = in->pe0y + ((in->pe1y - in->pe0y) * tc);
-			in->tcz = in->pe0z + ((in->pe1z - in->pe0z) * tc);
-		}
-	
-
 }
 
 
@@ -1344,15 +1292,8 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 		// generate 3 interpolation structs
 		// xxx - should store these for later, no?
 		interpInit(&cin, cur_turd, nxt_turd);
-		interpGenClosestLine( &cin );
-		
 		interpInit(&lin, lct, lnt);
-		interpGenClosestLine( &lin );
-		
 		interpInit(&rin, rct, rnt);
-		interpGenClosestLine( &rin );
-		
-
 		
 		float plx = lct->wx;
 		float ply = lct->wy;
@@ -1512,13 +1453,8 @@ void drawRoad(struct turd_struct *head) {
 		// generate 3 interpolation structs
 		// xxx - should store these for later, no?
 		interpInit(&cin, cur_turd, nxt_turd);
-		interpGenClosestLine( &cin );
-		
 		interpInit(&lin, lct, lnt);
-		interpGenClosestLine( &lin );
-		
 		interpInit(&rin, rct, rnt);
-		interpGenClosestLine( &rin );
 		
 		int i;
 		
