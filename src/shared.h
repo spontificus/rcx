@@ -114,12 +114,12 @@ typedef struct trimesh_struct {
 typedef struct turd_struct {
 	float x,y,z;
 	float a,b,c;
-	float nx,ny,nz;
+	float xnx,xny,xnz;
+	float ynx,yny,ynz;
+	float znx,zny,znz;
 	float anx,any,anz;
 	float wx,wy,wz;
-	float relx,rely,relz;
-	float rerx,rery,rerz;
-	float m00,m01,m02, m10,m11,m12, m20,m21,m22;
+	
 	GLfloat m[16];
 	struct turd_struct *l;
 	struct turd_struct *r;
@@ -136,6 +136,10 @@ turd_struct *edit_h = NULL;
 turd_struct edit_b;
 int edit_m = 1;
 
+#define X_AXIS 1
+#define Y_AXIS 2
+#define Z_AXIS 3
+
 typedef struct interp_stuct {
 		float ps0x,ps0y,ps0z;
 		float ps1x,ps1y,ps1z;
@@ -149,6 +153,8 @@ typedef struct interp_stuct {
 		float spx,spy,spz;  
 		float epx,epy,epz;
 		float ipx,ipy,ipz;
+		
+		int axis;
 
 } interp_struct;
 
