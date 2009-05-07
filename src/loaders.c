@@ -943,12 +943,24 @@ void makeTurdMatricies( struct turd_struct *tmp_turd ) {
 	tmp_turd->wy = mvr[1];
 	tmp_turd->wz = mvr[2];
 
+	// (x-axis)
+	mvr = mbv(tmp_turd->m, 1,0,0);
+	tmp_turd->xnx = mvr[0];
+	tmp_turd->xny = mvr[1];
+	tmp_turd->xnz = mvr[2];
+
 	// direction of travel (y-axis)
 	mvr = mbv(tmp_turd->m, 0,1,0);
-	tmp_turd->nx = mvr[0];
-	tmp_turd->ny = mvr[1];
-	tmp_turd->nz = mvr[2];
-	
+	tmp_turd->ynx = mvr[0];
+	tmp_turd->yny = mvr[1];
+	tmp_turd->ynz = mvr[2];
+
+	// (z-axis)
+	mvr = mbv(tmp_turd->m, 0,0,1);
+	tmp_turd->znx = mvr[0];
+	tmp_turd->zny = mvr[1];
+	tmp_turd->znz = mvr[2];
+
 	// and the actual normal
 	mvr = mbv(tmp_turd->m, 0,0,1);
 	tmp_turd->anx = mvr[0] - tmp_turd->wx;
@@ -1150,7 +1162,10 @@ float dot(dVector3 u, dVector3 v) {
 }
 
 // creates an interpolation object from two control points
-interp_struct *interpInit( interp_struct *in, turd_struct *cur_turd, turd_struct *nxt_turd ) {
+interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, turd_struct *nxt_turd ) {
+		float dist;
+		float psdx,psdy,psdz, pedx,pedy,pedz;
+		in->axis = axis;
 		
 		in->ps0x = cur_turd->wx;
 		in->ps0y = cur_turd->wy;
@@ -1161,16 +1176,42 @@ interp_struct *interpInit( interp_struct *in, turd_struct *cur_turd, turd_struct
 		in->pe0z = nxt_turd->wz;
 		
 		float xydist = pow( in->pe0x - in->ps0x, 2 ) + pow( in->pe0y - in->ps0y, 2 );
-		float dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.0;
+		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.0;
 		
 		// generate bezier control points as half distance along normal vectors
-		float psdx = cur_turd->nx - in->ps0x;
-		float psdy = cur_turd->ny - in->ps0y;
-		float psdz = cur_turd->nz - in->ps0z;
+		switch ( in->axis ) {
+			case X_AXIS:
+				psdx = cur_turd->xnx - in->ps0x;
+				psdy = cur_turd->xny - in->ps0y;
+				psdz = cur_turd->xnz - in->ps0z;
+				pedx = nxt_turd->xnx - in->pe0x;
+				pedy = nxt_turd->xny - in->pe0y;
+				pedz = nxt_turd->xnz - in->pe0z;
+				break;
+			
+			case Y_AXIS:
+				psdx = cur_turd->ynx - in->ps0x;
+				psdy = cur_turd->yny - in->ps0y;
+				psdz = cur_turd->ynz - in->ps0z;
+				pedx = nxt_turd->ynx - in->pe0x;
+				pedy = nxt_turd->yny - in->pe0y;
+				pedz = nxt_turd->ynz - in->pe0z;				
+				break;
 		
-		float pedx = nxt_turd->nx - in->pe0x;
-		float pedy = nxt_turd->ny - in->pe0y;
-		float pedz = nxt_turd->nz - in->pe0z;
+			case Z_AXIS:
+				psdx = cur_turd->znx - in->ps0x;
+				psdy = cur_turd->zny - in->ps0y;
+				psdz = cur_turd->znz - in->ps0z;
+				pedx = nxt_turd->znx - in->pe0x;
+				pedy = nxt_turd->zny - in->pe0y;
+				pedz = nxt_turd->znz - in->pe0z;
+				break;
+				
+			default:
+				printlog(0, "Axis rotation type not supported, try another dimension");
+				exit(0);
+				break;
+		}
 		
 		in->scx = in->ps0x + psdx * dist;
 		in->scy = in->ps0y + psdy * dist;
@@ -1291,9 +1332,9 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	
 		// generate 3 interpolation structs
 		// xxx - should store these for later, no?
-		interpInit(&cin, cur_turd, nxt_turd);
-		interpInit(&lin, lct, lnt);
-		interpInit(&rin, rct, rnt);
+		interpInit(&cin, Y_AXIS, cur_turd, nxt_turd);
+		interpInit(&lin, Y_AXIS, lct, lnt);
+		interpInit(&rin, Y_AXIS, rct, rnt);
 		
 		float plx = lct->wx;
 		float ply = lct->wy;
@@ -1415,55 +1456,55 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	return tri;
 }
 
+
+void interpPatch(float tx, float ty, float *v, interp_struct *lin, interp_struct *rin, interp_struct *bin, interp_struct *tin) {
+	float vl[3];
+	float vr[3];
+	float vb[3];
+	float vt[3];
+	
+	float txi = 1.0 - tx;
+	float tyi = 1.0 - ty;
+	
+	
+	interpDraw( lin, ty, (float *)&vl);
+	interpDraw( rin, ty, (float *)&vr);
+	interpDraw( bin, tx, (float *)&vb);
+	interpDraw( tin, tx, (float *)&vt);
+		
+	v[0] = ( vl[0]*txi + vr[0]*tx + vb[0]*tyi + vt[0]*ty ) / 2.0;
+	v[1] = ( vl[1]*txi + vr[1]*tx + vb[1]*tyi + vt[1]*ty ) / 2.0;
+	v[2] = ( vl[2]*txi + vr[2]*tx + vb[2]*tyi + vt[2]*ty ) / 2.0;
+}
+
+
 void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
 		interp_struct lin;
 		interp_struct rin;
 		interp_struct bin;
 		interp_struct tin;
-			
-		float vbl[3];
-		float vbr[3];
-		float vtl[3];
-		float vtr[3];
-		
-		
-		// generate 3 interpolation structs
-		// xxx - should store these for later, no?
-		
-		interpInit(&lin, bl, tl);
-		interpInit(&rin, br, tr);
-		interpInit(&bin, bl, br);
-		interpInit(&tin, tl, tr);
+				
+		interpInit(&lin, Y_AXIS, bl, tl);
+		interpInit(&rin, Y_AXIS, br, tr);
+		interpInit(&bin, X_AXIS, bl, br);
+		interpInit(&tin, X_AXIS, tl, tr);
 		
 		int xloop,yloop;
 		
 		float xt,yt;
 		float xti,yti;
-		float xtn,ytn;
-		float xtni, ytni;
-		
-		float nbl[3];
-		float nbr[3];
-		float ntl[3];
-		float ntr[3];
+		float ytn;
+		float ytni;
 			
 		float nmx,nmy,nmz;
-/*		
-		glNormal3f(	cur_turd->l->anx*cnmodn + nxt_turd->l->anx * cnmodf,
-									cur_turd->l->any*cnmodn + nxt_turd->l->any * cnmodf,
-									cur_turd->l->anz*cnmodn + nxt_turd->l->anz * cnmodf);
-			glVertex3f(plx, ply, plz);
-			glNormal3f(	cur_turd->l->anx*nnmodn + nxt_turd->l->anx * nnmodf,
-						cur_turd->l->any*nnmodn + nxt_turd->l->any * nnmodf,
-						cur_turd->l->anz*nnmodn + nxt_turd->l->anz * nnmodf);
-			// Current Mormal MOD Near/Far
-			float cnmodn = (1.0-t);
-			float cnmodf = t;
-			
-			float nnmodn = (1.0-(i+1.0)/num);
-			float nnmodf = (i+1.0)/num;
-*/
-			
+
+		float v[3];
+
+		
+		v[0] = 0;
+		v[1] = 0;
+		v[2] = 0;
+	
 		int xn = 5;
 		int yn = 10;
 		glEnable(GL_NORMALIZE);
@@ -1472,53 +1513,34 @@ void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_str
 			yti = (float)(1.0 - yt);
 			
 			ytn = (float)(yloop + 1.0)/yn;
-			ytni = (float)(1.0 - ytn);
-						
-			glBegin(GL_TRIANGLE_STRIP);
+			ytni = (float)(1.0 - ytn);			
 			
-			// create interpolated grid points
-			interpDraw( &lin, yt, (float *)&vbl);
-			interpDraw( &lin, ytn, (float *)&vtl);
-			interpDraw( &rin, yt, (float *)&vbr);
-			interpDraw( &rin, ytn, (float *)&vtr);
-			
-
-			glVertex3f(vbl[0], vbl[1], vbl[2]);
-			glVertex3f(vtl[0], vtl[1], vtl[2]);
-			
-					
+			glBegin(GL_TRIANGLE_STRIP);		
 			for (xloop=0; xloop<=xn; xloop++) {
+				
 				xt = (float)xloop/xn;
-				xtn = (float)(xloop + 1.0)/xn;
 				xti = (float)(1.0 - xt);
 				
-
 				nmx = ((bl->anx * xti + br->anx * xt) * yti) + ((tl->anx * xti + tr->anx * xt) * yt);
 				nmy = ((bl->any * xti + br->any * xt) * yti) + ((tl->any * xti + tr->any * xt) * yt);
 				nmz = ((bl->anz * xti + br->anz * xt) * yti) + ((tl->anz * xti + tr->anz * xt) * yt);
 				glNormal3f( nmx, nmy, nmz );
-				//printf("nx:%f ny:%f nz:%f\n", nmx, nmy, nmz);
+				
+				interpPatch(xt,yt,v, &lin,&rin,&bin,&tin);
+				glVertex3f(v[0], v[1], v[2]);
 
-				float cx = vbl[0] * xti + vbr[0] * xt;
-				float cy = vbl[1] * xti + vbr[1] * xt;
-				float cz = vbl[2] * xti + vbr[2] * xt;
-				glVertex3f(cx, cy, cz);
 
 				nmx = ((bl->anx * xti + br->anx * xt) * ytni) + ((tl->anx * xti + tr->anx * xt) * ytn);
 				nmy = ((bl->any * xti + br->any * xt) * ytni) + ((tl->any * xti + tr->any * xt) * ytn);
 				nmz = ((bl->anz * xti + br->anz * xt) * ytni) + ((tl->anz * xti + tr->anz * xt) * ytn);
 				glNormal3f( nmx, nmy, nmz );
-			
-				float nx = vtl[0] * xti + vtr[0] * xt;
-				float ny = vtl[1] * xti + vtr[1] * xt;
-				float nz = vtl[2] * xti + vtr[2] * xt;
-				glVertex3f(nx, ny, nz);
+
+				interpPatch(xt,ytn,v, &lin,&rin,&bin,&tin);
+				glVertex3f(v[0], v[1], v[2]);
 				
 			}
-			
-			//glVertex3f(vbr[0], vbr[1], vbr[2]);
-			//glVertex3f(vtr[0], vtr[1], vtr[2]);
 			glEnd();
+		
 		}
 		glDisable(GL_NORMALIZE);
 }
@@ -1526,10 +1548,8 @@ void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_str
 
 void drawRoad(struct turd_struct *head) {
 	struct turd_struct *cur_turd = head;
-	struct turd_struct *nxt_turd;
-	struct turd_struct *tmp_turd;
+	struct turd_struct *nxt_turd;	
 	struct turd_struct *lct,*lnt, *rct,*rnt;
-	
 
 
 	glMaterialfv (GL_FRONT, GL_DIFFUSE, gray);
