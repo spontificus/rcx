@@ -154,6 +154,11 @@ typedef struct interp_stuct {
 		float epx,epy,epz;
 		float ipx,ipy,ipz;
 		
+		// visual normals
+		float snx,sny,snz;
+		float enx,eny,enz;
+		
+		// Which axis are we interpolating along
 		int axis;
 
 } interp_struct;
