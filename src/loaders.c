@@ -1161,6 +1161,19 @@ float dot(dVector3 u, dVector3 v) {
 	return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
 }
 
+void normalise(float *n) {
+	float d = sqrt( pow(n[0],2) + pow(n[1],2) + pow(n[2],2) );
+	
+	if ( d == 0 ) {
+		return;
+	}
+
+	n[0] /= d;
+	n[1] /= d;
+	n[2] /= d;
+}
+
+
 // creates an interpolation object from two control points
 interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, turd_struct *nxt_turd ) {
 		float dist;
@@ -1221,6 +1234,14 @@ interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, t
 		in->tcy = in->pe0y - pedy * dist;
 		in->tcz = in->pe0z - pedz * dist;
 		
+		in->snx = cur_turd->anx;
+		in->sny = cur_turd->any;
+		in->snz = cur_turd->anz;
+		
+		in->enx = nxt_turd->anx;
+		in->eny = nxt_turd->any;
+		in->enz = nxt_turd->anz;
+		
 		return in;
 }
 
@@ -1242,7 +1263,9 @@ interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, t
 // Once sc[xyz]->tc[xyz] has been discovered, interpolation is equally cheap
 // for any value of 't'.
 //
-void interpDraw( interp_struct *in, float t, float *p ) {
+void interpDraw( interp_struct *in, float t, float *p , float *n) {
+	static float cn[3], sn[3], en[3];
+
 	in->cpx = in->scx + t * (in->tcx - in->scx);
 	in->cpy = in->scy + t * (in->tcy - in->scy);
 	in->cpz = in->scz + t * (in->tcz - in->scz);
@@ -1258,6 +1281,28 @@ void interpDraw( interp_struct *in, float t, float *p ) {
 	p[0] = in->spx + t * (in->epx - in->spx);
 	p[1] = in->spy + t * (in->epy - in->spy);
 	p[2] = in->spz + t * (in->epz - in->spz);
+	
+	// any better way to calculate normal?
+	cn[0] = in->snx + t * (in->enx - in->snx);
+	cn[1] = in->sny + t * (in->eny - in->sny);
+	cn[2] = in->snz + t * (in->enz - in->snz);
+	normalise(cn);
+
+	sn[0] = in->snx + t * (cn[0] - in->snx);
+	sn[1] = in->sny + t * (cn[1] - in->sny);
+	sn[2] = in->snz + t * (cn[2] - in->snz);
+	normalise(sn);
+	
+	en[0] = in->enx + t * (in->enx - cn[0]);
+	en[1] = in->eny + t * (in->eny - cn[1]);
+	en[2] = in->enz + t * (in->enz - cn[2]);
+	normalise(en);
+	
+	n[0] = sn[0] + t * (en[0] - sn[0]);
+	n[1] = sn[1] + t * (en[1] - sn[1]);
+	n[2] = sn[2] + t * (en[2] - sn[2]);
+	normalise(n);
+
 }
 
 
@@ -1321,6 +1366,8 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	ode_indices = calloc(1, t_count * num * 4 * 4 * sizeof(int));
 	printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
 
+	float n[3];
+
 	cur_turd = head;
 	while (cur_turd->nxt) {	
 		nxt_turd = cur_turd->nxt;
@@ -1368,9 +1415,9 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 		for (i=0; i<=num; i++) {
 			t = (float)i/num;
 			
-			interpDraw( &lin, t, (float *)&ls );
-			interpDraw( &cin, t, (float *)&cs );
-			interpDraw( &rin, t, (float *)&rs );
+			interpDraw( &lin, t, (float *)&ls, (float *)&n);
+			interpDraw( &cin, t, (float *)&cs, (float *)&n );
+			interpDraw( &rin, t, (float *)&rs, (float *)&n );
 					
 			plx = ls[0];
 			ply = ls[1];
@@ -1457,24 +1504,32 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 }
 
 
-void interpPatch(float tx, float ty, float *v, interp_struct *lin, interp_struct *rin, interp_struct *bin, interp_struct *tin) {
+void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, interp_struct *rin, interp_struct *bin, interp_struct *tin) {
 	float vl[3];
 	float vr[3];
 	float vb[3];
 	float vt[3];
 	
+	float nl[3];
+	float nr[3];
+	float nb[3];
+	float nt[3];
+	
 	float txi = 1.0 - tx;
 	float tyi = 1.0 - ty;
 	
-	
-	interpDraw( lin, ty, (float *)&vl);
-	interpDraw( rin, ty, (float *)&vr);
-	interpDraw( bin, tx, (float *)&vb);
-	interpDraw( tin, tx, (float *)&vt);
+	interpDraw( lin, ty, (float *)&vl, (float *)&nl);
+	interpDraw( rin, ty, (float *)&vr, (float *)&nr);
+	interpDraw( bin, tx, (float *)&vb, (float *)&nb);
+	interpDraw( tin, tx, (float *)&vt, (float *)&nt);
 		
 	v[0] = ( vl[0]*txi + vr[0]*tx + vb[0]*tyi + vt[0]*ty ) / 2.0;
 	v[1] = ( vl[1]*txi + vr[1]*tx + vb[1]*tyi + vt[1]*ty ) / 2.0;
 	v[2] = ( vl[2]*txi + vr[2]*tx + vb[2]*tyi + vt[2]*ty ) / 2.0;
+	
+	n[0] = ( nl[0]*txi + nr[0]*tx + nb[0]*tyi + nt[0]*ty ) / 2.0;
+	n[1] = ( nl[1]*txi + nr[1]*tx + nb[1]*tyi + nt[1]*ty ) / 2.0;
+	n[2] = ( nl[2]*txi + nr[2]*tx + nb[2]*tyi + nt[2]*ty ) / 2.0;
 }
 
 
@@ -1499,6 +1554,7 @@ void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_str
 		float nmx,nmy,nmz;
 
 		float v[3];
+		float n[3];
 
 		
 		v[0] = 0;
@@ -1521,21 +1577,12 @@ void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_str
 				xt = (float)xloop/xn;
 				xti = (float)(1.0 - xt);
 				
-				nmx = ((bl->anx * xti + br->anx * xt) * yti) + ((tl->anx * xti + tr->anx * xt) * yt);
-				nmy = ((bl->any * xti + br->any * xt) * yti) + ((tl->any * xti + tr->any * xt) * yt);
-				nmz = ((bl->anz * xti + br->anz * xt) * yti) + ((tl->anz * xti + tr->anz * xt) * yt);
-				glNormal3f( nmx, nmy, nmz );
-				
-				interpPatch(xt,yt,v, &lin,&rin,&bin,&tin);
+				interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
+				glNormal3f(n[0], n[1], n[2]);
 				glVertex3f(v[0], v[1], v[2]);
 
-
-				nmx = ((bl->anx * xti + br->anx * xt) * ytni) + ((tl->anx * xti + tr->anx * xt) * ytn);
-				nmy = ((bl->any * xti + br->any * xt) * ytni) + ((tl->any * xti + tr->any * xt) * ytn);
-				nmz = ((bl->anz * xti + br->anz * xt) * ytni) + ((tl->anz * xti + tr->anz * xt) * ytn);
-				glNormal3f( nmx, nmy, nmz );
-
-				interpPatch(xt,ytn,v, &lin,&rin,&bin,&tin);
+				interpPatch(xt,ytn,v,n, &lin,&rin,&bin,&tin);
+				glNormal3f(n[0], n[1], n[2]);
 				glVertex3f(v[0], v[1], v[2]);
 				
 			}
