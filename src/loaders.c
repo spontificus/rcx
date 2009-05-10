@@ -1342,7 +1342,7 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 	dGeomSetOffsetPosition(geom,0,0,s[3]);
 
 	//wheels:
-	geom_data *wheel_data;
+	geom_data *wheel_data[4];
 	dGeomID wheel_geom;
 	dBodyID wheel_body[4];
 	for (i=0;i<4;++i)
@@ -1364,17 +1364,17 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 		dGeomSetBody (wheel_geom, wheel_body[i]);
 
 		//allocate (geom) data
-		wheel_data = allocate_geom_data(wheel_geom, target->object);
+		wheel_data[i] = allocate_geom_data(wheel_geom, target->object);
 
 		//friction
-		wheel_data->mu = target->wheel_mu;
-		wheel_data->use_slip = true;
-		wheel_data->slip = target->wheel_slip;
-		wheel_data->bounce = target->wheel_bounce;
+		wheel_data[i]->mu = target->wheel_mu;
+		wheel_data[i]->wheel = true;
+		wheel_data[i]->slip = target->wheel_slip;
+		wheel_data[i]->bounce = target->wheel_bounce;
 
 		//hardness
-		wheel_data->erp = target->wheel_erp;
-		wheel_data->cfm = target->wheel_cfm;
+		wheel_data[i]->erp = target->wheel_erp;
+		wheel_data[i]->cfm = target->wheel_cfm;
 
 
 		//drag
@@ -1391,7 +1391,7 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 		odata->rot_drag[2] = target->wheel_rotation_drag[2];
 
 		//graphics
-		wheel_data->file_3d = target->wheel_graphics;
+		wheel_data[i]->file_3d = target->wheel_graphics;
 		
 		//(we need easy access to wheel body ids if using finite rotation)
 		target->wheel_body[i] = wheel_body[i];
@@ -1434,6 +1434,9 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 		//lock steering axis on all wheels
 		dJointSetHinge2Param (target->joint[i],dParamLoStop,0);
 		dJointSetHinge2Param (target->joint[i],dParamHiStop,0);
+
+		//to easily get rotation speed (for slip in sideway), set all geom datas to specify connected hinge2
+		wheel_data[i]->hinge2 = target->joint[i];
 	}
 
 	//to make it possible to tweak the hinge2 anchor x position:
