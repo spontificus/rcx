@@ -1189,7 +1189,7 @@ interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, t
 		in->pe0z = nxt_turd->wz;
 		
 		float xydist = pow( in->pe0x - in->ps0x, 2 ) + pow( in->pe0y - in->ps0y, 2 );
-		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.82842712;
+		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ); // 2.82842712;
 		
 		// generate bezier control points as half distance along normal vectors
 		switch ( in->axis ) {
@@ -1264,23 +1264,40 @@ interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, t
 // for any value of 't'.
 //
 void interpDraw( interp_struct *in, float t, float *p , float *n) {
+	static float cp[3], sp[3], ep[3];
+	static float s2cp[3], cp2e[3];
 	static float cn[3], sn[3], en[3];
+	float ht = t/2.0;
+	float hti = 0.5 - ht;
+	
+	s2cp[0] = in->ps0x + t * (in->scx - in->ps0x);
+	s2cp[1] = in->ps0y + t * (in->scy - in->ps0y);
+	s2cp[2] = in->ps0z + t * (in->scz - in->ps0z);
+	
+	cp2e[0] = in->tcx + t * (in->pe0x - in->tcx);
+	cp2e[1] = in->tcy + t * (in->pe0y - in->tcy);
+	cp2e[2] = in->tcz + t * (in->pe0z - in->tcz);
 
-	in->cpx = in->scx + t * (in->tcx - in->scx);
-	in->cpy = in->scy + t * (in->tcy - in->scy);
-	in->cpz = in->scz + t * (in->tcz - in->scz);
+	p[0] = s2cp[0] + t * (cp2e[0] - s2cp[0]);
+	p[1] = s2cp[1] + t * (cp2e[1] - s2cp[1]);
+	p[2] = s2cp[2] + t * (cp2e[2] - s2cp[2]);
 	
-	in->spx = in->ps0x + t * (in->cpx - in->ps0x);
-	in->spy = in->ps0y + t * (in->cpy - in->ps0y);
-	in->spz = in->ps0z + t * (in->cpz - in->ps0z);
+	/*
+	sp[0] = in->ps0x + t * (cp[0] - in->ps0x);
+	sp[1] = in->ps0y + t * (cp[1] - in->ps0y);
+	sp[2] = in->ps0z + t * (cp[2] - in->ps0z);
 	
-	in->epx = in->cpx + t * (in->pe0x - in->cpx);
-	in->epy = in->cpy + t * (in->pe0y - in->cpy);
-	in->epz = in->cpz + t * (in->pe0z - in->cpz);
+	ep[0] = cp[0] + t * (in->pe0x - cp[0]);
+	ep[1] = cp[1] + t * (in->pe0y - cp[1]);
+	ep[2] = cp[2] + t * (in->pe0z - cp[2]);
 	
-	p[0] = in->spx + t * (in->epx - in->spx);
-	p[1] = in->spy + t * (in->epy - in->spy);
-	p[2] = in->spz + t * (in->epz - in->spz);
+	p[0] = sp[0] + t * (ep[0] - sp[0]);
+	p[1] = sp[1] + t * (ep[1] - sp[1]);
+	p[2] = sp[2] + t * (ep[2] - sp[2]);
+	*/
+	
+	// more smoothing
+	//p[0] = (in->ps0x + t * (in->scx - in->ps0x)) + 
 	
 	// any better way to calculate normal?
 	cn[0] = in->snx + t * (in->enx - in->snx);
@@ -1641,9 +1658,10 @@ struct turd_struct *spiral;
 struct turd_struct *ramp;
 struct turd_struct *loop;
 struct turd_struct *helix;
+struct turd_struct *test;
 
 void initTurdTrack() {
-
+	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
@@ -1658,8 +1676,9 @@ void initTurdTrack() {
 
 void doTurdTrack() {
 	
+	drawRoad(test);
 	//drawRoad(spiral);
-	drawRoad(ramp);
+	//drawRoad(ramp);
 	//drawRoad(loop);
 	//drawRoad(helix);
 }

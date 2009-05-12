@@ -149,10 +149,6 @@ typedef struct interp_stuct {
 		float scx,scy,scz;	// closest line start
 		float tcx,tcy,tcz;  // closest line term
 
-		float cpx,cpy,cpz;  // moving pivot
-		float spx,spy,spz;  
-		float epx,epy,epz;
-		float ipx,ipy,ipz;
 		
 		// visual normals
 		float snx,sny,snz;
