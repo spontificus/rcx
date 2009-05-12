@@ -1189,7 +1189,7 @@ interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, t
 		in->pe0z = nxt_turd->wz;
 		
 		float xydist = pow( in->pe0x - in->ps0x, 2 ) + pow( in->pe0y - in->ps0y, 2 );
-		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.0;
+		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.82842712;
 		
 		// generate bezier control points as half distance along normal vectors
 		switch ( in->axis ) {
