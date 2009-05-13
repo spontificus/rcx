@@ -90,7 +90,7 @@ int graphics_init(void)
 
 	graphics_resize (screen->w, screen->h);
 
-	char *name = calloc(10+strlen(VERSION)+1, sizeof(char));
+	char *name = (char *)calloc(10+strlen(VERSION)+1, sizeof(char));
 	strcpy (name,"RollCageX ");
 	strcat (name,VERSION);
 
