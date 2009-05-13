@@ -1,8 +1,8 @@
 SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c
 
 #normal args and libs
-LIBS    = sdl ode gl glu
-ARGS    = -O2 -pipe -Wall -march=native -mtune=native -lm
+LIBS    = sdl gl glu
+ARGS    = -O2 -pipe -Wall -march=native -mtune=native -lm  -DdSINGLE -lode
 
 #windows specific args and libs
 W32LIBS = `sdl-config --static-libs --cflags --libs` `ode-config --cflags --libs` -lm -lopengl32 -lglu32
