@@ -136,7 +136,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 
 void car_physics_step(void)
 {
-	car *carp = car_head;
+	car_struct *carp = car_head;
 	bool antigrav;
 	while (carp != NULL)
 	{
@@ -326,7 +326,7 @@ void physics_step(void)
 	dSpaceCollide (space, 0, &CollisionCallback);
 
 	//se if any object "would like" to collide its components
-	object *obj = object_head;
+	object_struct *obj = object_head;
 	while (obj != NULL)
 	{
 		if (obj->collide_space)
