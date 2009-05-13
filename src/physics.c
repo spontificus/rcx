@@ -58,20 +58,39 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 	if (geom1->collide&&geom2->collide)
 	{
 		int mode = dContactSoftERP | dContactSoftCFM | dContactApprox1;
-		dReal slip,mu,erp,cfm,bounce;
-		//optional "Force-dependent-slip" (FDS) if requested (wheels)
-		if (geom1->use_slip||geom2->use_slip)
-		{
-			mode |= dContactSlip1 | dContactSlip2;
+		dReal slip,mu,erp,cfm;
+		dReal bounce = 0;
+		dVector3 fdir = {0,0,0};
 
-			mu = dInfinity;
-			slip = ((geom1->slip)+(geom2->slip))/2;
-		}
-		else //no slip needed
+		mu = (geom1->mu)*(geom2->mu);
+		slip = 0.0;
+
+		//determine if _one_of the geoms is a wheel
+		geom_data *wheel = NULL;
+		if (geom1->wheel&&!geom2->wheel)
+			wheel = geom1;
+		else if (!geom1->wheel&&geom2->wheel)
+			wheel = geom2;
+
+		if (wheel)
 		{
-			mu = ((geom1->mu)+(geom2->mu))/2;
-			slip = 0.0;
+			mode |= dContactSlip1 | dContactFDir1; //add slip calculations and specified direction
+
+			//get slip value (based on the two geoms' slip value and the wheel's rotation speed)
+			dReal speed = dJointGetHinge2Angle2Rate (wheel->hinge2);
+
+			if (speed < 0)
+				speed = -speed;
+
+			slip = (geom1->slip)*(geom2->slip)*speed;
+
+			//now get the axis direction of the wheel (slip in the right direction) note: axis is along Z
+			const dReal *rot = dGeomGetRotation(wheel->geom_id);
+			fdir[0] = rot[2];
+			fdir[1] = rot[6];
+			fdir[2] = rot[10];
 		}
+
 		//optional bouncyness (good for wheels?)
 		if (geom1->bounce||geom2->bounce)
 		{
@@ -79,8 +98,6 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 
 			bounce = ((geom1->bounce)+(geom2->bounce))/2;
 		}
-		else
-			bounce = 0.0;
 
 		erp = ((geom1->erp)+(geom2->erp))/2;
 		cfm = ((geom1->cfm)+(geom2->cfm))/2;
@@ -88,9 +105,12 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		int i;
 		for (i=0; i<count; ++i)
 		{
-			contact[i].surface.slip1 = slip;
-			contact[i].surface.slip2 = slip;
+			contact[i].fdir1[0] = fdir[0];
+			contact[i].fdir1[1] = fdir[1];
+			contact[i].fdir1[2] = fdir[2];
+
 			contact[i].surface.mode = mode;
+			contact[i].surface.slip1 = slip;
 			contact[i].surface.mu = mu;
 			contact[i].surface.soft_erp = erp;
 			contact[i].surface.soft_cfm = cfm;
@@ -116,7 +136,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 
 void car_physics_step(void)
 {
-	car *carp = car_head;
+	car_struct *carp = car_head;
 	bool antigrav;
 	while (carp != NULL)
 	{
@@ -306,7 +326,7 @@ void physics_step(void)
 	dSpaceCollide (space, 0, &CollisionCallback);
 
 	//se if any object "would like" to collide its components
-	object *obj = object_head;
+	object_struct *obj = object_head;
 	while (obj != NULL)
 	{
 		if (obj->collide_space)

@@ -32,11 +32,11 @@
 //local stuff:
 #include "shared.h" //custom data definitions
 
-car *venom;
-script *box; //keep track of our loaded debug box
-car *focused_car = NULL;
+car_struct *venom;
+script_struct *box; //keep track of our loaded debug box
+car_struct *focused_car = NULL;
 
-void printlog (int, char*, ...); //prototype (for included functions
+void printlog (int, const char*, ...); //prototype (for included functions
 
 //#include "scene.c"
 #include "graphics.c"
@@ -50,7 +50,7 @@ unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
 
 //print log message - if it's below or equal to the current verbosity level
-void printlog (int level, char *text, ...)
+void printlog (int level, const char *text, ...)
 {
 	if (level <= internal.verbosity)
 	{
@@ -122,7 +122,7 @@ int main (int argc, char *argv[])
 			break;
 		}
 
-	if (load_conf ("data/internal.conf", &internal, internal_index))
+	if (load_conf ((char *)"data/internal.conf", (char *)&internal, internal_index))
 		return -1;
 
 	if (graphics_init())
@@ -130,11 +130,11 @@ int main (int argc, char *argv[])
 
 	//<insert menu here>
 	
-	profile *prof = load_profile ("data/profiles/default");
+	profile *prof = load_profile ((char *)"data/profiles/default");
 	if (!prof)
 		return -1;
 
-	venom = load_car("data/teams/Nemesis/cars/Venom");
+	venom = load_car((char *)"data/teams/Nemesis/cars/Venom");
 	if (!venom)
 		emergency_quit();
 	prof->car = venom;
@@ -146,11 +146,11 @@ int main (int argc, char *argv[])
 		return -1;
 	}
 
-	if (load_track("data/worlds/Sandbox/tracks/Box"))
+	if (load_track((char *)"data/worlds/Sandbox/tracks/Box"))
 		emergency_quit();
 
 	//load box for online spawning
-	box = load_object("data/objects/misc/box");
+	box = load_object((char *)"data/objects/misc/box");
 	if (!box)
 		emergency_quit();
 

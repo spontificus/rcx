@@ -83,7 +83,7 @@ char *get_word (FILE *fp, bool newline_sensitive)
 		return get_word(fp, newline_sensitive);
 	}
 
-	char *word = calloc(l+1, sizeof(char));
+	char *word = (char *)calloc(l+1, sizeof(char));
 
 	fread (word, sizeof(char), l, fp);
 
@@ -105,7 +105,7 @@ char **get_word_list (FILE *fp)
 	//get first word
 	if ((word0 = get_word(fp, false)))
 	{
-		char **word = calloc(MAX_WORDS, sizeof(char*));
+		char **word = (char **)calloc(MAX_WORDS, sizeof(char*));
 		word[0] = word0;
 		int i;
 		for (i=1; (word[i]=get_word(fp,true)); ++i)
@@ -140,7 +140,7 @@ void free_word_list (char **target)
 //loads configuration file to memory (using index)
 //
 //(you may indent my code?)
-int load_conf (char *name, void *memory, data_index index)
+int load_conf (char *name, char *memory, struct data_index index[])
 {
  printlog(1, "-> loading conf file: %s\n", name);
  FILE *fp;
@@ -163,7 +163,7 @@ int load_conf (char *name, void *memory, data_index index)
 #endif
   int i,j,tmp;
   char **word;
-  char *argscan;
+  const char *argscan;
   size_t argsize;
   while ((word=get_word_list(fp)))
   {
@@ -241,6 +241,20 @@ int load_conf (char *name, void *memory, data_index index)
  }
 }
 
+#ifdef __cplusplus
+// required to iterate through an enum in C++
+template <class Enum>
+Enum & enum_increment(Enum & value, Enum begin, Enum end)
+{
+	return value = (value == end) ? begin : Enum(value + 1);
+}
+
+SDLKey & operator++ (SDLKey & key)
+{
+	return enum_increment(key, SDLK_FIRST, SDLK_LAST);
+}
+#endif
+
 //translate button name to key number
 SDLKey get_key (char *name)
 {
@@ -266,17 +280,17 @@ profile *load_profile (char *path)
 	profile *prof = allocate_profile();
 
 	//load personal conf
-	char *conf=calloc(strlen(path)+13+1,sizeof(char));//+1 for \0
+	char *conf=(char *)calloc(strlen(path)+13+1,sizeof(char));//+1 for \0
 	strcpy (conf,path);
 	strcat (conf,"/profile.conf");
 
-	if (load_conf(conf, prof, profile_index))
+	if (load_conf(conf, (char *)prof, profile_index))
 		return NULL;
 
 	free (conf);
 
 	//load key list
-	char *list=calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
+	char *list=(char *)calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
 	strcpy (list,path);
 	strcat (list,"/keys.lst");
 
@@ -311,7 +325,7 @@ profile *load_profile (char *path)
 		  if (strcmp(profile_key_list[i].name,word[0]) == 0)
 		  {
 		   printlog(2, " * match found\n");
-		   *(SDLKey*)((void*)prof+profile_key_list[i].offset) = get_key(word[1]);
+		   *(SDLKey*)((char*)prof+profile_key_list[i].offset) = get_key(word[1]);
 		   break;
 		  }
 
@@ -435,11 +449,11 @@ void debug_draw_sphere (GLuint list, GLfloat d, GLfloat colour[],
 
 //load data for spawning object (object data), hard-coded debug version
 //(objects are loaded as script instructions, executed for spawning)
-script *load_object(char *path)
+script_struct *load_object(char *path)
 {
 	printlog(1, "-> Loading object: %s", path);
 
-	script *tmp = script_head;
+	script_struct *tmp = script_head;
 	//see if already loaded
 	while (tmp)
 	{
@@ -452,7 +466,7 @@ script *load_object(char *path)
 	}
 
 	//new object
-	script *script;
+	script_struct *script;
 	
 	//currently no scripting, only hard-coded solutions
 	if (!strcmp(path,"data/objects/misc/box"))
@@ -461,7 +475,7 @@ script *load_object(char *path)
 		printlog(1, " (hard-coded box)\n");
 
 		script = allocate_script();
-		script->name = calloc(strlen(path) + 1, sizeof(char));
+		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		//the debug box will only spawn one component - one "3D file"
@@ -474,7 +488,7 @@ script *load_object(char *path)
 		printlog(1, " (hard-coded flipper)\n");
 
 		script = allocate_script();
-		script->name = calloc(strlen(path) + 1, sizeof(char));
+		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		script->graphics_debug1 = allocate_file_3d();
@@ -489,7 +503,7 @@ script *load_object(char *path)
 		printlog(1, " (hard-coded \"molecule\")\n");
 
 		script = allocate_script();
-		script->name = calloc(strlen(path) + 1, sizeof(char));
+		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		//draw approximate sphere
@@ -506,7 +520,7 @@ script *load_object(char *path)
 
 		//name
 		script = allocate_script();
-		script->name = calloc(strlen(path) + 1, sizeof(char));
+		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
 		//create graphics
@@ -551,7 +565,7 @@ script *load_object(char *path)
 }
 
 //bind two bodies together using fixed joint (simplify connection of many bodies)
-void debug_joint_fixed(dBodyID body1, dBodyID body2, object *obj)
+void debug_joint_fixed(dBodyID body1, dBodyID body2, object_struct *obj)
 {
 	dJointID joint;
 	joint = dJointCreateFixed (world, 0);
@@ -559,14 +573,14 @@ void debug_joint_fixed(dBodyID body1, dBodyID body2, object *obj)
 	dJointSetFixed (joint);
 
 	//use feedback
-	joint_data *data = allocate_joint_data (joint, obj, true);
+	joint_data *data = (joint_data *)allocate_joint_data (joint, obj, true);
 	data->threshold = 25000;
 	data->buffer = 1000;
 }
 
 //spawn a "loaded" (actually hard-coded) object
 //TODO: rotation
-void spawn_object(script *script, dReal x, dReal y, dReal z)
+void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 {
 	printlog(1, "-> Spawning object at: %f %f %f", x,y,z);
 	//prettend to be executing the script... just load debug values from
@@ -619,7 +633,7 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 	//
 
 	//flipper surface
-	object *obj = allocate_object(true, true);
+	object_struct *obj = allocate_object(true, true);
 	
 	dGeomID geom  = dCreateBox (0, 8,8,0.5); //geom
 	geom_data *data = allocate_geom_data(geom, obj);
@@ -657,7 +671,7 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object *obj = allocate_object(true, true);
+	object_struct *obj = allocate_object(true, true);
 
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
@@ -727,7 +741,7 @@ void spawn_object(script *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object *obj = allocate_object(true, false); //no space (no geoms collide)
+	object_struct *obj = allocate_object(true, false); //no space (no geoms collide)
 	dBodyID old_body[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 	dBodyID old_pillar[4] = {0,0,0,0};
 
@@ -1687,11 +1701,11 @@ void doTurdTrack() {
 int load_track (char *path)
 {
 	printlog(1, "=> Loading track: %s\n", path);
-	char *conf=calloc(strlen(path)+11+1,sizeof(char));//+1 for \0
+	char *conf=(char *)calloc(strlen(path)+11+1,sizeof(char));//+1 for \0
 	strcpy (conf,path);
 	strcat (conf,"/track.conf");
 
-	if (load_conf(conf, &track, track_index))
+	if (load_conf(conf, (char *)&track, track_index))
 		return -1;
 
 	free (conf);
@@ -1825,7 +1839,7 @@ int load_track (char *path)
 
 
 	//now lets load some objects!
-	char *list=calloc(strlen(path)+12+1,sizeof(char));//+1 for \0
+	char *list=(char *)calloc(strlen(path)+12+1,sizeof(char));//+1 for \0
 	strcpy (list,path);
 	strcat (list,"/objects.lst");
 
@@ -1860,8 +1874,8 @@ int load_track (char *path)
 		}
 		else
 		{
-			script *obj;
-			char *obj_list = calloc(strlen(w[1])+13+1, sizeof(char));
+			script_struct *obj;
+			char *obj_list = (char *)calloc(strlen(w[1])+13+1, sizeof(char));
 			strcpy (obj_list,"data/objects/");
 			strcat (obj_list,w[1]);
 
@@ -1876,7 +1890,7 @@ int load_track (char *path)
 			{
 				if (w[0][0] == '>'&&w[1][0] != '\0')
 				{
-					obj_list = calloc(strlen(w[1])+13+1,
+					obj_list = (char *)calloc(strlen(w[1])+13+1,
 							sizeof(char));
 					strcpy (obj_list,"data/objects/");
 					strcat (obj_list,w[1]);
@@ -1916,12 +1930,12 @@ int load_track (char *path)
 }
 
 
-car *load_car (char *path)
+car_struct *load_car (char *path)
 {
 	printlog(1, "=> Loading car: %s", path);
 
 	//see if already loaded
-	car *tmp = car_head;
+	car_struct *tmp = car_head;
 	while (tmp)
 	{
 		if (!strcmp(tmp->name, path))
@@ -1934,15 +1948,15 @@ car *load_car (char *path)
 
 	printlog(1, "\n");
 	//apparently not
-	car *target = allocate_car();
-	target->name = calloc(strlen(path) + 1, sizeof(char));
+	car_struct *target = allocate_car();
+	target->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 	strcpy (target->name, path);
 
-	char *conf=calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
+	char *conf=(char *)calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
 	strcpy (conf,path);
 	strcat (conf,"/car.conf");
 
-	if (load_conf(conf, target, car_index))
+	if (load_conf(conf, (char *)target, car_index))
 		return NULL;
 
 	free (conf);
@@ -2009,7 +2023,7 @@ car *load_car (char *path)
 }
 
 
-void spawn_car(car *target, dReal x, dReal y, dReal z)
+void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 {
 	printlog(1, "-> spawning car at: %f %f %f\n", x,y,z);
 
@@ -2100,7 +2114,7 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 	dGeomSetOffsetPosition(geom,0,0,s[3]);
 
 	//wheels:
-	geom_data *wheel_data;
+	geom_data *wheel_data[4];
 	dGeomID wheel_geom;
 	dBodyID wheel_body[4];
 	for (i=0;i<4;++i)
@@ -2122,17 +2136,17 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 		dGeomSetBody (wheel_geom, wheel_body[i]);
 
 		//allocate (geom) data
-		wheel_data = allocate_geom_data(wheel_geom, target->object);
+		wheel_data[i] = allocate_geom_data(wheel_geom, target->object);
 
 		//friction
-		wheel_data->mu = target->wheel_mu;
-		wheel_data->use_slip = true;
-		wheel_data->slip = target->wheel_slip;
-		wheel_data->bounce = target->wheel_bounce;
+		wheel_data[i]->mu = target->wheel_mu;
+		wheel_data[i]->wheel = true;
+		wheel_data[i]->slip = target->wheel_slip;
+		wheel_data[i]->bounce = target->wheel_bounce;
 
 		//hardness
-		wheel_data->erp = target->wheel_erp;
-		wheel_data->cfm = target->wheel_cfm;
+		wheel_data[i]->erp = target->wheel_erp;
+		wheel_data[i]->cfm = target->wheel_cfm;
 
 
 		//drag
@@ -2149,7 +2163,7 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 		odata->rot_drag[2] = target->wheel_rotation_drag[2];
 
 		//graphics
-		wheel_data->file_3d = target->wheel_graphics;
+		wheel_data[i]->file_3d = target->wheel_graphics;
 		
 		//(we need easy access to wheel body ids if using finite rotation)
 		target->wheel_body[i] = wheel_body[i];
@@ -2192,6 +2206,9 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 		//lock steering axis on all wheels
 		dJointSetHinge2Param (target->joint[i],dParamLoStop,0);
 		dJointSetHinge2Param (target->joint[i],dParamHiStop,0);
+
+		//to easily get rotation speed (for slip in sideway), set all geom datas to specify connected hinge2
+		wheel_data[i]->hinge2 = target->joint[i];
 	}
 
 	//to make it possible to tweak the hinge2 anchor x position:
@@ -2208,7 +2225,7 @@ void spawn_car(car *target, dReal x, dReal y, dReal z)
 //not used at the moment, might need some tweaking...
 
 //removes an object
-void remove_object(object *target)
+void remove_object(object_struct *target)
 {
 	//lets just hope the given pointer is ok...
 	printlog(1, " > remove object");
@@ -2245,7 +2262,7 @@ void remove_object(object *target)
 	printlog(1, "\n");
 }
 
-void remove_car (car* target)
+void remove_car (car_struct* target)
 {
 	printlog(1, "removing car\n");
 	remove_object (target->object);
