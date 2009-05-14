@@ -1169,6 +1169,8 @@ turd_struct *loadTurd(char *filename) {
 	turd_head
 	*/
 	
+	head_turd->calllist = 0;
+	head_turd->redraw = 1;
 
 
 	return head_turd;
@@ -1209,7 +1211,7 @@ interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, t
 		in->pe0z = nxt_turd->wz;
 		
 		float xydist = pow( in->pe0x - in->ps0x, 2 ) + pow( in->pe0y - in->ps0y, 2 );
-		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ) / 2.0;
+		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ); // 2.82842712;
 		
 		// generate bezier control points as half distance along normal vectors
 		switch ( in->axis ) {
@@ -1284,23 +1286,38 @@ interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, t
 // for any value of 't'.
 //
 void interpDraw( interp_struct *in, float t, float *p , float *n) {
+//	static float cp[3], sp[3], ep[3];
+	static float s2cp[3], cp2e[3];
 	static float cn[3], sn[3], en[3];
+	
+	s2cp[0] = in->ps0x + t * (in->scx - in->ps0x);
+	s2cp[1] = in->ps0y + t * (in->scy - in->ps0y);
+	s2cp[2] = in->ps0z + t * (in->scz - in->ps0z);
+	
+	cp2e[0] = in->tcx + t * (in->pe0x - in->tcx);
+	cp2e[1] = in->tcy + t * (in->pe0y - in->tcy);
+	cp2e[2] = in->tcz + t * (in->pe0z - in->tcz);
 
-	in->cpx = in->scx + t * (in->tcx - in->scx);
-	in->cpy = in->scy + t * (in->tcy - in->scy);
-	in->cpz = in->scz + t * (in->tcz - in->scz);
+	p[0] = s2cp[0] + t * (cp2e[0] - s2cp[0]);
+	p[1] = s2cp[1] + t * (cp2e[1] - s2cp[1]);
+	p[2] = s2cp[2] + t * (cp2e[2] - s2cp[2]);
 	
-	in->spx = in->ps0x + t * (in->cpx - in->ps0x);
-	in->spy = in->ps0y + t * (in->cpy - in->ps0y);
-	in->spz = in->ps0z + t * (in->cpz - in->ps0z);
+	/*
+	sp[0] = in->ps0x + t * (cp[0] - in->ps0x);
+	sp[1] = in->ps0y + t * (cp[1] - in->ps0y);
+	sp[2] = in->ps0z + t * (cp[2] - in->ps0z);
 	
-	in->epx = in->cpx + t * (in->pe0x - in->cpx);
-	in->epy = in->cpy + t * (in->pe0y - in->cpy);
-	in->epz = in->cpz + t * (in->pe0z - in->cpz);
+	ep[0] = cp[0] + t * (in->pe0x - cp[0]);
+	ep[1] = cp[1] + t * (in->pe0y - cp[1]);
+	ep[2] = cp[2] + t * (in->pe0z - cp[2]);
 	
-	p[0] = in->spx + t * (in->epx - in->spx);
-	p[1] = in->spy + t * (in->epy - in->spy);
-	p[2] = in->spz + t * (in->epz - in->spz);
+	p[0] = sp[0] + t * (ep[0] - sp[0]);
+	p[1] = sp[1] + t * (ep[1] - sp[1]);
+	p[2] = sp[2] + t * (ep[2] - sp[2]);
+	*/
+	
+	// more smoothing
+	//p[0] = (in->ps0x + t * (in->scx - in->ps0x)) + 
 	
 	// any better way to calculate normal?
 	cn[0] = in->snx + t * (in->enx - in->snx);
@@ -1327,20 +1344,11 @@ void interpDraw( interp_struct *in, float t, float *p , float *n) {
 
 
 
-
-trimesh_struct *calcTrimesh(struct turd_struct *head) {
+void initTrimesh(struct turd_struct *head, int numx, int numy) {
 	struct turd_struct *cur_turd = head;
-	struct turd_struct *nxt_turd;
-	struct turd_struct *lct,*lnt, *rct,*rnt;
-	int i;	
-	float t;
-	
-	if ( head->tri ) {
-		// clear out old data
-		//dGeomTriMeshDataDestroy(head->tri->dataid);
-		//dSpaceRemove(space, head->tri->meshid);
+	int t_count=0;
 		
-		// is this automatic?
+	if ( head->tri ) {
 		free(head->tri->ode_verts);
 		free(head->tri->ode_indices);
 	} else {
@@ -1357,170 +1365,126 @@ trimesh_struct *calcTrimesh(struct turd_struct *head) {
 	}
 
 	struct trimesh_struct *tri = head->tri;
-
-	dReal *ode_verts = tri->ode_verts;
-	unsigned int *ode_indices = tri->ode_indices;
 	
-	
-	float ls[3];
-	float cs[3];
-	float rs[3];
-
-	interp_struct lin;
-	interp_struct cin;
-	interp_struct rin;
-	
-	int num=10;
-	int t_count=0;
-	int v_count=0;
-	int i_count=0;
-
-	cur_turd = head;
-	while (cur_turd) {	
-		cur_turd = cur_turd->nxt;
-		t_count++;
-	}
-		
-	// allocate memory
-	ode_verts = calloc(1, t_count * num * 4 * 4 * sizeof(dVector3));
-	ode_indices = calloc(1, t_count * num * 4 * 4 * sizeof(int));
-	printf("Making: %d verts, %d indices\n", t_count * num * 4 * 3, t_count * num * 4 * 4);
-
-	float n[3];
-
-	cur_turd = head;
+	// count how many triangles we're gonna need
 	while (cur_turd->nxt) {	
-		nxt_turd = cur_turd->nxt;
-	//printf("---\n");
-		lct = cur_turd->l;
-		lnt = nxt_turd->l;
-		rct = cur_turd->r;
-		rnt = nxt_turd->r;
-	
-		// generate 3 interpolation structs
-		// xxx - should store these for later, no?
-		interpInit(&cin, Y_AXIS, cur_turd, nxt_turd);
-		interpInit(&lin, Y_AXIS, lct, lnt);
-		interpInit(&rin, Y_AXIS, rct, rnt);
+		cur_turd = cur_turd->nxt;
 		
-		float plx = lct->wx;
-		float ply = lct->wy;
-		float plz = lct->wz;
-		
-		float pcx = cur_turd->wx;
-		float pcy = cur_turd->wy;
-		float pcz = cur_turd->wz;
-		
-		float prx = rct->wx;
-		float pry = rct->wy;
-		float prz = rct->wz;
-		
-		// add first three vertices
-		ode_verts[v_count++] = plx;
-		ode_verts[v_count++] = ply;
-		ode_verts[v_count++] = plz;
-		v_count++;
-		
-		ode_verts[v_count++] = pcx;
-		ode_verts[v_count++] = pcy;
-		ode_verts[v_count++] = pcz;
-		v_count++;
-		
-		ode_verts[v_count++] = prx;
-		ode_verts[v_count++] = pry;
-		ode_verts[v_count++] = prz;
-		v_count++;			
-				
-		
-		for (i=0; i<=num; i++) {
-			t = (float)i/num;
-			
-			interpDraw( &lin, t, (float *)&ls, (float *)&n);
-			interpDraw( &cin, t, (float *)&cs, (float *)&n );
-			interpDraw( &rin, t, (float *)&rs, (float *)&n );
-					
-			plx = ls[0];
-			ply = ls[1];
-			plz = ls[2];
-			
-			pcx = cs[0];
-			pcy = cs[1];
-			pcz = cs[2];
-			
-			prx = rs[0];
-			pry = rs[1];
-			prz = rs[2];
-			
-			ode_verts[v_count++] = plx;
-			ode_verts[v_count++] = ply;
-			ode_verts[v_count++] = plz;
-			v_count++;
-			
-			ode_verts[v_count++] = pcx;
-			ode_verts[v_count++] = pcy;
-			ode_verts[v_count++] = pcz;
-			v_count++;
-			
-			ode_verts[v_count++] = prx;
-			ode_verts[v_count++] = pry;
-			ode_verts[v_count++] = prz;
-			v_count++;
-			
-			int p_start = (v_count / 4) - 6;
-			int s_start = (v_count / 4) - 3;
-			
-			
-			// should be clockwise, according to manual,
-			// but wheels don't interact with it
-			// are they wound the wrong way?
-			if (0) {
-				// clockwise winding
-				ode_indices[i_count++] = p_start+1;
-				ode_indices[i_count++] = p_start;
-				ode_indices[i_count++] = s_start;
-				
-				ode_indices[i_count++] = s_start;
-				ode_indices[i_count++] = s_start+1;
-				ode_indices[i_count++] = p_start+1;
-				
-				ode_indices[i_count++] = p_start+2;
-				ode_indices[i_count++] = p_start+1;
-				ode_indices[i_count++] = s_start+1;
-				
-				ode_indices[i_count++] = s_start+1;
-				ode_indices[i_count++] = s_start+2;
-				ode_indices[i_count++] = p_start+2;
-			} else {
-				// anti-clockwise winding
-				ode_indices[i_count++] = s_start;
-				ode_indices[i_count++] = p_start;
-				ode_indices[i_count++] = p_start+1;
-				
-				ode_indices[i_count++] = p_start+1;
-				ode_indices[i_count++] = s_start+1;
-				ode_indices[i_count++] = s_start;
-				
-				ode_indices[i_count++] = s_start+1;
-				ode_indices[i_count++] = p_start+1;
-				ode_indices[i_count++] = p_start+2;
-
-				ode_indices[i_count++] = p_start+2;
-				ode_indices[i_count++] = s_start+2;
-				ode_indices[i_count++] = s_start+1;
-			}
-		}
-			
-	
-	
-		cur_turd = nxt_turd;
+		// 2 for each left + right patch
+		t_count += 2;
 	}
 	
-	dGeomTriMeshDataBuildSimple( tri->dataid, ode_verts, v_count, ode_indices, i_count );
+//	printf("%d sections\n", t_count);
+	
+	// allocate memory
+	tri->v_count = t_count * (numx+1) * (numy+1);
+	tri->ode_verts = calloc(1, tri->v_count * sizeof(dVector4));
+	
+	//tri->i_count = t_count * (((2 * numx) - 2) * 3) * numy;
+	tri->i_count = t_count * numx * numy * 2 * 3;
+	tri->ode_indices = calloc(1, tri->i_count * sizeof(int));
+	
+	head->tri = tri;
+	
+	//printf("i:%d\n", tri->i);
+}
+
+
+void addTrimeshVert(struct trimesh_struct *t, int i, float *v) {
+	t->ode_verts[i][0] = v[0];
+	t->ode_verts[i][1] = v[1];
+	t->ode_verts[i][2] = v[2];
+}
+
+
+void debugTrimesh(struct trimesh_struct *tri) {
+	int i;
+	int t = 0;
+	
+	
+	for ( i = 0; i < tri->i_count; i += 3 ) {
+		int i1 = tri->ode_indices[i];
+		int i2 = tri->ode_indices[i+1];
+		int i3 = tri->ode_indices[i+2];
+		
+//		printf("i1:%d i2:%d i3:%d\n", i1,i2,i3);
+		
+		float v1x = tri->ode_verts[i1][0];
+		float v1y = tri->ode_verts[i1][1];
+		float v1z = tri->ode_verts[i1][2];
+		
+		float v2x = tri->ode_verts[i2][0];
+		float v2y = tri->ode_verts[i2][1];
+		float v2z = tri->ode_verts[i2][2];
+		
+		float v3x = tri->ode_verts[i3][0];
+		float v3y = tri->ode_verts[i3][1];
+		float v3z = tri->ode_verts[i3][2];
+		
+		glBegin(GL_LINE_STRIP);
+		if ( t == 0 ) {
+			glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, black);
+		} else {
+			glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
+		}
+		glVertex3f(v1x, v1y, v1z);
+		glVertex3f(v2x, v2y, v2z);
+		glVertex3f(v3x, v3y, v3z);
+		glVertex3f(v1x, v1y, v1z);
+		
+		glEnd();
+		
+		t = 1-t;
+	}
+}
+
+void linkTrimesh(struct turd_struct *head, int numx, int numy) {
+	struct turd_struct *cur_turd = head;
+	struct turd_struct *lr_turd;
+	int xloop,yloop;
+	int i = 0;
+	int v_off = 0;
+	struct trimesh_struct *tri= head->tri;
+	
+	while ( cur_turd->nxt ) {
+		lr_turd = cur_turd->l;
+		while ( lr_turd->r ) {
+			for (yloop = 0; yloop < numy; yloop++) {
+				for (xloop = 0; xloop < numx; xloop++) {
+
+					// anticlockwise winding
+					tri->ode_indices[i++] = v_off + (numx+1);
+					tri->ode_indices[i++] = v_off;
+					tri->ode_indices[i++] = v_off + (numx+1) + 1;
+					
+					tri->ode_indices[i++] = v_off + (numx+1) + 1;
+					tri->ode_indices[i++] = v_off;
+					tri->ode_indices[i++] = v_off + 1;				
+					
+					// skip to next vertex
+					v_off++;
+				}
+				// skip to beginning of next row
+				v_off++;
+			}	
+			
+			// we're at the end of a patch, skip the next row of vertices as
+			// they've already been linked
+			v_off +=  numx + 1;
+			
+			lr_turd = lr_turd->r;
+		}
+		
+		cur_turd = cur_turd->nxt;
+	}
+
+/*
+	printf("num ver:%d  v:%d\n", tri->v_count, v_off);
+	printf("num ind:%d  i:%d\n", tri->i_count, i);
+*/
+	
+	dGeomTriMeshDataBuildSimple( tri->dataid, tri->ode_verts[0], tri->v_count, tri->ode_indices, tri->i_count );
 	dGeomTriMeshSetData( tri->meshid, tri->dataid );
-	
-	
-	
-	return tri;
 }
 
 
@@ -1553,7 +1517,7 @@ void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, int
 }
 
 
-void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
+void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
 		interp_struct lin;
 		interp_struct rin;
 		interp_struct bin;
@@ -1570,21 +1534,20 @@ void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_str
 		float xti,yti;
 		float ytn;
 		float ytni;
-			
-		float nmx,nmy,nmz;
-
+		int i=t->i;
+	
 		float v[3];
 		float n[3];
-
-		
+	
 		v[0] = 0;
 		v[1] = 0;
 		v[2] = 0;
 	
 		int xn = 5;
 		int yn = 10;
-		glEnable(GL_NORMALIZE);
+		
 		for (yloop=0; yloop<yn; yloop++) {
+			
 			yt = (float)yloop/yn;
 			yti = (float)(1.0 - yt);
 			
@@ -1600,59 +1563,94 @@ void doRoadPatch(struct turd_struct *bl, struct turd_struct *br, struct turd_str
 				interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
 				glNormal3f(n[0], n[1], n[2]);
 				glVertex3f(v[0], v[1], v[2]);
+				
+				// only need to add the currently interpolated vert, not the next one
+				// unless it's the last y-row
+				addTrimeshVert(t, i++, v);
 
 				interpPatch(xt,ytn,v,n, &lin,&rin,&bin,&tin);
 				glNormal3f(n[0], n[1], n[2]);
 				glVertex3f(v[0], v[1], v[2]);
 				
+				// if we're in the last y loop pass, put in the top row of vertices
+				if ( yloop == yn-1 ) {
+					addTrimeshVert(t, i+xn, v);
+				}
+				
 			}
 			glEnd();
 		
 		}
-		glDisable(GL_NORMALIZE);
+		
+		// account for the top row of vertices
+		i += xn + 1;
+		//printf("i:%d\n", i);
+		t->i = i;
 }
 
 
 void drawRoad(struct turd_struct *head) {
-	struct turd_struct *cur_turd = head;
-	struct turd_struct *nxt_turd;	
-	struct turd_struct *lct,*lnt, *rct,*rnt;
 
+	if (head->redraw == 1) {
+		struct turd_struct *cur_turd = head;
+		struct turd_struct *nxt_turd;	
+		struct turd_struct *lct,*lnt, *rct,*rnt;
 
-	glMaterialfv (GL_FRONT, GL_DIFFUSE, gray);
-	glMaterialfv (GL_FRONT, GL_AMBIENT, black);
-	glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
-	//glMateriali (GL_FRONT, GL_SHININESS, 1);
-	
-
-
-	cur_turd = head;
-	while (cur_turd->nxt) {	
-		nxt_turd = cur_turd->nxt;
-	//printf("---\n");
-		lct = cur_turd->l;
-		lnt = nxt_turd->l;
-		rct = cur_turd->r;
-		rnt = nxt_turd->r;
+		if ( head->calllist != 0 ) {
+			glDeleteLists( head->calllist, 1 );
+		}
 		
-		doRoadPatch(lct,cur_turd, lnt,nxt_turd);
-		doRoadPatch(cur_turd,rct, nxt_turd,rnt);
-	
-
-		cur_turd = nxt_turd;
-	}
+		head->calllist = glGenLists(1);
 		
-	if ( head->tri == NULL ) {
-		head->tri = calcTrimesh( head );
+		glNewList( head->calllist, GL_COMPILE );
+		
+		glMaterialfv (GL_FRONT, GL_DIFFUSE, gray);
+		glMaterialfv (GL_FRONT, GL_AMBIENT, black);
+		glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
+		
+		initTrimesh(head, 5, 10);
+		
+		head->tri->i = 0;
+
+		cur_turd = head;
+		while (cur_turd->nxt) {	
+			nxt_turd = cur_turd->nxt;
+
+			lct = cur_turd->l;
+			lnt = nxt_turd->l;
+			rct = cur_turd->r;
+			rnt = nxt_turd->r;
+
+			// do left side of road
+			doRoadPatch(head->tri, lct,cur_turd, lnt,nxt_turd);
+			
+			// do right side of road
+			doRoadPatch(head->tri, cur_turd,rct, nxt_turd,rnt);
+
+			cur_turd = nxt_turd;
+		}
+			
+
+		linkTrimesh(head, 5, 10);
+
+		//debugTrimesh(head->tri);
+		
+		glEndList();	
+		
+		head->redraw = 0;
 	}
+	
+	glCallList( head->calllist );
+	
 }
 
 void recalcTurd( turd_struct *t ) {
 	calcTurd( t );
-	
-	// technically we don't need to do this if nothing is running
+	t->redraw = 1;
+	// technically we don't need to recalculate ODE in editing mode
 	if ( editing == 0 ) {
-		calcTrimesh( t );
+		
+		//calcTrimesh( t );
 	}
 }
 
@@ -1664,7 +1662,6 @@ struct turd_struct *helix;
 struct turd_struct *test;
 
 void initTurdTrack() {
-
 	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");	
 	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
