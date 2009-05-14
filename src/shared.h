@@ -100,64 +100,6 @@ typedef struct file_3d_struct {
 	struct file_3d_struct *next;
 } file_3d_struct;
 
-typedef struct trimesh_struct {
-	dGeomID meshid;
-	dTriMeshDataID dataid;
-	
-	dReal *ode_verts;
-	unsigned int *ode_indices;
-	struct geom_data *data;
-	int v_count;
-	int i_count;
-} trimesh_struct;
-
-typedef struct turd_struct {
-	float x,y,z;
-	float a,b,c;
-	float xnx,xny,xnz;
-	float ynx,yny,ynz;
-	float znx,zny,znz;
-	float anx,any,anz;
-	float wx,wy,wz;
-	
-	GLfloat m[16];
-	struct turd_struct *l;
-	struct turd_struct *r;
-	struct turd_struct *pre;
-	struct turd_struct *nxt;
-	
-	// should be elsewhere
-	struct trimesh_struct *tri;
-} turd_struct;
-
-turd_struct *turd_head = NULL;
-turd_struct *edit_t = NULL;
-turd_struct *edit_h = NULL;
-turd_struct edit_b;
-int edit_m = 1;
-
-#define X_AXIS 1
-#define Y_AXIS 2
-#define Z_AXIS 3
-
-typedef struct interp_stuct {
-		float ps0x,ps0y,ps0z;
-		float ps1x,ps1y,ps1z;
-		float pe0x,pe0y,pe0z;
-		float pe1x,pe1y,pe1z;
-
-		float scx,scy,scz;	// closest line start
-		float tcx,tcy,tcz;  // closest line term
-
-		
-		// visual normals
-		float snx,sny,snz;
-		float enx,eny,enz;
-		
-		// Which axis are we interpolating along
-		int axis;
-
-} interp_struct;
 
 //graphics_list *graphics_list_head = NULL;
 file_3d_struct *file_3d_head = NULL;
@@ -531,6 +473,73 @@ struct data_index track_index[] = {
 //TODO: weapons
 
 
+typedef struct trimesh_struct {
+	dGeomID meshid;
+	dTriMeshDataID dataid;
+	
+	dReal *ode_verts;
+	unsigned int *ode_indices;
+	struct geom_data *data;
+	int v_count;
+	int i_count;
+	int i;
+} trimesh_struct;
+
+typedef struct turd_struct {
+	float x,y,z;
+	float a,b,c;
+	float xnx,xny,xnz;
+	float ynx,yny,ynz;
+	float znx,zny,znz;
+	float anx,any,anz;
+	float wx,wy,wz;
+	
+	GLfloat m[16];
+	struct turd_struct *l;
+	struct turd_struct *r;
+	struct turd_struct *pre;
+	struct turd_struct *nxt;
+	
+	// should be elsewhere
+	struct trimesh_struct *tri;
+	int calllist;
+	int redraw;
+	
+} turd_struct;
+
+turd_struct *turd_head = NULL;
+turd_struct *edit_t = NULL;
+turd_struct *edit_h = NULL;
+turd_struct edit_b;
+int edit_m = 1;
+
+#define X_AXIS 1
+#define Y_AXIS 2
+#define Z_AXIS 3
+
+typedef struct interp_stuct {
+		float ps0x,ps0y,ps0z;
+		float ps1x,ps1y,ps1z;
+		float pe0x,pe0y,pe0z;
+		float pe1x,pe1y,pe1z;
+
+		float scx,scy,scz;	// closest line start
+		float tcx,tcy,tcz;  // closest line term
+
+		
+		// visual normals
+		float snx,sny,snz;
+		float enx,eny,enz;
+		
+		// Which axis are we interpolating along
+		int axis;
+
+} interp_struct;
+
+
+
 // function prototypes
 void doTurdTrack();
 void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c );
+
+
