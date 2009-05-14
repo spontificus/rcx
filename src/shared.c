@@ -7,10 +7,10 @@
 
 //allocate new script storage, and add it to list
 //(not used yet, only for storing 3d list pointers...)
-script *allocate_script(void)
+script_struct *allocate_script(void)
 {
 	printlog(2, " > allocating script");
-	script *tmp = malloc(sizeof(script));
+	script_struct *tmp = (script_struct *)malloc(sizeof(script_struct));
 	tmp->next = script_head;
 	script_head = tmp;
 
@@ -31,12 +31,12 @@ script *allocate_script(void)
 }
 
 //allocate a new object, add it to the list and returns its pointer
-object *allocate_object (bool adspace, bool adjointgroup)
+object_struct *allocate_object (bool adspace, bool adjointgroup)
 {
 	printlog(2, " > allocating object");
-	object *object_next = object_head;
+	object_struct *object_next = object_head;
 
-	object_head = malloc(sizeof(object));
+	object_head = (object_struct *)malloc(sizeof(object_struct));
 
 	object_head->prev = NULL;
 	object_head->next = object_next;
@@ -85,10 +85,10 @@ object *allocate_object (bool adspace, bool adjointgroup)
 
 //allocates a new geom data, returns its pointer (and uppdate its object's count),
 //ads it to the component list, and ads the data to specified geom (assumed)
-geom_data *allocate_geom_data (dGeomID geom, object *obj)
+geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 {
 	printlog(2, " > allocating geom_data");
-	geom_data *tmp_geom = malloc(sizeof(geom_data));
+	geom_data *tmp_geom = (geom_data *)malloc(sizeof(geom_data));
 
 	//parent object
 	tmp_geom->object_parent = obj;
@@ -139,9 +139,8 @@ geom_data *allocate_geom_data (dGeomID geom, object *obj)
 	geom_data_head->mu = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
-
-	geom_data_head->use_slip = false; //no FDS slip (unless needed by other)
-	geom_data_head->slip = 0.0; //no FDS slip
+	geom_data_head->slip = internal.slip; //no FDS slip
+	geom_data_head->wheel = false; //not a wheel
 	geom_data_head->bounce = 0.0; //no bouncyness
 
 	geom_data_head->collide = true; //on collision, create opposing forces
@@ -154,10 +153,10 @@ geom_data *allocate_geom_data (dGeomID geom, object *obj)
 	return geom_data_head;
 }
 
-body_data *allocate_body_data (dBodyID body, object *obj)
+body_data *allocate_body_data (dBodyID body, object_struct *obj)
 {
 	printlog(2, " > allocating body_data");
-	body_data *tmp_body = malloc(sizeof(body_data));
+	body_data *tmp_body = (body_data *)malloc(sizeof(body_data));
 
 	//parent object
 	tmp_body->object_parent = obj;
@@ -199,11 +198,11 @@ body_data *allocate_body_data (dBodyID body, object *obj)
 	return body_data_head;
 }
 
-joint_data *allocate_joint_data (dJointID joint, object *obj, bool feedback)
+joint_data *allocate_joint_data (dJointID joint, object_struct *obj, bool feedback)
 {
 	printlog(2, " > allocating joint_data");
 	bool warn = false;
-	joint_data *tmp_joint = malloc(sizeof(joint_data));
+	joint_data *tmp_joint = (joint_data *)malloc(sizeof(joint_data));
 
 	//parent object
 	tmp_joint->object_parent = obj;
@@ -256,7 +255,7 @@ profile *allocate_profile(void)
 {
 	printlog(2, " > allocating profile");
 	profile *profile_next = profile_head;
-	profile_head = malloc(sizeof(profile));
+	profile_head = (profile *)malloc(sizeof(profile));
 
 	//add to list
 	profile_head->prev=NULL;
@@ -311,11 +310,11 @@ void free_profile (profile *target)
 
 //allocates car, ad to list...
 //(no object allocations - since we want to allocate car without spawning)
-car *allocate_car(void)
+car_struct *allocate_car(void)
 {
 	printlog(2, " > allocating car");
-	car *car_next = car_head;
-	car_head = malloc(sizeof(car));
+	car_struct *car_next = car_head;
+	car_head = (car_struct *)malloc(sizeof(car_struct));
 
 	//add to list
 	car_head->prev=NULL;
@@ -386,11 +385,11 @@ car *allocate_car(void)
 }
 
 //allocates new link in 3d rendering list
-file_3d *allocate_file_3d (void)
+file_3d_struct *allocate_file_3d (void)
 {
 	printlog(2, " > allocating 3d file storage");
 
-	file_3d * tmp_3d = malloc (sizeof(file_3d));
+	file_3d_struct *tmp_3d = (file_3d_struct *)malloc (sizeof(file_3d_struct));
 	//add to list
 	tmp_3d->next = file_3d_head;
 	file_3d_head = tmp_3d;
@@ -410,7 +409,7 @@ file_3d *allocate_file_3d (void)
 }
 
 //destroys an object
-void free_object(object *target)
+void free_object(object_struct *target)
 {
 	//lets just hope the given pointer is ok...
 	printlog(2, " > freeing object");
@@ -528,7 +527,7 @@ void free_joint_data (joint_data *target)
 
 
 //run _before_ starting full erase of object/component lists (at race end)
-void free_car (car *target)
+void free_car (car_struct *target)
 {
 	printlog(2, " > freeing car\n");
 
@@ -575,7 +574,7 @@ void free_all (void)
 		free_object(object_head);
 
 	//only place where scripts and 3d lists are removed
-	script *script_tmp = script_head;
+	script_struct *script_tmp = script_head;
 	while (script_head)
 	{
 		script_tmp = script_head->next;
@@ -585,7 +584,7 @@ void free_all (void)
 	}
 
 	//destroy loaded 3d files
-	file_3d *file_3d_tmp;
+	file_3d_struct *file_3d_tmp;
 	while (file_3d_head)
 	{
 		file_3d_tmp = file_3d_head; //copy from from list

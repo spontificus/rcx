@@ -92,7 +92,7 @@ void event_step(Uint32 step)
 						editing = 1 - editing;
 						if ( editing == 0 ) {
 							// leaving editing mode, update ODE
-							calcTrimesh( edit_h );
+							//calcTrimesh( edit_h );
 						}
 						
 						break;
@@ -117,7 +117,7 @@ void event_step(Uint32 step)
 						} else {
 							edit_t->a += 15;
 						}
-						print_matrix( edit_t->m );
+						//print_matrix( edit_t->m );
 						recalcTurd( edit_h );
 						break;
 						
@@ -128,7 +128,7 @@ void event_step(Uint32 step)
 						} else {
 							edit_t->a -= 15;
 						}
-						print_matrix( edit_t->m );
+						//print_matrix( edit_t->m );
 						recalcTurd( edit_h );
 						break;
 					
@@ -354,7 +354,7 @@ void event_step(Uint32 step)
 		//if selected car, read input
 		if (prof->car)
 		{
-			car *carp = prof->car;
+			car_struct *carp = prof->car;
 			if (keys[prof->drift_break])
 			{
 				carp->drift_breaks = true;
