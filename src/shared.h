@@ -477,7 +477,7 @@ typedef struct trimesh_struct {
 	dGeomID meshid;
 	dTriMeshDataID dataid;
 	
-	dReal *ode_verts;
+	dVector3 *ode_verts;
 	unsigned int *ode_indices;
 	struct geom_data *data;
 	int v_count;

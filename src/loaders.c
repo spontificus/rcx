@@ -1372,22 +1372,65 @@ void initTrimesh(struct turd_struct *head, int numx, int numy) {
 	
 	// allocate memory
 	tri->v_count = t_count * (numx+1) * (numy+1);
-	tri->ode_verts = calloc(1, tri->v_count * 4 * sizeof(dReal));
+	tri->ode_verts = calloc(1, tri->v_count * sizeof(dVector4));
 	
 	//tri->i_count = t_count * (((2 * numx) - 2) * 3) * numy;
 	tri->i_count = t_count * numx * numy * 2 * 3;
 	tri->ode_indices = calloc(1, tri->i_count * sizeof(int));
 	
 	head->tri = tri;
+	
+	//printf("i:%d\n", tri->i);
 }
 
 
 void addTrimeshVert(struct trimesh_struct *t, int i, float *v) {
-	t->ode_verts[0 + i*4] = v[0];
-	t->ode_verts[1 + i*4] = v[1];
-	t->ode_verts[2 + i*4] = v[2];
+	t->ode_verts[i][0] = v[0];
+	t->ode_verts[i][1] = v[1];
+	t->ode_verts[i][2] = v[2];
 }
 
+
+void debugTrimesh(struct trimesh_struct *tri) {
+	int i;
+	int t = 0;
+	
+	
+	for ( i = 0; i < tri->i_count; i += 3 ) {
+		int i1 = tri->ode_indices[i];
+		int i2 = tri->ode_indices[i+1];
+		int i3 = tri->ode_indices[i+2];
+		
+//		printf("i1:%d i2:%d i3:%d\n", i1,i2,i3);
+		
+		float v1x = tri->ode_verts[i1][0];
+		float v1y = tri->ode_verts[i1][1];
+		float v1z = tri->ode_verts[i1][2];
+		
+		float v2x = tri->ode_verts[i2][0];
+		float v2y = tri->ode_verts[i2][1];
+		float v2z = tri->ode_verts[i2][2];
+		
+		float v3x = tri->ode_verts[i3][0];
+		float v3y = tri->ode_verts[i3][1];
+		float v3z = tri->ode_verts[i3][2];
+		
+		glBegin(GL_LINE_STRIP);
+		if ( t == 0 ) {
+			glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, black);
+		} else {
+			glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
+		}
+		glVertex3f(v1x, v1y, v1z);
+		glVertex3f(v2x, v2y, v2z);
+		glVertex3f(v3x, v3y, v3z);
+		glVertex3f(v1x, v1y, v1z);
+		
+		glEnd();
+		
+		t = 1-t;
+	}
+}
 
 void linkTrimesh(struct turd_struct *head, int numx, int numy) {
 	struct turd_struct *cur_turd = head;
@@ -1404,21 +1447,23 @@ void linkTrimesh(struct turd_struct *head, int numx, int numy) {
 				for (xloop = 0; xloop < numx; xloop++) {
 
 					// anticlockwise winding
-					tri->ode_indices[i++] = v_off + (yloop + 1) * numx;
-					tri->ode_indices[i++] = v_off + yloop * numx;
-					tri->ode_indices[i++] = v_off + (yloop + 1) * numx + 1;
+					tri->ode_indices[i++] = v_off + (numx+1);
+					tri->ode_indices[i++] = v_off;
+					tri->ode_indices[i++] = v_off + (numx+1) + 1;
 					
-					tri->ode_indices[i++] = v_off + (yloop + 1) * numx + 1;
-					tri->ode_indices[i++] = v_off + yloop * numx;
-					tri->ode_indices[i++] = v_off + yloop * numx + 1;				
+					tri->ode_indices[i++] = v_off + (numx+1) + 1;
+					tri->ode_indices[i++] = v_off;
+					tri->ode_indices[i++] = v_off + 1;				
 					
 					// skip to next vertex
 					v_off++;
 				}
 				// skip to beginning of next row
 				v_off++;
-			}
+			}	
 			
+			// we're at the end of a patch, skip the next row of vertices as
+			// they've already been linked
 			v_off +=  numx + 1;
 			
 			lr_turd = lr_turd->r;
@@ -1432,7 +1477,7 @@ void linkTrimesh(struct turd_struct *head, int numx, int numy) {
 	printf("num ind:%d  i:%d\n", tri->i_count, i);
 */
 	
-	dGeomTriMeshDataBuildSimple( tri->dataid, tri->ode_verts, tri->v_count, tri->ode_indices, tri->i_count );
+	dGeomTriMeshDataBuildSimple( tri->dataid, tri->ode_verts[0], tri->v_count, tri->ode_indices, tri->i_count );
 	dGeomTriMeshSetData( tri->meshid, tri->dataid );
 }
 
@@ -1521,6 +1566,7 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 				glNormal3f(n[0], n[1], n[2]);
 				glVertex3f(v[0], v[1], v[2]);
 				
+				// if we're in the last y loop pass, put in the top row of vertices
 				if ( yloop == yn-1 ) {
 					addTrimeshVert(t, i+xn, v);
 				}
@@ -1529,6 +1575,8 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 			glEnd();
 		
 		}
+		
+		// account for the top row of vertices
 		i += xn + 1;
 		//printf("i:%d\n", i);
 		t->i = i;
@@ -1576,9 +1624,12 @@ void drawRoad(struct turd_struct *head) {
 			cur_turd = nxt_turd;
 		}
 			
-		glEndList();	
-		
+
 		linkTrimesh(head, 5, 10);
+
+		//debugTrimesh(head->tri);
+		
+		glEndList();	
 		
 		head->redraw = 0;
 	}
@@ -1621,6 +1672,7 @@ void initTurdTrack() {
 void doTurdTrack() {
 	
 	drawRoad(test);
+	
 	//drawRoad(spiral);
 	//drawRoad(ramp);
 	//drawRoad(loop);
