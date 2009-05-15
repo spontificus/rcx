@@ -7,8 +7,12 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
+// prototype
+float *mbv(float *m, float x, float y, float z);
+
 SDL_Surface *screen;
-GLdouble cpos[3] = {20,-25,20};
+GLdouble cpos[3] = {0,-100,30};
+float cmat[16];
 Uint32 flags = SDL_OPENGL;
 
 GLuint genTex_chequers() {
@@ -155,6 +159,12 @@ int graphics_init(void)
 	// gen textures
 	glEnable( GL_TEXTURE_2D );
 	tex_ch = genTex_chequers();
+	
+	// setup camera matrix
+	glPushMatrix();
+	glTranslatef(0,-10,10);
+	glGetFloatv(GL_MODELVIEW_MATRIX, cmat);
+	glPopMatrix();
 
 	//everything ok
 	return 0;
@@ -166,7 +176,10 @@ dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
 {
+	const dReal *pos, *rot; //store rendering position
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	GLfloat matrix[16];
+	float *mvr;
 
 //	glLoadIdentity();
 
@@ -181,7 +194,33 @@ void graphics_step (Uint32 step)
 
 	if ( editing == 0 ) {
 		glPolygonMode(GL_BACK, GL_FILL);
-		gluLookAt (cpos[0]+gpos[0],cpos[1]+gpos[1]-50,cpos[2]+gpos[2]+100, gpos[0],gpos[1],gpos[2], 0,0,1);
+
+		pos = dBodyGetPosition (focused_car->bodyid);
+		rot = dBodyGetRotation (focused_car->bodyid);
+		//create transformation matrix to render correct position
+		//and rotation (float)
+		
+		matrix[0]=rot[0];
+		matrix[1]=rot[4];
+		matrix[2]=rot[8];
+		matrix[3]=0;
+		matrix[4]=rot[1];
+		matrix[5]=rot[5];
+		matrix[6]=rot[9];
+		matrix[7]=0;
+		matrix[8]=rot[2];
+		matrix[9]=rot[6];
+		matrix[10]=rot[10];
+		matrix[11]=0;
+		matrix[12]=pos[0];
+		matrix[13]=pos[1];
+		matrix[14]=pos[2];
+		matrix[15]=1;
+
+		mvr = mbv(matrix, cpos[0],cpos[1], focused_car->dir * cpos[2]);
+
+		gluLookAt (mvr[0],mvr[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
+		
 	} else {
 		glPolygonMode(GL_BACK, GL_LINE);
 		gluLookAt (cpos[0]+edit_t->wx,cpos[1]+edit_t->wy-50,cpos[2]+edit_t->wz+100, edit_t->wx,edit_t->wy,edit_t->wz, 0,0,1);
@@ -249,7 +288,7 @@ void graphics_step (Uint32 step)
 
 	//loop through all geoms, see if they need rendering
 	geom_data *geom;
-	const dReal *pos, *rot; //store rendering position
+	
 	for (geom = geom_data_head; geom; geom = geom->next)
 	{
 		if (!geom->file_3d) //invisible
@@ -262,7 +301,7 @@ void graphics_step (Uint32 step)
 
 			//create transformation matrix to render correct position
 			//and rotation (float)
-			GLfloat matrix[16];
+			
 			matrix[0]=rot[0];
 			matrix[1]=rot[4];
 			matrix[2]=rot[8];
