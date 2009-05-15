@@ -226,7 +226,7 @@ void graphics_step (Uint32 step)
 
 			mvr = mbv(matrix, cpos[0],cpos[1], focused_car->dir * cpos[2]);
 
-			gluLookAt (mvr[0],mvr[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
+			gluLookAt (mvr[0],mvr[1],pos[2]+cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
 		}
 		
 	} else {
