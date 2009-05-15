@@ -941,14 +941,6 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 
 
-float *mbv(float *m, float x, float y, float z) {
-	static float v[3];
-	v[0] = x*m[0] + y*m[4] + z*m[8] + m[12];
-	v[1] = x*m[1] + y*m[5] + z*m[9] + m[13];
-	v[2] = x*m[2] + y*m[6] + z*m[10] + m[14];
-	
-	return (float *)&v;
-}
 
 
 void makeTurdMatricies( struct turd_struct *tmp_turd ) {
