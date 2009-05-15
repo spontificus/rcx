@@ -12,6 +12,7 @@ static enum {running, done, paused, locked, error} runlevel;
 
 // editing flag - should most likely be absorbed into the enum above.
 int editing = 0;
+int cam_mode = 0;
 
 GLuint tex_ch;
 

@@ -88,6 +88,10 @@ void event_step(Uint32 step)
 						spawn_object (box ,0,0,489.5);
 					break;
 					
+					case SDLK_c:
+						cam_mode = 1-cam_mode;
+						break;
+					
 					case SDLK_TAB:
 						editing = 1 - editing;
 						if ( editing == 0 ) {
@@ -338,18 +342,33 @@ void event_step(Uint32 step)
 		float step_m = 0.1;
 
 		//move camera
-		if (keys[prof->cam_x_pos])
-			cpos[0]+=step*step_m;
-		else if (keys[prof->cam_x_neg])
-			cpos[0]-=step*step_m;
-		if (keys[prof->cam_y_pos])
-			cpos[1]+=step*step_m;
-		else if (keys[prof->cam_y_neg])
-			cpos[1]-=step*step_m;
-		if (keys[prof->cam_z_pos])
-			cpos[2]+=step*step_m;
-		else if (keys[prof->cam_z_neg])
-			cpos[2]-=step*step_m;
+		if ( editing == 0 ) {
+			if (keys[prof->cam_x_pos])
+				cpos[0]+=step*step_m;
+			else if (keys[prof->cam_x_neg])
+				cpos[0]-=step*step_m;
+			if (keys[prof->cam_y_pos])
+				cpos[1]+=step*step_m;
+			else if (keys[prof->cam_y_neg])
+				cpos[1]-=step*step_m;
+			if (keys[prof->cam_z_pos])
+				cpos[2]+=step*step_m;
+			else if (keys[prof->cam_z_neg])
+				cpos[2]-=step*step_m;
+		} else {	
+			if (keys[prof->cam_x_pos])
+				ecpos[0]+=step*step_m;
+			else if (keys[prof->cam_x_neg])
+				ecpos[0]-=step*step_m;
+			if (keys[prof->cam_y_pos])
+				ecpos[1]+=step*step_m;
+			else if (keys[prof->cam_y_neg])
+				ecpos[1]-=step*step_m;
+			if (keys[prof->cam_z_pos])
+				ecpos[2]+=step*step_m;
+			else if (keys[prof->cam_z_neg])
+				ecpos[2]-=step*step_m;
+		}
 
 		//if selected car, read input
 		if (prof->car)
