@@ -1510,6 +1510,8 @@ void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, int
 	n[2] = ( nl[2]*txi + nr[2]*tx + nb[2]*tyi + nt[2]*ty ) / 2.0;
 }
 
+static float rp_xt = 0;
+static float rp_yt = 0;
 
 void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
 		interp_struct lin;
@@ -1540,6 +1542,8 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 		int xn = 5;
 		int yn = 10;
 		
+		glBindTexture( GL_TEXTURE_2D, tex_ch );
+		
 		for (yloop=0; yloop<yn; yloop++) {
 			
 			yt = (float)yloop/yn;
@@ -1555,6 +1559,7 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 				xti = (float)(1.0 - xt);
 				
 				interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
+				glTexCoord2d(rp_xt, rp_yt);
 				glNormal3f(n[0], n[1], n[2]);
 				glVertex3f(v[0], v[1], v[2]);
 				
@@ -1563,6 +1568,7 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 				addTrimeshVert(t, i++, v);
 
 				interpPatch(xt,ytn,v,n, &lin,&rin,&bin,&tin);
+				glTexCoord2d(rp_xt, rp_yt + 0.5);
 				glNormal3f(n[0], n[1], n[2]);
 				glVertex3f(v[0], v[1], v[2]);
 				
@@ -1571,10 +1577,14 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 					addTrimeshVert(t, i+xn, v);
 				}
 				
+				rp_xt += 0.5;
+					
 			}
 			glEnd();
-		
+			rp_xt += 0.5;
 		}
+		
+		glBindTexture( GL_TEXTURE_2D, 0 );
 		
 		// account for the top row of vertices
 		i += xn + 1;
@@ -1609,6 +1619,10 @@ void drawRoad(struct turd_struct *head) {
 		cur_turd = head;
 		while (cur_turd->nxt) {	
 			nxt_turd = cur_turd->nxt;
+			
+			// reset tex coords
+			rp_xt = 0;
+			rp_yt = 0;
 
 			lct = cur_turd->l;
 			lnt = nxt_turd->l;
