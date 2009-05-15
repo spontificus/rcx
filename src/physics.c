@@ -69,7 +69,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		}
 		else //no slip needed
 		{
-			mu = (geom1->mu)*(geom2->mu);
+			mu = ((geom1->mu)+(geom2->mu))/2;
 			slip = 0.0;
 		}
 		//optional bouncyness (good for wheels?)
