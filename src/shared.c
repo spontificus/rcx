@@ -139,8 +139,9 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	geom_data_head->mu = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
-	geom_data_head->slip = internal.slip; //no FDS slip
-	geom_data_head->wheel = false; //not a wheel
+
+	geom_data_head->use_slip = false; //no FDS slip (unless needed by other)
+	geom_data_head->slip = 0.0; //no FDS slip
 	geom_data_head->bounce = 0.0; //no bouncyness
 
 	geom_data_head->collide = true; //on collision, create opposing forces

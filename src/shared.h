@@ -47,7 +47,7 @@ struct internal_struct {
 	int contact_points;
 	bool finite_rotation;
 	dReal scale; //TODO
-	dReal mu,erp,cfm,slip;
+	dReal mu,erp,cfm;
 
 	dReal dis_linear, dis_angular, dis_time;
 	int dis_steps;
@@ -74,7 +74,6 @@ struct data_index internal_index[] = {
 	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
 	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
 	{"default_cfm",		'f',1, offsetof(struct internal_struct, cfm)},
-	{"default_slip",		'f',1, offsetof(struct internal_struct, slip)},
 	{"auto_disable_linear",	'f',1, offsetof(struct internal_struct, dis_linear)},
 	{"auto_disable_angular",	'f',1, offsetof(struct internal_struct, dis_angular)},
 	{"auto_disable_time",	'f',1, offsetof(struct internal_struct, dis_time)},
@@ -178,11 +177,9 @@ typedef struct geom_data_struct {
 
 	//Physics data:
 	//placeholder for more physics data
+	bool use_slip;//true if object needs fds slip friction
 	dReal mu, erp, cfm, slip, bounce;
-
-	bool wheel; //true if wheel side slip and connected to hinge2
-	dJointID hinge2;
-
+	//(setting mu to dInfinity and using slip{1,2} is great for wheels)
 	//End of physics data
 	
 	bool collide; //create physical collision when touching other components
