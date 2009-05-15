@@ -13,6 +13,7 @@ static enum {running, done, paused, locked, error} runlevel;
 // editing flag - should most likely be absorbed into the enum above.
 int editing = 0;
 
+GLuint tex_ch;
 
 //the following a some basic color definitions (used for lights and materials)
 GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
