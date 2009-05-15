@@ -11,6 +11,62 @@ SDL_Surface *screen;
 GLdouble cpos[3] = {20,-25,20};
 Uint32 flags = SDL_OPENGL;
 
+GLuint genTex_chequers() {
+	GLuint texture;
+	int width, height;
+	char *data;
+	
+	int wrap = 1;
+
+	// allocate buffer
+	width = 2;
+	height = 2;
+	data = malloc( width * height * 3 );
+
+	char g1 = 128;
+	char g2 = 216;
+
+	// gen data
+	data[0] = g1;
+	data[1] = g1;
+	data[2] = g1;
+	data[3] = g2;
+	data[4] = g2;
+	data[5] = g2;
+	
+	data[6] = g1;
+	data[7] = g1;
+	data[8] = g1;
+	data[9] = g2;
+	data[10] = g2;
+	data[11] = g2;
+	
+
+	// allocate a texture name
+	glGenTextures( 1, &texture );
+
+	// select our current texture
+	glBindTexture( GL_TEXTURE_2D, texture );
+
+	// select modulate to mix texture with color for shading GL_MODULATE
+	glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap ? GL_REPEAT : GL_CLAMP );
+	glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap ? GL_REPEAT : GL_CLAMP );
+
+	// build our texture mipmaps
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data );
+
+	// free buffer
+	free( data );
+	
+	glBindTexture( GL_TEXTURE_2D, 0 );
+
+	return texture;
+}
 
 void graphics_resize (int w, int h)
 {
@@ -97,6 +153,10 @@ int graphics_init(void)
 	SDL_WM_SetCaption (name, "RCX");
 
 	free (name);
+	
+	// gen textures
+	glEnable( GL_TEXTURE_2D );
+	tex_ch = genTex_chequers();
 
 	//everything ok
 	return 0;
@@ -252,4 +312,5 @@ void graphics_quit(void)
 	printlog(1, "=> Quit graphics\n");
 	SDL_Quit();
 }
+
 
