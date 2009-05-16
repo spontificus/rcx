@@ -98,7 +98,20 @@ void event_step(Uint32 step)
 							// leaving editing mode, update ODE
 							//calcTrimesh( edit_h );
 						}
+						break;
 						
+					case SDLK_x:
+						turd_head = turd_head->r;
+						edit_t = turd_head->nxt;
+						edit_h = turd_head->nxt;
+						t_backup( edit_t );
+						break;
+						
+					case SDLK_z:
+						turd_head = turd_head->l;
+						edit_t = turd_head->nxt;
+						edit_h = turd_head->nxt;
+						t_backup( edit_t );
 						break;
 						
 					// switch between editing angles and position

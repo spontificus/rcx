@@ -1145,21 +1145,27 @@ turd_struct *loadTurd(char *filename) {
 
 	calcTurd( head_turd );
 	
-	/*
+	
 	// yeach - a holder for the global list
-	tmp_turd = malloc(sizeof(turd_struct));
-	*/
+	tmp_turd = calloc(1, sizeof(turd_struct));
+	
 	if ( turd_head == NULL ) {
 		// i kan coed gud
-		turd_head = head_turd;
+		turd_head = tmp_turd;
+		tmp_turd->l = tmp_turd;
+		tmp_turd->r = tmp_turd;
+		
 		edit_t = head_turd;
 		edit_h = head_turd;
 	}
-	/*
+	
 	tmp_turd->nxt = head_turd;
-	tmp_turd->
-	turd_head
-	*/
+	tmp_turd->l = turd_head;
+	tmp_turd->r = turd_head->r;
+	turd_head->r->l = tmp_turd;
+	turd_head->r = tmp_turd;
+	
+
 	
 	head_turd->calllist = 0;
 	head_turd->redraw = 1;
@@ -1669,10 +1675,10 @@ struct turd_struct *test;
 
 void initTurdTrack() {
 	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");
-	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
+//	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
 	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
-	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
-	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
+//	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
+//	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
 
 	glBegin(GL_LINES);
 		glVertex3f(0,0,0);
@@ -1683,7 +1689,8 @@ void initTurdTrack() {
 
 void doTurdTrack() {
 	drawRoad(test);
-	//drawRoad(spiral);
+	drawRoad(spiral);
+
 	//drawRoad(ramp);
 	//drawRoad(loop);
 	//drawRoad(helix);
