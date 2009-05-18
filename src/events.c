@@ -4,6 +4,9 @@
 //
 //See main.c for licensing
 
+#include "events.h"
+extern joint_data *joint_data_head;
+
 SDL_Event event;
 Uint8 *keys;
 

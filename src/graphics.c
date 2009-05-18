@@ -7,9 +7,11 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
-SDL_Surface *screen;
-GLdouble cpos[3] = {20,-25,20};
-Uint32 flags = SDL_OPENGL;
+#include "graphics.h"
+#include "turd.h"
+#include "main.h"
+
+
 
 GLuint genTex_chequers() {
 	GLuint texture;
