@@ -121,6 +121,8 @@ dJointGroupID contactgroup;
 profile *profile_head;
 GLuint tex_ch;
 
+enum runenum runlevel;
+
 //simple demo:
 int main (int argc, char *argv[])
 {

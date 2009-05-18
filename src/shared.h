@@ -16,7 +16,7 @@
 //(locked is used when we want to pause the loops, but still try to catch
 //up with real time when unlocked, basically: stop simulation, but do not
 //reset "simulated time" variables... Use it when building objects)
-static enum {running, done, paused, locked, error} runlevel;
+extern enum runenum {running, done, paused, locked, error} runlevel;
 
 // editing flag - should most likely be absorbed into the enum above.
 extern int editing;
