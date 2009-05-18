@@ -21,7 +21,7 @@ GLuint genTex_chequers() {
 	// allocate buffer
 	width = 2;
 	height = 2;
-	data = malloc( width * height * 3 );
+	data = (char *)malloc( width * height * 3 );
 
 	char g1 = 128;
 	char g2 = 216;

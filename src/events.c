@@ -234,11 +234,11 @@ void event_step(Uint32 step)
 							edit_t = edit_t->l;
 						}
 						
-						nt = calloc(1, sizeof(turd_struct));
+						nt = (turd_struct *)calloc(1, sizeof(turd_struct));
 						setupTurdValues(nt, 0,15,0, 0,0,0);
 
-						nt->l = calloc(1, sizeof(turd_struct));
-						nt->r = calloc(1, sizeof(turd_struct));
+						nt->l = (turd_struct *)calloc(1, sizeof(turd_struct));
+						nt->r = (turd_struct *)calloc(1, sizeof(turd_struct));
 						setupTurdValues(nt->l, -10,0,0, 0,0,0);					
 						setupTurdValues(nt->r, 10,0,0, 0,0,0);
 						nt->l->r = nt;

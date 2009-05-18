@@ -480,7 +480,7 @@ typedef struct trimesh_struct {
 	
 	dVector3 *ode_verts;
 	unsigned int *ode_indices;
-	struct geom_data *data;
+	struct geom_data_struct *data;
 	int v_count;
 	int i_count;
 	int i;

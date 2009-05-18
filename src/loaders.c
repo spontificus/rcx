@@ -1033,7 +1033,7 @@ void calcTurd( struct turd_struct *t ) {
 
 
 // this _so_ should be a generic loader
-turd_struct *loadTurd(char *filename) {
+turd_struct *loadTurd(const char *filename) {
 	FILE *fp;
 	char buf[100];
 	void *ptr;
@@ -1084,17 +1084,17 @@ turd_struct *loadTurd(char *filename) {
 		switch ( sec ) {
 			case 'c':
 //				printf("c\n");
-				tmp_turd = calloc(1,sizeof(turd_struct));		
+				tmp_turd = (turd_struct *)calloc(1,sizeof(turd_struct));		
 
 				setupTurdValues(tmp_turd, x,y,z, a,b,c);
 
 				// left and right side of road are offset from center
-				bast_turd = calloc(1,sizeof(turd_struct));
+				bast_turd = (turd_struct *)calloc(1,sizeof(turd_struct));
 				setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
 				bast_turd->r = tmp_turd;
 				tmp_turd->l = bast_turd;
 
-				bast_turd = calloc(1,sizeof(turd_struct));
+				bast_turd = (turd_struct *)calloc(1,sizeof(turd_struct));
 				setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
 				bast_turd->l = tmp_turd;
 				tmp_turd->r = bast_turd;
@@ -1149,7 +1149,7 @@ turd_struct *loadTurd(char *filename) {
 	
 	
 	// yeach - a holder for the global list
-	tmp_turd = calloc(1, sizeof(turd_struct));
+	tmp_turd = (turd_struct *)calloc(1, sizeof(turd_struct));
 	
 	if ( turd_head == NULL ) {
 		// i kan coed gud
@@ -1352,7 +1352,7 @@ void initTrimesh(struct turd_struct *head, int numx, int numy) {
 		free(head->tri->ode_verts);
 		free(head->tri->ode_indices);
 	} else {
-		head->tri = calloc(1, sizeof(trimesh_struct));
+		head->tri = (trimesh_struct *)calloc(1, sizeof(trimesh_struct));
 		head->tri->dataid = dGeomTriMeshDataCreate();
 		head->tri->meshid = dCreateTriMesh(NULL, head->tri->dataid, NULL, NULL, NULL);
 		
@@ -1378,11 +1378,11 @@ void initTrimesh(struct turd_struct *head, int numx, int numy) {
 	
 	// allocate memory
 	tri->v_count = t_count * (numx+1) * (numy+1);
-	tri->ode_verts = calloc(1, tri->v_count * sizeof(dVector4));
+	tri->ode_verts = (dVector4 *)calloc(1, tri->v_count * sizeof(dVector4));
 	
 	//tri->i_count = t_count * (((2 * numx) - 2) * 3) * numy;
 	tri->i_count = t_count * numx * numy * 2 * 3;
-	tri->ode_indices = calloc(1, tri->i_count * sizeof(int));
+	tri->ode_indices = (unsigned int *)calloc(1, tri->i_count * sizeof(int));
 	
 	head->tri = tri;
 	
