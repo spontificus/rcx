@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
 
-#define VERSION "0.05" //supports alphanumeric versioning
 
 //Required stuff:
 #include <SDL.h>
@@ -30,24 +29,24 @@
 #include <unistd.h>
 
 //local stuff:
-#include "shared.h" //custom data definitions
+#include "main.h" //custom data definitions
 
-car_struct *venom;
-script_struct *box; //keep track of our loaded debug box
-car_struct *focused_car = NULL;
 
-void printlog (int, const char*, ...); //prototype (for included functions
 
-//#include "scene.c"
-#include "graphics.c"
-#include "physics.c"
-#include "shared.c" //functions for handling custom data
-#include "loaders.c" //loading functions for confs, tracks, cars, etc...
-#include "events.c"  //responds to events both OS- and game simulation related
+#include "graphics.h"
+#include "physics.h"
+#include "shared.h" //functions for handling custom data
+#include "loaders.h" //loading functions for confs, tracks, cars, etc...
+#include "events.h"  //responds to events both OS- and game simulation related
+#include "trimesh.h" //trimesh class for ODE
+#include "turd.h"
 
 //keep track of warnings
 unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
+
+struct internal_struct internal;
+struct track_struct track;
 
 //print log message - if it's below or equal to the current verbosity level
 void printlog (int level, const char *text, ...)
@@ -73,9 +72,96 @@ void emergency_quit (void)
 	printlog(0, "WTF?!\n");
 }
 
+void initCol(GLfloat *c, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+	c[0] = r;
+	c[1] = g;
+	c[2] = b;
+	c[3] = a;
+}
+
+GLfloat black[4]; // = nothing for lights
+GLfloat dgray[4];
+GLfloat gray[4];
+GLfloat lgray[4];
+GLfloat white[4];
+GLfloat red[4];
+GLfloat green[4];
+GLfloat lgreen[4];
+GLfloat blue[4];
+GLfloat lblue[4];
+GLfloat yellow[4];
+
+struct joint_data_struct *joint_data_head;
+struct body_data_struct *body_data_head;
+struct geom_data_struct *geom_data_head;
+struct object_struct *object_head;
+struct script_struct *script_head;
+struct file_3d_struct *file_3d_head;
+struct car_struct *car_head;
+int editing;
+int cam_mode;
+
+car_struct *venom;
+script_struct *box; //keep track of our loaded debug box
+car_struct *focused_car;
+
+SDL_Surface *screen;
+GLdouble cpos[3];
+GLdouble ecpos[3];
+Uint32 flags;
+turd_struct *turd_head;
+turd_struct *edit_t;
+turd_struct *edit_h;
+turd_struct edit_b;
+int edit_m;
+
+dWorldID world;
+dSpaceID space;
+dJointGroupID contactgroup;
+profile *profile_head;
+GLuint tex_ch;
+
 //simple demo:
 int main (int argc, char *argv[])
 {
+	joint_data_head = NULL;
+	body_data_head = NULL;
+	geom_data_head = NULL;
+	object_head = NULL;
+	script_head = NULL;
+	file_3d_head = NULL;
+	car_head = NULL;
+	focused_car = NULL;
+	editing = 0;
+	
+	initCol(black, 0.0f, 0.0f, 0.0f, 1.0f); // = nothing for lights
+	initCol(dgray, 0.2f, 0.2f, 0.2f, 1.0f);
+	initCol(gray, 0.5f, 0.5f, 0.5f, 1.0f);
+	initCol(lgray, 0.8f, 0.8f, 0.8f, 1.0f);
+	initCol(white, 1.0f, 1.0f, 1.0f, 1.0f);
+	initCol(red, 1.0f, 0.0f, 0.0f, 1.0f);
+	initCol(green, 0.0f, 1.0f, 0.0f, 1.0f);
+	initCol(lgreen, 0.4f, 1.0f, 0.4f, 1.0f);
+	initCol(blue, 0.0f, 0.0f, 1.0f, 1.0f);
+	initCol(lblue, 0.6f, 0.6f, 1.0f, 1.0f);
+	initCol(yellow, 1.0f, 1.0f, 0.0f, 1.0f);
+	
+	cpos[0] = 0;
+	cpos[1] = -100;
+	cpos[2] = 30;
+	
+	ecpos[0] = 0;
+	ecpos[1] = -100;
+	ecpos[2] = 30;
+
+	flags = SDL_OPENGL;
+	
+	turd_head = NULL;
+	edit_t = NULL;
+	edit_h = NULL;
+	edit_m = 1;
+	
+
 	//issue
 	printf("\n    -=[ Hello, and welcome to RollCageX version %s ]=-\n\n", VERSION);
 	printf(" Copyright (C) 2009, This program comes with ABSOLUTELY NO WARRANTY; see\n \"license.txt\" for details\n\n");

@@ -3,9 +3,10 @@
 //See main.c about licensing
 //
 
-dWorldID world;
-dSpaceID space;
-dJointGroupID contactgroup;//TODO: move to shared.h data? good for event thread?
+#include "physics.h"
+#include "main.h"
+
+extern joint_data *joint_data_head;
 
 int physics_init(void)
 {

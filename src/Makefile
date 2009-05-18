@@ -1,8 +1,9 @@
-SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c
+SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c trimesh.cpp turd.cpp
 
 #normal args and libs
 LIBS    = sdl gl glu
 ARGS    = -g -pipe -Wall -march=native -mtune=native -lm  -DdSINGLE -lode
+CC      = g++
 
 #windows specific args and libs
 W32LIBS = `sdl-config --static-libs --cflags --libs` `ode-config --cflags --libs` -lm -lopengl32 -lglu32
@@ -10,14 +11,14 @@ W32ARGS = -O2 -pipe -Wall -march=i686   -mtune=i686   -lm
 
 
 normal: $(SOURCE)
-	gcc -o ../rcx main.c `pkg-config --cflags --libs $(LIBS)` $(ARGS)
+	$(CC) -o ../rcx $(SOURCE) `pkg-config --cflags --libs $(LIBS)` $(ARGS) 
 
 #might cause ("nVidious") problems... :-P
 static: $(SOURCE)
-	gcc -o ../rcx main.c `pkg-config --static --cflags --libs $(LIBS)` -static $(ARGS)
+	$(CC) -o ../rcx $(SOURCE) `pkg-config --static --cflags --libs $(LIBS)` -static $(ARGS)
 
 win32-static: $(SOURCE)
-	gcc -o ../rcx.exe main.c $(W32LIBS) -static -lstdc++ -lwinmm -lgdi32 -Dwindows $(W32ARGS)
+	$(CC) -o ../rcx.exe $(SOURCE) $(W32LIBS) -static -lstdc++ -lwinmm -lgdi32 -Dwindows $(W32ARGS)
 
 #only use with a suitable port of gcc (MinGW, CygWin, etc)
 win32-hack: $(SOURCE)

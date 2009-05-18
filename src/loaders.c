@@ -7,6 +7,10 @@
 
 #define MAX_WORDS 100
 
+#include "loaders.h"
+
+
+
 //read a line from file pointer, remove blanks and sepparate words
 //guaranteed to return at least one word, or (if nothing left), NULL
 int get_word_length(FILE *fp)
@@ -140,7 +144,7 @@ void free_word_list (char **target)
 //loads configuration file to memory (using index)
 //
 //(you may indent my code?)
-int load_conf (char *name, char *memory, struct data_index index[])
+int load_conf (char *name, char *memory, const struct data_index index[])
 {
  printlog(1, "-> loading conf file: %s\n", name);
  FILE *fp;
@@ -1031,7 +1035,7 @@ void calcTurd( struct turd_struct *t ) {
 
 
 // this _so_ should be a generic loader
-turd_struct *loadTurd(char *filename) {
+turd_struct *loadTurd(const char *filename) {
 	FILE *fp;
 	char buf[100];
 	void *ptr;
@@ -1082,17 +1086,17 @@ turd_struct *loadTurd(char *filename) {
 		switch ( sec ) {
 			case 'c':
 //				printf("c\n");
-				tmp_turd = calloc(1,sizeof(turd_struct));		
+				tmp_turd = (turd_struct *)calloc(1,sizeof(turd_struct));		
 
 				setupTurdValues(tmp_turd, x,y,z, a,b,c);
 
 				// left and right side of road are offset from center
-				bast_turd = calloc(1,sizeof(turd_struct));
+				bast_turd = (turd_struct *)calloc(1,sizeof(turd_struct));
 				setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
 				bast_turd->r = tmp_turd;
 				tmp_turd->l = bast_turd;
 
-				bast_turd = calloc(1,sizeof(turd_struct));
+				bast_turd = (turd_struct *)calloc(1,sizeof(turd_struct));
 				setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
 				bast_turd->l = tmp_turd;
 				tmp_turd->r = bast_turd;
@@ -1147,7 +1151,7 @@ turd_struct *loadTurd(char *filename) {
 	
 	
 	// yeach - a holder for the global list
-	tmp_turd = calloc(1, sizeof(turd_struct));
+	tmp_turd = (turd_struct *)calloc(1, sizeof(turd_struct));
 	
 	if ( turd_head == NULL ) {
 		// i kan coed gud
@@ -1164,12 +1168,11 @@ turd_struct *loadTurd(char *filename) {
 	tmp_turd->r = turd_head->r;
 	turd_head->r->l = tmp_turd;
 	turd_head->r = tmp_turd;
-	
-
-	
+		
 	head_turd->calllist = 0;
 	head_turd->redraw = 1;
 
+	head_turd->tri = new trimesh(head_turd);
 
 	return head_turd;
 }
@@ -1342,148 +1345,15 @@ void interpDraw( interp_struct *in, float t, float *p , float *n) {
 
 
 
-void initTrimesh(struct turd_struct *head, int numx, int numy) {
-	struct turd_struct *cur_turd = head;
-	int t_count=0;
-		
-	if ( head->tri ) {
-		free(head->tri->ode_verts);
-		free(head->tri->ode_indices);
-	} else {
-		head->tri = calloc(1, sizeof(trimesh_struct));
-		head->tri->dataid = dGeomTriMeshDataCreate();
-		head->tri->meshid = dCreateTriMesh(NULL, head->tri->dataid, NULL, NULL, NULL);
-		
-		geom_data *data = allocate_geom_data(head->tri->meshid, track.object);
-		data->mu = track.mu;
-		data->slip = track.slip;
-		data->erp = track.erp;
-		data->cfm = track.cfm;
-		data->collide=1;
-	}
-
-	struct trimesh_struct *tri = head->tri;
-	
-	// count how many triangles we're gonna need
-	while (cur_turd->nxt) {	
-		cur_turd = cur_turd->nxt;
-		
-		// 2 for each left + right patch
-		t_count += 2;
-	}
-	
-//	printf("%d sections\n", t_count);
-	
-	// allocate memory
-	tri->v_count = t_count * (numx+1) * (numy+1);
-	tri->ode_verts = calloc(1, tri->v_count * sizeof(dVector4));
-	
-	//tri->i_count = t_count * (((2 * numx) - 2) * 3) * numy;
-	tri->i_count = t_count * numx * numy * 2 * 3;
-	tri->ode_indices = calloc(1, tri->i_count * sizeof(int));
-	
-	head->tri = tri;
-	
-	//printf("i:%d\n", tri->i);
-}
 
 
-void addTrimeshVert(struct trimesh_struct *t, int i, float *v) {
-	t->ode_verts[i][0] = v[0];
-	t->ode_verts[i][1] = v[1];
-	t->ode_verts[i][2] = v[2];
-}
 
 
-void debugTrimesh(struct trimesh_struct *tri) {
-	int i;
-	int t = 0;
-	
-	
-	for ( i = 0; i < tri->i_count; i += 3 ) {
-		int i1 = tri->ode_indices[i];
-		int i2 = tri->ode_indices[i+1];
-		int i3 = tri->ode_indices[i+2];
-		
-//		printf("i1:%d i2:%d i3:%d\n", i1,i2,i3);
-		
-		float v1x = tri->ode_verts[i1][0];
-		float v1y = tri->ode_verts[i1][1];
-		float v1z = tri->ode_verts[i1][2];
-		
-		float v2x = tri->ode_verts[i2][0];
-		float v2y = tri->ode_verts[i2][1];
-		float v2z = tri->ode_verts[i2][2];
-		
-		float v3x = tri->ode_verts[i3][0];
-		float v3y = tri->ode_verts[i3][1];
-		float v3z = tri->ode_verts[i3][2];
-		
-		glBegin(GL_LINE_STRIP);
-		if ( t == 0 ) {
-			glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, black);
-		} else {
-			glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
-		}
-		glVertex3f(v1x, v1y, v1z);
-		glVertex3f(v2x, v2y, v2z);
-		glVertex3f(v3x, v3y, v3z);
-		glVertex3f(v1x, v1y, v1z);
-		
-		glEnd();
-		
-		t = 1-t;
-	}
-}
 
-void linkTrimesh(struct turd_struct *head, int numx, int numy) {
-	struct turd_struct *cur_turd = head;
-	struct turd_struct *lr_turd;
-	int xloop,yloop;
-	int i = 0;
-	int v_off = 0;
-	struct trimesh_struct *tri= head->tri;
-	
-	while ( cur_turd->nxt ) {
-		lr_turd = cur_turd->l;
-		while ( lr_turd->r ) {
-			for (yloop = 0; yloop < numy; yloop++) {
-				for (xloop = 0; xloop < numx; xloop++) {
 
-					// anticlockwise winding
-					tri->ode_indices[i++] = v_off + (numx+1);
-					tri->ode_indices[i++] = v_off;
-					tri->ode_indices[i++] = v_off + (numx+1) + 1;
-					
-					tri->ode_indices[i++] = v_off + (numx+1) + 1;
-					tri->ode_indices[i++] = v_off;
-					tri->ode_indices[i++] = v_off + 1;				
-					
-					// skip to next vertex
-					v_off++;
-				}
-				// skip to beginning of next row
-				v_off++;
-			}	
-			
-			// we're at the end of a patch, skip the next row of vertices as
-			// they've already been linked
-			v_off +=  numx + 1;
-			
-			lr_turd = lr_turd->r;
-		}
-		
-		cur_turd = cur_turd->nxt;
-	}
 
-/*
-	printf("num ver:%d  v:%d\n", tri->v_count, v_off);
-	printf("num ind:%d  i:%d\n", tri->i_count, i);
-*/
-	
-	dGeomTriMeshDataBuildSimple( tri->dataid, tri->ode_verts[0], tri->v_count, tri->ode_indices, tri->i_count );
-	dGeomTriMeshSetData( tri->meshid, tri->dataid );
-}
+
+
 
 
 void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, interp_struct *rin, interp_struct *bin, interp_struct *tin) {
@@ -1517,7 +1387,7 @@ void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, int
 static float rp_xt = 0;
 static float rp_yt = 0;
 
-void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
+void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
 		interp_struct lin;
 		interp_struct rin;
 		interp_struct bin;
@@ -1569,7 +1439,7 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 				
 				// only need to add the currently interpolated vert, not the next one
 				// unless it's the last y-row
-				addTrimeshVert(t, i++, v);
+				t->addVert(i++, v);
 
 				interpPatch(xt,ytn,v,n, &lin,&rin,&bin,&tin);
 				glTexCoord2d(rp_xt, rp_yt + 0.5);
@@ -1578,7 +1448,7 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 				
 				// if we're in the last y loop pass, put in the top row of vertices
 				if ( yloop == yn-1 ) {
-					addTrimeshVert(t, i+xn, v);
+					t->addVert(i+xn, v);
 				}
 				
 				rp_xt += 0.5;
@@ -1616,7 +1486,7 @@ void drawRoad(struct turd_struct *head) {
 		glMaterialfv (GL_FRONT, GL_AMBIENT, black);
 		glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
 		
-		initTrimesh(head, 5, 10);
+		head->tri->init(5, 10);
 		
 		head->tri->i = 0;
 
@@ -1643,7 +1513,7 @@ void drawRoad(struct turd_struct *head) {
 		}
 			
 
-		linkTrimesh(head, 5, 10);
+		head->tri->link(5, 10);
 
 		//debugTrimesh(head->tri);
 		
@@ -1674,9 +1544,9 @@ struct turd_struct *helix;
 struct turd_struct *test;
 
 void initTurdTrack() {
-	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");
+//	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");
 //	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
-	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
+//	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 //	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 //	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
 
@@ -1687,10 +1557,10 @@ void initTurdTrack() {
 	
 }
 
-void doTurdTrack() {	
-	drawRoad(test);
-	drawRoad(spiral);
 
+void doTurdTrack() {	
+//	drawRoad(test);
+//	drawRoad(spiral);
 	//drawRoad(ramp);
 	//drawRoad(loop);
 	//drawRoad(helix);

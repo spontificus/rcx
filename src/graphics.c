@@ -7,15 +7,14 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
-// prototype
-float *mbv(float *m, float x, float y, float z);
 
-SDL_Surface *screen;
-GLdouble cpos[3] = {0,-100,30};
-GLdouble ecpos[3] = {0,-100,30};
 
 float cmat[16];
-Uint32 flags = SDL_OPENGL;
+
+#include "graphics.h"
+#include "turd.h"
+#include "main.h"
+
 
 GLuint genTex_chequers() {
 	GLuint texture;
@@ -27,7 +26,7 @@ GLuint genTex_chequers() {
 	// allocate buffer
 	width = 2;
 	height = 2;
-	data = malloc( width * height * 3 );
+	data = (char *)malloc( width * height * 3 );
 
 	char g1 = 128;
 	char g2 = 216;
