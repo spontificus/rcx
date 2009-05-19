@@ -5,6 +5,7 @@
 
 extern car_struct *venom;
 extern script_struct *box; //keep track of our loaded debug box
+extern script_struct *sphere;
 extern car_struct *focused_car;
 
 extern struct internal_struct internal;

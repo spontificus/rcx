@@ -32,7 +32,6 @@
 #include "main.h" //custom data definitions
 
 
-
 #include "graphics.h"
 #include "physics.h"
 #include "shared.h" //functions for handling custom data
@@ -102,6 +101,7 @@ int editing;
 
 car_struct *venom;
 script_struct *box; //keep track of our loaded debug box
+script_struct *sphere;
 car_struct *focused_car;
 
 SDL_Surface *screen;
@@ -233,6 +233,7 @@ int main (int argc, char *argv[])
 
 	//load box for online spawning
 	box = load_object((char *)"data/objects/misc/box");
+	sphere = load_object((char *)"data/objects/misc/sphere");
 	if (!box)
 		emergency_quit();
 

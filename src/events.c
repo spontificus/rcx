@@ -333,6 +333,10 @@ void event_step(Uint32 step)
 						}
 						break;
 
+					case SDLK_F7:
+						spawn_object (sphere, 0,0,10);
+					break;
+
 					default:
 						break;
 				}
