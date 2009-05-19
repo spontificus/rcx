@@ -117,6 +117,7 @@ typedef struct script_struct {
 	bool flipper;
 	bool NH4;
 	bool building;
+	bool sphere;
 
 	struct script_struct *next;
 } script_struct;
@@ -403,7 +404,8 @@ car_struct *allocate_car(void);
 body_data *allocate_body_data (dBodyID body, object_struct *obj);
 void free_object(object_struct *target);
 void free_car (car_struct *target);
-
+float dot(dVector3 u, dVector3 v);
+void normalise(float *n);
 
 #define __SHARED_H__
 #endif

@@ -8,6 +8,7 @@
 #include "trimesh.h"
 #include "main.h"
 #include "turd.h"
+#include "interp.h"
 
 /* loaders.c */
 int get_word_length(FILE *fp);
@@ -27,8 +28,6 @@ void makeTurdMatricies(struct turd_struct *tmp_turd);
 void setupTurdValues(struct turd_struct *tmp_turd, float x, float y, float z, float a, float b, float c);
 void calcTurd(struct turd_struct *t);
 void recalcTurd(struct turd_struct *t);
-float dot(dVector3 u, dVector3 v);
-void normalise(float *n);
 void drawRoad(struct turd_struct *head);
 void initTurdTrack(void);
 void doTurdTrack(void);
