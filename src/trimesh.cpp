@@ -29,13 +29,16 @@ void trimesh::init(int numx, int numy) {
 	i_count = t_count * numx * numy * 2 * 3;
 	ode_indices = (unsigned int *)calloc(1, i_count * sizeof(int));
 	
+	i_placed = 0;
+	
 }
 
 
-void trimesh::addVert(int i, float *v) {
-	ode_verts[i][0] = v[0];
-	ode_verts[i][1] = v[1];
-	ode_verts[i][2] = v[2];
+void trimesh::addVert(float *v) {
+	ode_verts[i_placed][0] = v[0];
+	ode_verts[i_placed][1] = v[1];
+	ode_verts[i_placed][2] = v[2];
+	i_placed++;
 }
 
 
@@ -79,12 +82,16 @@ void trimesh::link(int numx, int numy) {
 	}
 
 /*
-	printf("num ver:%d  v:%d\n", tri->v_count, v_off);
-	printf("num ind:%d  i:%d\n", tri->i_count, i);
+	printf("num ver:%d  v:%d placed:%d\n", v_count, v_off, i_placed);
+	printf("num ind:%d  i:%d\n", i_count, i);
 */
 	
 	dGeomTriMeshDataBuildSimple( dataid, ode_verts[0], v_count, ode_indices, i_count );
 	dGeomTriMeshSetData( meshid, dataid );
+	
+	// force recompute of AABBs.. stupid ode
+	dReal aabb[6];
+	dGeomGetAABB(meshid, aabb);
 }
 
 

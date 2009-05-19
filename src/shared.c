@@ -728,6 +728,7 @@ float *mbv(float *m, float x, float y, float z) {
 	return (float *)&v;
 }
 
+
 void print_matrix( float *m ) {
 	printf("%f %f %f %f\n", m[0], m[4], m[8], m[12]);
 	printf("%f %f %f %f\n", m[1], m[5], m[9], m[13]);

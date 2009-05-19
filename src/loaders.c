@@ -9,8 +9,6 @@
 
 #include "loaders.h"
 
-
-
 //read a line from file pointer, remove blanks and sepparate words
 //guaranteed to return at least one word, or (if nothing left), NULL
 int get_word_length(FILE *fp)
@@ -1344,18 +1342,6 @@ void interpDraw( interp_struct *in, float t, float *p , float *n) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, interp_struct *rin, interp_struct *bin, interp_struct *tin) {
 	float vl[3];
 	float vr[3];
@@ -1404,7 +1390,6 @@ void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, str
 		float xti,yti;
 		float ytn;
 		float ytni;
-		int i=t->i;
 	
 		float v[3];
 		float n[3];
@@ -1418,7 +1403,7 @@ void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, str
 		
 		glBindTexture( GL_TEXTURE_2D, tex_ch );
 		
-		for (yloop=0; yloop<yn; yloop++) {
+		for (yloop=0; yloop<=yn; yloop++) {
 			
 			yt = (float)yloop/yn;
 			yti = (float)(1.0 - yt);
@@ -1432,23 +1417,25 @@ void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, str
 				xt = (float)xloop/xn;
 				xti = (float)(1.0 - xt);
 				
-				interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
-				glTexCoord2d(rp_xt, rp_yt);
-				glNormal3f(n[0], n[1], n[2]);
-				glVertex3f(v[0], v[1], v[2]);
-				
-				// only need to add the currently interpolated vert, not the next one
-				// unless it's the last y-row
-				t->addVert(i++, v);
+				if ( yloop < yn ) {
+					interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
+					glTexCoord2d(rp_xt, rp_yt);
+					glNormal3f(n[0], n[1], n[2]);
+					glVertex3f(v[0], v[1], v[2]);
+					
+					// only need to add the currently interpolated vert, not the next one
+					// unless it's the last y-row
+					t->addVert(v);
 
-				interpPatch(xt,ytn,v,n, &lin,&rin,&bin,&tin);
-				glTexCoord2d(rp_xt, rp_yt + 0.5);
-				glNormal3f(n[0], n[1], n[2]);
-				glVertex3f(v[0], v[1], v[2]);
-				
-				// if we're in the last y loop pass, put in the top row of vertices
-				if ( yloop == yn-1 ) {
-					t->addVert(i+xn, v);
+					interpPatch(xt,ytn,v,n, &lin,&rin,&bin,&tin);
+					glTexCoord2d(rp_xt, rp_yt + 0.5);
+					glNormal3f(n[0], n[1], n[2]);
+					glVertex3f(v[0], v[1], v[2]);
+				} else {
+					// if we're in the last y loop pass, put in the top row of vertices
+					interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
+					t->addVert(v);
+					
 				}
 				
 				rp_xt += 0.5;
@@ -1459,11 +1446,6 @@ void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, str
 		}
 		
 		glBindTexture( GL_TEXTURE_2D, 0 );
-		
-		// account for the top row of vertices
-		i += xn + 1;
-		//printf("i:%d\n", i);
-		t->i = i;
 }
 
 
@@ -1488,8 +1470,6 @@ void drawRoad(struct turd_struct *head) {
 		
 		head->tri->init(5, 10);
 		
-		head->tri->i = 0;
-
 		cur_turd = head;
 		while (cur_turd->nxt) {	
 			nxt_turd = cur_turd->nxt;
@@ -1515,11 +1495,11 @@ void drawRoad(struct turd_struct *head) {
 
 		head->tri->link(5, 10);
 
-		//debugTrimesh(head->tri);
+		//head->tri->drawDebug();
 		
 		glEndList();	
 		
-		head->redraw = 0;
+		head->redraw = 1;
 	}
 	
 	glCallList( head->calllist );
@@ -1544,9 +1524,9 @@ struct turd_struct *helix;
 struct turd_struct *test;
 
 void initTurdTrack() {
-//	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");
-//	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
-//	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
+	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");
+	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
+	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 //	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 //	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
 
@@ -1558,10 +1538,10 @@ void initTurdTrack() {
 }
 
 
-void doTurdTrack() {	
-//	drawRoad(test);
-//	drawRoad(spiral);
-	//drawRoad(ramp);
+void doTurdTrack() {
+	drawRoad(test);
+	drawRoad(spiral);
+	drawRoad(ramp);
 	//drawRoad(loop);
 	//drawRoad(helix);
 }
