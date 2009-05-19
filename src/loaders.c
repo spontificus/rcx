@@ -520,6 +520,22 @@ script_struct *load_object(char *path)
 
 		script->NH4 = true;
 	}
+	else if (!strcmp(path, "data/objects/misc/sphere"))
+	{
+		printlog(1, " (hard-coded sphere)\n");
+
+		script = allocate_script();
+		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
+		strcpy (script->name, path);
+
+		//draw approximate sphere
+		script->graphics_debug1 = allocate_file_3d();
+		debug_draw_sphere (script->graphics_debug1->list,2, lblue,white,42);
+//		script->graphics_debug2 = allocate_file_3d();
+//		debug_draw_sphere (script->graphics_debug2->list,1.6,white,white,42);
+
+		script->sphere = true;
+	}
 	else if (!strcmp(path, "data/objects/misc/building"))
 	{
 		printlog(1, " (hard-coded building)\n");
@@ -739,6 +755,35 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//done
 	//
 	//
+	}
+	else if (script->sphere)
+	{
+	printlog(1, " (sphere)\n");
+	//
+	//
+	//
+
+	object_struct *obj = allocate_object(true, true);
+
+	//center sphere
+	dGeomID geom  = dCreateSphere (0, 1); //geom
+	geom_data *data = allocate_geom_data(geom, obj);
+	dBodyID body1 = dBodyCreate (world);
+
+	dMass m;
+	dMassSetSphere (&m,1,1); //radius
+	dMassAdjust (&m,60); //mass
+	dBodySetMass (body1, &m);
+
+	dGeomSetBody (geom, body1);
+
+	dBodySetPosition (body1, x, y, z);
+
+	data->mu = 1;
+	data->bounce = 1.5;
+	
+	//Next, Graphics
+	data->file_3d = script->graphics_debug1;
 	}
 	//
 	else if (script->building)

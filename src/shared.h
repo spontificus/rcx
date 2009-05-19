@@ -126,6 +126,7 @@ typedef struct script_struct {
 	bool flipper;
 	bool NH4;
 	bool building;
+	bool sphere;
 
 	struct script_struct *next;
 } script_struct;

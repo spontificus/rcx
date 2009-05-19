@@ -34,6 +34,7 @@
 
 car_struct *venom;
 script_struct *box; //keep track of our loaded debug box
+script_struct *sphere;
 car_struct *focused_car = NULL;
 
 void printlog (int, const char*, ...); //prototype (for included functions
@@ -151,6 +152,7 @@ int main (int argc, char *argv[])
 
 	//load box for online spawning
 	box = load_object((char *)"data/objects/misc/box");
+	sphere = load_object((char *)"data/objects/misc/sphere");
 	if (!box)
 		emergency_quit();
 
