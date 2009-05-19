@@ -83,6 +83,10 @@ void event_step(Uint32 step)
 						printlog(1, "(10sec height)\n");
 						spawn_object (box ,0,0,489.5);
 					break;
+					
+					case SDLK_F7:
+						spawn_object (sphere, 0,0,10);
+					break;
 
 					default:
 						break;
