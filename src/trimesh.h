@@ -15,10 +15,10 @@ class trimesh {
 	struct geom_data_struct *data;
 	int v_count;
 	int i_count;
+	int i_placed;
 
 	struct turd_struct *head;
 public:
-	int i; 
 
 	trimesh(struct turd_struct *h) {
 		head = h;
@@ -26,7 +26,6 @@ public:
 		ode_indices = NULL;
 		v_count = 0;
 		i_count = 0;
-		i = 0;
 		
 		dataid = dGeomTriMeshDataCreate();
 		meshid = dCreateTriMesh(NULL, dataid, NULL, NULL, NULL);
@@ -40,7 +39,7 @@ public:
 	}
 	
 	void init(int numx, int numy);
-	void addVert(int i, float *v);
+	void addVert(float *v);
 	void link(int numx, int numy);
 	void drawDebug();
 
