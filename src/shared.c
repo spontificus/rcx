@@ -725,3 +725,21 @@ void print_matrix( float *m ) {
 	printf("%f %f %f %f\n", m[3], m[7], m[11], m[15]);
 }
 
+
+// inner product of two vectors
+float dot(dVector3 u, dVector3 v) {
+	return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+}
+
+void normalise(float *n) {
+	float d = sqrt( pow(n[0],2) + pow(n[1],2) + pow(n[2],2) );
+	
+	if ( d == 0 ) {
+		return;
+	}
+
+	n[0] /= d;
+	n[1] /= d;
+	n[2] /= d;
+}
+

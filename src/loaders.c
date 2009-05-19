@@ -1178,173 +1178,7 @@ turd_struct *loadTurd(const char *filename) {
 }
 
 
-
-// inner product of two vectors
-float dot(dVector3 u, dVector3 v) {
-	return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
-}
-
-void normalise(float *n) {
-	float d = sqrt( pow(n[0],2) + pow(n[1],2) + pow(n[2],2) );
-	
-	if ( d == 0 ) {
-		return;
-	}
-
-	n[0] /= d;
-	n[1] /= d;
-	n[2] /= d;
-}
-
-
-// creates an interpolation object from two control points
-interp_struct *interpInit( interp_struct *in, int axis, turd_struct *cur_turd, turd_struct *nxt_turd ) {
-		float dist;
-		float psdx,psdy,psdz, pedx,pedy,pedz;
-		in->axis = axis;
-		
-		in->ps0x = cur_turd->wx;
-		in->ps0y = cur_turd->wy;
-		in->ps0z = cur_turd->wz;
-		
-		in->pe0x = nxt_turd->wx;
-		in->pe0y = nxt_turd->wy;
-		in->pe0z = nxt_turd->wz;
-		
-		float xydist = pow( in->pe0x - in->ps0x, 2 ) + pow( in->pe0y - in->ps0y, 2 );
-		dist = sqrt( xydist + pow( in->pe0z - in->ps0z, 2 ) ); // 2.82842712;
-		
-		// generate bezier control points as half distance along normal vectors
-		switch ( in->axis ) {
-			case X_AXIS:
-				psdx = cur_turd->xnx - in->ps0x;
-				psdy = cur_turd->xny - in->ps0y;
-				psdz = cur_turd->xnz - in->ps0z;
-				pedx = nxt_turd->xnx - in->pe0x;
-				pedy = nxt_turd->xny - in->pe0y;
-				pedz = nxt_turd->xnz - in->pe0z;
-				break;
-			
-			case Y_AXIS:
-				psdx = cur_turd->ynx - in->ps0x;
-				psdy = cur_turd->yny - in->ps0y;
-				psdz = cur_turd->ynz - in->ps0z;
-				pedx = nxt_turd->ynx - in->pe0x;
-				pedy = nxt_turd->yny - in->pe0y;
-				pedz = nxt_turd->ynz - in->pe0z;				
-				break;
-		
-			case Z_AXIS:
-				psdx = cur_turd->znx - in->ps0x;
-				psdy = cur_turd->zny - in->ps0y;
-				psdz = cur_turd->znz - in->ps0z;
-				pedx = nxt_turd->znx - in->pe0x;
-				pedy = nxt_turd->zny - in->pe0y;
-				pedz = nxt_turd->znz - in->pe0z;
-				break;
-				
-			default:
-				printlog(0, "Axis rotation type not supported, try another dimension");
-				exit(0);
-				break;
-		}
-		
-		in->scx = in->ps0x + psdx * dist;
-		in->scy = in->ps0y + psdy * dist;
-		in->scz = in->ps0z + psdz * dist;
-		
-		in->tcx = in->pe0x - pedx * dist;
-		in->tcy = in->pe0y - pedy * dist;
-		in->tcz = in->pe0z - pedz * dist;
-		
-		in->snx = cur_turd->anx;
-		in->sny = cur_turd->any;
-		in->snz = cur_turd->anz;
-		
-		in->enx = nxt_turd->anx;
-		in->eny = nxt_turd->any;
-		in->enz = nxt_turd->anz;
-		
-		return in;
-}
-
-
-// inputs an interpolation struct, with a desired scale (t = 0->1), and populates
-// point 'p'
-//
-// cp[xyz] is a moving control point, which moves (with t) along the 3d line
-//   represented by the closest points the of the y-axis of each interpolation
-//   object (sc[xyz]->tc[xyz]
-//
-// sp[xyz] is the control point which moves (with t) from the starting
-//   point to cp[xyz]
-//
-// ep[xyz] moves from cp[xyz] to the end point
-//
-// The point p is derived from the line sp[xyz]->ep[xyz], scaled by t.
-//
-// Once sc[xyz]->tc[xyz] has been discovered, interpolation is equally cheap
-// for any value of 't'.
-//
-void interpDraw( interp_struct *in, float t, float *p , float *n) {
-//	static float cp[3], sp[3], ep[3];
-	static float s2cp[3], cp2e[3];
-	static float cn[3], sn[3], en[3];
-	
-	s2cp[0] = in->ps0x + t * (in->scx - in->ps0x);
-	s2cp[1] = in->ps0y + t * (in->scy - in->ps0y);
-	s2cp[2] = in->ps0z + t * (in->scz - in->ps0z);
-	
-	cp2e[0] = in->tcx + t * (in->pe0x - in->tcx);
-	cp2e[1] = in->tcy + t * (in->pe0y - in->tcy);
-	cp2e[2] = in->tcz + t * (in->pe0z - in->tcz);
-
-	p[0] = s2cp[0] + t * (cp2e[0] - s2cp[0]);
-	p[1] = s2cp[1] + t * (cp2e[1] - s2cp[1]);
-	p[2] = s2cp[2] + t * (cp2e[2] - s2cp[2]);
-	
-	/*
-	sp[0] = in->ps0x + t * (cp[0] - in->ps0x);
-	sp[1] = in->ps0y + t * (cp[1] - in->ps0y);
-	sp[2] = in->ps0z + t * (cp[2] - in->ps0z);
-	
-	ep[0] = cp[0] + t * (in->pe0x - cp[0]);
-	ep[1] = cp[1] + t * (in->pe0y - cp[1]);
-	ep[2] = cp[2] + t * (in->pe0z - cp[2]);
-	
-	p[0] = sp[0] + t * (ep[0] - sp[0]);
-	p[1] = sp[1] + t * (ep[1] - sp[1]);
-	p[2] = sp[2] + t * (ep[2] - sp[2]);
-	*/
-	
-	// more smoothing
-	//p[0] = (in->ps0x + t * (in->scx - in->ps0x)) + 
-	
-	// any better way to calculate normal?
-	cn[0] = in->snx + t * (in->enx - in->snx);
-	cn[1] = in->sny + t * (in->eny - in->sny);
-	cn[2] = in->snz + t * (in->enz - in->snz);
-	normalise(cn);
-
-	sn[0] = in->snx + t * (cn[0] - in->snx);
-	sn[1] = in->sny + t * (cn[1] - in->sny);
-	sn[2] = in->snz + t * (cn[2] - in->snz);
-	normalise(sn);
-	
-	en[0] = in->enx + t * (in->enx - cn[0]);
-	en[1] = in->eny + t * (in->eny - cn[1]);
-	en[2] = in->enz + t * (in->enz - cn[2]);
-	normalise(en);
-	
-	n[0] = sn[0] + t * (en[0] - sn[0]);
-	n[1] = sn[1] + t * (en[1] - sn[1]);
-	n[2] = sn[2] + t * (en[2] - sn[2]);
-	normalise(n);
-
-}
-
-
-void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, interp_struct *rin, interp_struct *bin, interp_struct *tin) {
+void interpPatch(float tx, float ty, float *v, float *n, interp *lin, interp *rin, interp *bin, interp *tin) {
 	float vl[3];
 	float vr[3];
 	float vb[3];
@@ -1358,10 +1192,10 @@ void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, int
 	float txi = 1.0 - tx;
 	float tyi = 1.0 - ty;
 	
-	interpDraw( lin, ty, (float *)&vl, (float *)&nl);
-	interpDraw( rin, ty, (float *)&vr, (float *)&nr);
-	interpDraw( bin, tx, (float *)&vb, (float *)&nb);
-	interpDraw( tin, tx, (float *)&vt, (float *)&nt);
+	lin->draw( ty, (float *)&vl, (float *)&nl);
+	rin->draw( ty, (float *)&vr, (float *)&nr);
+	bin->draw( tx, (float *)&vb, (float *)&nb);
+	tin->draw( tx, (float *)&vt, (float *)&nt);
 		
 	v[0] = ( vl[0]*txi + vr[0]*tx + vb[0]*tyi + vt[0]*ty ) / 2.0;
 	v[1] = ( vl[1]*txi + vr[1]*tx + vb[1]*tyi + vt[1]*ty ) / 2.0;
@@ -1372,19 +1206,20 @@ void interpPatch(float tx, float ty, float *v, float *n, interp_struct *lin, int
 	n[2] = ( nl[2]*txi + nr[2]*tx + nb[2]*tyi + nt[2]*ty ) / 2.0;
 }
 
+
 static float rp_xt = 0;
 static float rp_yt = 0;
 
 void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
-		interp_struct lin;
-		interp_struct rin;
-		interp_struct bin;
-		interp_struct tin;
+		interp *lin = new interp();
+		interp *rin = new interp();
+		interp *bin = new interp();
+		interp *tin = new interp();
 				
-		interpInit(&lin, Y_AXIS, bl, tl);
-		interpInit(&rin, Y_AXIS, br, tr);
-		interpInit(&bin, X_AXIS, bl, br);
-		interpInit(&tin, X_AXIS, tl, tr);
+		lin->init(Y_AXIS, bl, tl);
+		rin->init(Y_AXIS, br, tr);
+		bin->init(X_AXIS, bl, br);
+		tin->init(X_AXIS, tl, tr);
 		
 		int xloop,yloop;
 		
@@ -1420,7 +1255,7 @@ void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, str
 				xti = (float)(1.0 - xt);
 				
 				if ( yloop < yn ) {
-					interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
+					interpPatch(xt,yt,v,n, lin,rin,bin,tin);
 					glTexCoord2d(rp_xt, rp_yt);
 					glNormal3f(n[0], n[1], n[2]);
 					glVertex3f(v[0], v[1], v[2]);
@@ -1429,13 +1264,13 @@ void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, str
 					// unless it's the last y-row
 					t->addVert(v);
 
-					interpPatch(xt,ytn,v,n, &lin,&rin,&bin,&tin);
+					interpPatch(xt,ytn,v,n, lin,rin,bin,tin);
 					glTexCoord2d(rp_xt, rp_yt + 0.5);
 					glNormal3f(n[0], n[1], n[2]);
 					glVertex3f(v[0], v[1], v[2]);
 				} else {
 					// if we're in the last y loop pass, put in the top row of vertices
-					interpPatch(xt,yt,v,n, &lin,&rin,&bin,&tin);
+					interpPatch(xt,yt,v,n, lin,rin,bin,tin);
 					t->addVert(v);
 					
 				}
