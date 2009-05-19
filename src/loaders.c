@@ -1483,6 +1483,10 @@ void linkTrimesh(struct turd_struct *head, int numx, int numy) {
 	
 	dGeomTriMeshDataBuildSimple( tri->dataid, tri->ode_verts[0], tri->v_count, tri->ode_indices, tri->i_count );
 	dGeomTriMeshSetData( tri->meshid, tri->dataid );
+	
+	// force recompute of AABBs.. stupid ode
+	dReal aabb[6];
+	dGeomGetAABB(tri->meshid, aabb);
 }
 
 
