@@ -23,14 +23,10 @@ void debug_draw_sphere(GLuint list, GLfloat d, GLfloat colour[], GLfloat specula
 script_struct *load_object(char *path);
 void debug_joint_fixed(dBodyID body1, dBodyID body2, object_struct *obj);
 void spawn_object(script_struct *script, dReal x, dReal y, dReal z);
-float *mbv(float *m, float x, float y, float z);
-void makeTurdMatricies(struct turd_struct *tmp_turd);
-void setupTurdValues(struct turd_struct *tmp_turd, float x, float y, float z, float a, float b, float c);
-void calcTurd(struct turd_struct *t);
-void recalcTurd(struct turd_struct *t);
-void drawRoad(struct turd_struct *head);
+void drawRoad(struct turd *head);
 void initTurdTrack(void);
 void doTurdTrack(void);
+void recalcTurd( turd *t );
 int load_track(char *path);
 car_struct *load_car(char *path);
 void spawn_car(car_struct *target, dReal x, dReal y, dReal z);

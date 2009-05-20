@@ -107,10 +107,10 @@ car_struct *focused_car;
 SDL_Surface *screen;
 GLdouble cpos[3];
 Uint32 flags;
-turd_struct *turd_head;
-turd_struct *edit_t;
-turd_struct *edit_h;
-turd_struct edit_b;
+turd *turd_head;
+turd *edit_t;
+turd *edit_h;
+turd edit_b;
 int edit_m;
 
 dWorldID world;

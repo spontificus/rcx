@@ -1,5 +1,6 @@
 #ifndef __GRAPHICS_H__
 #include "shared.h"
+#include "loaders.h"
 
 extern SDL_Surface *screen;
 extern GLdouble cpos[3];

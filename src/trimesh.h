@@ -2,8 +2,11 @@
 #include <ode/ode.h>
 #include "shared.h"
 #include "main.h"
+
 // prototypes
 geom_data *allocate_geom_data (dGeomID geom, object_struct *obj);
+
+class turd;
 
 class trimesh {
 
@@ -17,10 +20,10 @@ class trimesh {
 	int i_count;
 	int i_placed;
 
-	struct turd_struct *head;
+	turd *head;
 public:
 
-	trimesh(struct turd_struct *h) {
+	trimesh(turd *h) {
 		head = h;
 		ode_verts = NULL;
 		ode_indices = NULL;

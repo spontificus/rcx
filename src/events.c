@@ -14,8 +14,8 @@ void event_step(Uint32 step)
 {
 	//loop geoms to see if any event
 	geom_data *geom = geom_data_head;
-	struct turd_struct *t;
-	struct turd_struct *nt;
+	turd *t;
+	turd *nt;
 	FILE *fp;
 	
 	while (geom)
@@ -237,13 +237,13 @@ void event_step(Uint32 step)
 							edit_t = edit_t->l;
 						}
 						
-						nt = (turd_struct *)calloc(1, sizeof(turd_struct));
-						setupTurdValues(nt, 0,15,0, 0,0,0);
+						nt = new turd();
+						nt->setup(0,15,0, 0,0,0);
 
-						nt->l = (turd_struct *)calloc(1, sizeof(turd_struct));
-						nt->r = (turd_struct *)calloc(1, sizeof(turd_struct));
-						setupTurdValues(nt->l, -10,0,0, 0,0,0);					
-						setupTurdValues(nt->r, 10,0,0, 0,0,0);
+						nt->l = new turd();
+						nt->r = new turd();
+						nt->l->setup(-10,0,0, 0,0,0);					
+						nt->r->setup(10,0,0, 0,0,0);
 						nt->l->r = nt;
 						nt->r->l = nt;
 						
@@ -270,6 +270,10 @@ void event_step(Uint32 step)
 						edit_t->r->nxt = nt->r;
 						
 						edit_t = nt;
+						
+						if ( nt->l->r != nt || nt->r->l != nt ) {
+							printf("\n!!!!!\n");
+						}
 						
 						recalcTurd(edit_h);
 						t_backup(edit_t);
@@ -326,6 +330,7 @@ void event_step(Uint32 step)
 #endif
 						t = edit_h;
 						while (t) {
+							//printf("t:%p lr:%p rl:%p\n", t, t->r, t->r->r);
 							fprintf(fp,"%f %f %f %f %f %f c\n", t->x/15, t->y/15, t->z/15, t->a, t->b, t->c);
 							fprintf(fp,"%f %f %f %f %f %f l\n", t->l->x/15, t->l->y/15, t->l->z/15, t->l->a, t->l->b, t->l->c);
 							fprintf(fp,"%f %f %f %f %f %f r\n", t->r->x/15, t->r->y/15, t->r->z/15, t->r->a, t->r->b, t->r->c);

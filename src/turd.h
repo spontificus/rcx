@@ -1,11 +1,21 @@
 #ifndef __TURD_H__
 
+#include "shared.h"
 #include "trimesh.h"
 class trimesh;
 
+class turd {
+public:
+	turd() {
+		l = NULL;
+		r = NULL;
+		pre = NULL;
+		nxt = NULL;
+		
+		calllist = 0;
+		redraw = 1;
+	}
 
-
-typedef struct turd_struct {
 	float x,y,z;
 	float a,b,c;
 	float xnx,xny,xnz;
@@ -15,22 +25,26 @@ typedef struct turd_struct {
 	float wx,wy,wz;
 	
 	GLfloat m[16];
-	struct turd_struct *l;
-	struct turd_struct *r;
-	struct turd_struct *pre;
-	struct turd_struct *nxt;
+	turd *l;
+	turd *r;
+	turd *pre;
+	turd *nxt;
 	
 	// should be elsewhere
 	trimesh *tri;
 	int calllist;
 	int redraw;
 	
-} turd_struct;
+	void load(const char *filename);
+	void setup( float x,float y,float z, float a,float b,float c );
+	void makeMatricies();
+	void calc();
+};
 
-extern turd_struct *turd_head;
-extern turd_struct *edit_t;
-extern turd_struct *edit_h;
-extern turd_struct edit_b;
+extern turd *turd_head;
+extern turd *edit_t;
+extern turd *edit_h;
+extern turd edit_b;
 extern int edit_m;
 
 #define X_AXIS 1
@@ -41,10 +55,8 @@ extern int edit_m;
 
 
 // function prototypes
-void doTurdTrack();
-void makeTurd( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c );
-void t_backup( turd_struct *t );
-void t_restore( turd_struct *t );
+void t_backup( turd *t );
+void t_restore( turd *t );
 
 #define __TURD_H__
 #endif

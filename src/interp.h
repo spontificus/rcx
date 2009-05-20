@@ -6,7 +6,7 @@ public:
 	}
 
 	void draw(float t, float *p , float *n);
-  void init( int axis, turd_struct *cur_turd, turd_struct *nxt_turd );
+  void init( int axis, turd *cur_turd, turd *nxt_turd );
 
 	float ps0x,ps0y,ps0z;
 	float ps1x,ps1y,ps1z;

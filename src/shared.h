@@ -398,6 +398,7 @@ void free_object(object_struct *target);
 void free_car (car_struct *target);
 float dot(dVector3 u, dVector3 v);
 void normalise(float *n);
+float *mbv(float *m, float x, float y, float z);
 
 #define __SHARED_H__
 #endif
