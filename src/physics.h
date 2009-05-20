@@ -1,4 +1,6 @@
 #ifndef __PHYSICS_H__
+#define __PHYSICS_H__
+
 #include <ode/ode.h>
 #include "shared.h"
 
@@ -13,5 +15,4 @@ void body_physics_step(void);
 void physics_step(void);
 void physics_quit(void);
 
-#define __PHYSICS_H__
 #endif

@@ -1,4 +1,6 @@
 #ifndef __GRAPHICS_H__
+#define __GRAPHICS_H__
+
 #include "shared.h"
 #include "loaders.h"
 
@@ -19,5 +21,4 @@ void graphics_step(Uint32 step);
 void graphics_loop(void);
 void graphics_quit(void);
 
-#define __GRAPHICS_H__
 #endif

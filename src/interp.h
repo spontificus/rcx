@@ -1,3 +1,5 @@
+#ifndef __INTERP_H__
+#define __INTERP_H__
 #include "turd.h"
 
 class interp {
@@ -25,3 +27,5 @@ public:
 	int axis;
 
 };
+
+#endif

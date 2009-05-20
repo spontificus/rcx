@@ -755,5 +755,3 @@ float *mbv(float *m, float x, float y, float z) {
 	
 	return (float *)&v;
 }
-
-

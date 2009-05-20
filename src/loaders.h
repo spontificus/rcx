@@ -1,9 +1,12 @@
 #ifndef __LOADERS_H__
+#define __LOADERS_H__
 
 #include <ode/ode.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <ctype.h>
 #include "shared.h"
+
 
 #include "trimesh.h"
 #include "main.h"
@@ -33,5 +36,4 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z);
 void remove_object(object_struct *target);
 void remove_car(car_struct *target);
 
-#define __LOADERS_H__
 #endif

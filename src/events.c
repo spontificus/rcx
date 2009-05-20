@@ -463,4 +463,3 @@ void event_loop (void)
 		time_old = time;
 	}
 }
-

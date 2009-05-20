@@ -145,5 +145,3 @@ void interp::draw(float t, float *p , float *n) {
 	normalise(n);
 
 }
-
-

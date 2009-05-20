@@ -1,4 +1,5 @@
 #ifndef __TURD_H__
+#define __TURD_H__
 
 #include "shared.h"
 #include "trimesh.h"
@@ -58,5 +59,4 @@ extern int edit_m;
 void t_backup( turd *t );
 void t_restore( turd *t );
 
-#define __TURD_H__
 #endif

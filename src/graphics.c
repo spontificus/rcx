@@ -312,5 +312,3 @@ void graphics_quit(void)
 	printlog(1, "=> Quit graphics\n");
 	SDL_Quit();
 }
-
-

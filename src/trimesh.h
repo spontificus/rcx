@@ -1,4 +1,6 @@
 #ifndef __TRIMESH_H__
+#define __TRIMESH_H__
+
 #include <ode/ode.h>
 #include "shared.h"
 #include "main.h"
@@ -48,5 +50,4 @@ public:
 
 };
 
-#define __TRIMESH_H__
 #endif
