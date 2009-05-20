@@ -3,7 +3,7 @@ SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c trimesh.cpp tur
 #normal args and libs
 LIBS    = sdl gl glu
 ARGS    = -g -pipe -Wall -lm  -DdSINGLE -lode
-CC      = g++34
+CC      = g++
 
 #windows specific args and libs
 W32LIBS = `sdl-config --static-libs --cflags --libs` `ode-config --cflags --libs` -lm -lopengl32 -lglu32
