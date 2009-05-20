@@ -252,7 +252,7 @@ int main (int argc, char *argv[])
 
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
 	Uint32 realtime; //real time (with possible delay since last update)
-	Uint32 stepsize_ms = internal.stepsize*1000;
+	Uint32 stepsize_ms = (Uint32)(internal.stepsize*1000);
 
 	printlog (0, "\n-> Starting Race\n");
 	runlevel = running;
