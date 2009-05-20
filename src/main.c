@@ -109,10 +109,10 @@ SDL_Surface *screen;
 GLdouble cpos[3];
 GLdouble ecpos[3];
 Uint32 flags;
-turd_struct *turd_head;
-turd_struct *edit_t;
-turd_struct *edit_h;
-turd_struct edit_b;
+turd *turd_head;
+turd *edit_t;
+turd *edit_h;
+turd edit_b;
 int edit_m;
 
 dWorldID world;
@@ -308,4 +308,3 @@ int main (int argc, char *argv[])
 	printlog(0, "\nBye!\n\n");
 	return 0;
 }
-

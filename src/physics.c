@@ -393,4 +393,3 @@ void physics_quit (void)
 	dWorldDestroy (world);
 	dCloseODE();
 }
-

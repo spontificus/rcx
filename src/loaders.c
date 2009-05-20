@@ -985,242 +985,6 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 }
 
 
-
-
-
-
-
-void makeTurdMatricies( struct turd_struct *tmp_turd ) {
-	float *mvr;
-	
-	// store current matrix
-	glGetFloatv(GL_MODELVIEW_MATRIX,tmp_turd->m);
-	
-	// real world coords
-	mvr = mbv(tmp_turd->m, 0,0,0);
-	tmp_turd->wx = mvr[0];
-	tmp_turd->wy = mvr[1];
-	tmp_turd->wz = mvr[2];
-
-	// (x-axis)
-	mvr = mbv(tmp_turd->m, 1,0,0);
-	tmp_turd->xnx = mvr[0];
-	tmp_turd->xny = mvr[1];
-	tmp_turd->xnz = mvr[2];
-
-	// direction of travel (y-axis)
-	mvr = mbv(tmp_turd->m, 0,1,0);
-	tmp_turd->ynx = mvr[0];
-	tmp_turd->yny = mvr[1];
-	tmp_turd->ynz = mvr[2];
-
-	// (z-axis)
-	mvr = mbv(tmp_turd->m, 0,0,1);
-	tmp_turd->znx = mvr[0];
-	tmp_turd->zny = mvr[1];
-	tmp_turd->znz = mvr[2];
-
-	// and the actual normal
-	mvr = mbv(tmp_turd->m, 0,0,1);
-	tmp_turd->anx = mvr[0] - tmp_turd->wx;
-	tmp_turd->any = mvr[1] - tmp_turd->wy;
-	tmp_turd->anz = mvr[2] - tmp_turd->wz;
-}
-
-void setupTurdValues( struct turd_struct *tmp_turd, float x,float y,float z, float a,float b,float c ) {
-	tmp_turd->x = x;
-	tmp_turd->y = y;
-	tmp_turd->z = z;
-	tmp_turd->a = a;
-	tmp_turd->b = b;
-	tmp_turd->c = c;
-}
-
-
-void calcTurd( struct turd_struct *t ) {
-	glPushMatrix();		
-	glMatrixMode(GL_MODELVIEW);
-	
-	// go through entire list, using gl to process the relational
-	// offsets, and store the matrix for each node, which we'll
-	// use later. It would perhaps be nicer to use our own matrix
-	// math library, rather than invoking gl, but i don't know how
-	// to do that, and this works for now.
-	//
-	while ( t ) {
-		glTranslatef(t->x,t->y,t->z);
-		glRotatef(t->a,1,0,0);
-		glRotatef(t->b,0,1,0);
-		glRotatef(t->c,0,0,1);
-		makeTurdMatricies( t );
-		
-		glPushMatrix();
-		glTranslatef(t->l->x, t->l->y, t->l->z);
-		glRotatef(t->l->a,1,0,0);
-		glRotatef(t->l->b,0,1,0);
-		glRotatef(t->l->c,0,0,1);
-		makeTurdMatricies( t->l );
-		glPopMatrix();		
-				
-		glPushMatrix();
-		glTranslatef(t->r->x, t->r->y, t->r->z);
-		glRotatef(t->r->a,1,0,0);
-		glRotatef(t->r->b,0,1,0);
-		glRotatef(t->r->c,0,0,1);
-		makeTurdMatricies( t->r );
-		glPopMatrix();
-			
-		t = t->nxt;
-	}
-	glPopMatrix();
-}
-
-
-
-// this _so_ should be a generic loader
-turd_struct *loadTurd(const char *filename) {
-	FILE *fp;
-	char buf[100];
-	void *ptr;
-
-#ifdef windows
-	fp = fopen(filename, "rb");
-#else
-	fp = fopen(filename, "r");
-#endif
-
-
-	float x,y,z,a,b,c;
-	char sec;
-
-  int first = 1;
-	struct turd_struct *tmp_turd = NULL;
-	struct turd_struct *head_turd = NULL;
-	struct turd_struct *last_turd = NULL;
-	struct turd_struct *bast_turd = NULL;
-
-	float mod=15;
-	float xmod=10;
-
-	int count = 0;
-	int res;
-
-	printlog(0, "Loading Trackfile: %s\n", filename);
-
-	while ( (ptr = fgets((char *)&buf, 100, fp)) ) {
-		count++;
-		res = sscanf(buf, "%f %f %f %f %f %f %c", &x, &y, &z, &a, &b, &c, &sec);
-//		printf("res:%d\n", res);
-		if ( res != 7 ) {
-			res = sscanf(buf, "%f %f %f %f %f %f", &x, &y, &z, &a, &b, &c);
-			if ( res != 6 ) {
-				printlog(0, "Track format not recognised\n");
-				exit(1);
-			}
-		
-			printlog(0, "add track section type (c,l,r) to end of line\n");
-			sec = 'c';
-		}
-
-		x *= mod;
-		y *= mod;
-		z *= mod;
-
-		switch ( sec ) {
-			case 'c':
-//				printf("c\n");
-				tmp_turd = (turd_struct *)calloc(1,sizeof(turd_struct));		
-
-				setupTurdValues(tmp_turd, x,y,z, a,b,c);
-
-				// left and right side of road are offset from center
-				bast_turd = (turd_struct *)calloc(1,sizeof(turd_struct));
-				setupTurdValues( bast_turd, -xmod,0,0, 0,0,0 );
-				bast_turd->r = tmp_turd;
-				tmp_turd->l = bast_turd;
-
-				bast_turd = (turd_struct *)calloc(1,sizeof(turd_struct));
-				setupTurdValues( bast_turd, xmod,0,0, 0,0,0 );
-				bast_turd->l = tmp_turd;
-				tmp_turd->r = bast_turd;
-
-				if (first == 1) {
-					first = 0;
-					head_turd = tmp_turd;
-				}
-
-				if (last_turd != NULL) {
-					last_turd->nxt = tmp_turd;
-					tmp_turd->pre = last_turd;
-					
-					last_turd->l->nxt = tmp_turd->l;
-					last_turd->r->nxt = tmp_turd->r;
-					tmp_turd->l->pre = last_turd->l;
-					tmp_turd->r->pre = last_turd->r;
-				}
-
-				last_turd = tmp_turd;
-				break;
-				
-			case 'l':
-//				printf("l\n");
-				tmp_turd->l->x = x;
-				tmp_turd->l->y = y;
-				tmp_turd->l->z = z;
-				tmp_turd->l->a = a;
-				tmp_turd->l->b = b;
-				tmp_turd->l->c = c;
-				break;
-			
-			case 'r':
-//				printf("r\n");
-				tmp_turd->r->x = x;
-				tmp_turd->r->y = y;
-				tmp_turd->r->z = z;
-				tmp_turd->r->a = a;
-				tmp_turd->r->b = b;
-				tmp_turd->r->c = c;
-				break;
-				
-			default:
-				printf("Shouldn't be here (%c)\n", sec);
-				break;
-		}
-	}
-	
-	fclose(fp);
-
-	calcTurd( head_turd );
-	
-	
-	// yeach - a holder for the global list
-	tmp_turd = (turd_struct *)calloc(1, sizeof(turd_struct));
-	
-	if ( turd_head == NULL ) {
-		// i kan coed gud
-		turd_head = tmp_turd;
-		tmp_turd->l = tmp_turd;
-		tmp_turd->r = tmp_turd;
-		
-		edit_t = head_turd;
-		edit_h = head_turd;
-	}
-	
-	tmp_turd->nxt = head_turd;
-	tmp_turd->l = turd_head;
-	tmp_turd->r = turd_head->r;
-	turd_head->r->l = tmp_turd;
-	turd_head->r = tmp_turd;
-		
-	head_turd->calllist = 0;
-	head_turd->redraw = 1;
-
-	head_turd->tri = new trimesh(head_turd);
-
-	return head_turd;
-}
-
-
 void interpPatch(float tx, float ty, float *v, float *n, interp *lin, interp *rin, interp *bin, interp *tin) {
 	float vl[3];
 	float vr[3];
@@ -1253,7 +1017,7 @@ void interpPatch(float tx, float ty, float *v, float *n, interp *lin, interp *ri
 static float rp_xt = 0;
 static float rp_yt = 0;
 
-void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, struct turd_struct *tl, struct turd_struct *tr) {
+void doRoadPatch(trimesh *t, turd *bl, turd *br, turd *tl, turd *tr) {
 		interp *lin = new interp();
 		interp *rin = new interp();
 		interp *bin = new interp();
@@ -1329,12 +1093,14 @@ void doRoadPatch(trimesh *t, struct turd_struct *bl, struct turd_struct *br, str
 }
 
 
-void drawRoad(struct turd_struct *head) {
+void drawRoad(turd *head) {
 
 	if (head->redraw == 1) {
-		struct turd_struct *cur_turd = head;
-		struct turd_struct *nxt_turd;	
-		struct turd_struct *lct,*lnt, *rct,*rnt;
+		
+	
+		turd *cur_turd = head;
+		turd *nxt_turd;	
+		turd *lct,*lnt, *rct,*rnt;
 
 		if ( head->calllist != 0 ) {
 			glDeleteLists( head->calllist, 1 );
@@ -1379,15 +1145,15 @@ void drawRoad(struct turd_struct *head) {
 		
 		glEndList();	
 		
-		head->redraw = 1;
+		head->redraw = 0;
 	}
 	
 	glCallList( head->calllist );
 	
 }
 
-void recalcTurd( turd_struct *t ) {
-	calcTurd( t );
+void recalcTurd( turd *t ) {
+	t->calc();
 	t->redraw = 1;
 	// technically we don't need to recalculate ODE in editing mode
 	if ( editing == 0 ) {
@@ -1397,18 +1163,19 @@ void recalcTurd( turd_struct *t ) {
 }
 
 
-struct turd_struct *spiral;
-struct turd_struct *ramp;
-struct turd_struct *loop;
-struct turd_struct *helix;
-struct turd_struct *test;
+turd spiral;
+turd ramp;
+turd loop;
+turd helix;
+turd test;
 
 void initTurdTrack() {
-	test = loadTurd("./data/worlds/Sandbox/tracks/Box/test.conf");
-	ramp = loadTurd("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
-	spiral = loadTurd("./data/worlds/Sandbox/tracks/Box/spiral.conf");
+	test.load("./data/worlds/Sandbox/tracks/Box/test.conf");
+	ramp.load("./data/worlds/Sandbox/tracks/Box/ramp3.conf");
+//	spiral.load("./data/worlds/Sandbox/tracks/Box/spiral.conf");
 //	loop = loadTurd("./data/worlds/Sandbox/tracks/Box/loopd.conf");
 //	helix = loadTurd("./data/worlds/Sandbox/tracks/Box/helix.conf");
+
 
 	glBegin(GL_LINES);
 		glVertex3f(0,0,0);
@@ -1419,9 +1186,9 @@ void initTurdTrack() {
 
 
 void doTurdTrack() {
-	drawRoad(test);
-	drawRoad(spiral);
-	drawRoad(ramp);
+	drawRoad(&test);
+	drawRoad(&ramp);
+	//drawRoad(&spiral);
 	//drawRoad(loop);
 	//drawRoad(helix);
 }

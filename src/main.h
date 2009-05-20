@@ -1,4 +1,5 @@
 #ifndef __MAIN_H__
+#define __MAIN_H__
 #include "shared.h"
 
 #define VERSION "0.05" //supports alphanumeric versioning
@@ -15,5 +16,4 @@ extern struct track_struct track;
 void printlog(int level, const char *text, ...);
 void emergency_quit(void);
 
-#define __MAIN_H__
 #endif

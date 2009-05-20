@@ -1,4 +1,6 @@
 #ifndef __SHARED_H__
+#define __SHARED_H__
+
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <ode/ode.h>
@@ -406,6 +408,6 @@ void free_object(object_struct *target);
 void free_car (car_struct *target);
 float dot(dVector3 u, dVector3 v);
 void normalise(float *n);
+float *mbv(float *m, float x, float y, float z);
 
-#define __SHARED_H__
 #endif

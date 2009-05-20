@@ -3,7 +3,7 @@
 #include "turd.h"
 
 void trimesh::init(int numx, int numy) {
-	struct turd_struct *cur_turd = head;
+	turd *cur_turd = head;
 	int t_count=0;
 		
 	if ( ode_verts != NULL ) {
@@ -43,14 +43,15 @@ void trimesh::addVert(float *v) {
 
 
 void trimesh::link(int numx, int numy) {
-	struct turd_struct *cur_turd = head;
-	struct turd_struct *lr_turd;
+	turd *cur_turd = head;
+	turd *lr_turd;
 	int xloop,yloop;
 	int i = 0;
 	int v_off = 0;
 	
 	while ( cur_turd->nxt ) {
 		lr_turd = cur_turd->l;
+		
 		while ( lr_turd->r ) {
 			for (yloop = 0; yloop < numy; yloop++) {
 				for (xloop = 0; xloop < numx; xloop++) {
@@ -75,6 +76,7 @@ void trimesh::link(int numx, int numy) {
 			// they've already been linked
 			v_off +=  numx + 1;
 			
+			//printf("c:%p lr:%p lrr:%p\n", cur_turd, lr_turd, lr_turd->r);
 			lr_turd = lr_turd->r;
 		}
 		

@@ -720,16 +720,6 @@ void free_all (void)
 }
 
 
-float *mbv(float *m, float x, float y, float z) {
-	static float v[3];
-	v[0] = x*m[0] + y*m[4] + z*m[8] + m[12];
-	v[1] = x*m[1] + y*m[5] + z*m[9] + m[13];
-	v[2] = x*m[2] + y*m[6] + z*m[10] + m[14];
-	
-	return (float *)&v;
-}
-
-
 void print_matrix( float *m ) {
 	printf("%f %f %f %f\n", m[0], m[4], m[8], m[12]);
 	printf("%f %f %f %f\n", m[1], m[5], m[9], m[13]);
@@ -755,3 +745,14 @@ void normalise(float *n) {
 	n[2] /= d;
 }
 
+float *mbv(float *m, float x, float y, float z) {
+	static float v[3];
+	v[0] = x*m[0] + y*m[4] + z*m[8] + m[12];
+	v[1] = x*m[1] + y*m[5] + z*m[9] + m[13];
+	v[2] = x*m[2] + y*m[6] + z*m[10] + m[14];
+	
+//	printf("in: %f %f %f\n", x,y,z);
+//	printf("out: %f %f %f\n", v[0],v[1],v[2]);
+	
+	return (float *)&v;
+}
