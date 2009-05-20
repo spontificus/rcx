@@ -621,7 +621,7 @@ void free_body_data (body_data *target)
 }
 
 //destroys a joint, and removes it from the list
-void free_joint_data (joint_data_struct *target)
+void free_joint_data (joint_data *target)
 {
 	//lets just hope the given pointer is ok...
 	printlog(2, " > freeing joint");

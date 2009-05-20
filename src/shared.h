@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <ode/ode.h>
+#include <stdbool.h> 
 
 //Shared data structs and typedefs.
 //
@@ -394,6 +395,7 @@ script_struct *allocate_script(void);
 file_3d_struct *allocate_file_3d (void);
 object_struct *allocate_object (bool adspace, bool adjointgroup);
 joint_data *allocate_joint_data (dJointID joint, object_struct *obj, bool feedback);
+geom_data *allocate_geom_data (dGeomID geom, object_struct *obj);
 car_struct *allocate_car(void);
 body_data *allocate_body_data (dBodyID body, object_struct *obj);
 void free_object(object_struct *target);

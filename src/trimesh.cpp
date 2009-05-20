@@ -2,6 +2,8 @@
 #include "trimesh.h"
 #include "turd.h"
 
+#ifdef __cplusplusx
+
 void trimesh::init(int numx, int numy) {
 	turd *cur_turd = head;
 	int t_count=0;
@@ -137,3 +139,5 @@ void trimesh::drawDebug() {
 		t = 1-t;
 	}
 }
+
+#endif

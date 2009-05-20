@@ -979,6 +979,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 }
 
 
+#ifdef __cplusplusx
 
 void interpPatch(float tx, float ty, float *v, float *n, interp *lin, interp *rin, interp *bin, interp *tin) {
 	float vl[3];
@@ -1187,6 +1188,8 @@ void doTurdTrack() {
 	//drawRoad(helix);
 }
 
+#endif  // __cplusplusx
+
 
 int load_track (char *path)
 {
@@ -1304,10 +1307,12 @@ int load_track (char *path)
 	glVertex3f (-100.0f, -100.0f, 0.0f);
 	
 	glEnd();
-	//doTurdTrack();
+	
 	glEndList();
 
+#ifdef __cplusplusx
 	initTurdTrack();
+#endif
 
 	//temp solution, ramp
 	geom = dCreateBox (0,8,12,1);

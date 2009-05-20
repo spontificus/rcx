@@ -14,9 +14,11 @@ void event_step(Uint32 step)
 {
 	//loop geoms to see if any event
 	geom_data *geom = geom_data_head;
+#ifdef __cplusplusx
 	turd *t;
 	turd *nt;
 	FILE *fp;
+#endif
 	
 	while (geom)
 	{
@@ -90,7 +92,8 @@ void event_step(Uint32 step)
 						printlog(1, "(10sec height)\n");
 						spawn_object (box ,0,0,489.5);
 					break;
-					
+
+#ifdef __cplusplusx
 					case SDLK_TAB:
 						editing = 1 - editing;
 						if ( editing == 0 ) {
@@ -337,6 +340,7 @@ void event_step(Uint32 step)
 							t = t->nxt;
 						}
 						break;
+#endif
 
 					case SDLK_F7:
 						spawn_object (sphere, 0,0,10);

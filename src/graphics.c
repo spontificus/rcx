@@ -184,6 +184,7 @@ void graphics_step (Uint32 step)
 	if ( editing == 0 ) {
 		glPolygonMode(GL_BACK, GL_FILL);
 		gluLookAt (cpos[0]+gpos[0],cpos[1]+gpos[1]-50,cpos[2]+gpos[2]+100, gpos[0],gpos[1],gpos[2], 0,0,1);
+#ifdef __cplusplusx
 	} else {
 		glPolygonMode(GL_BACK, GL_LINE);
 		gluLookAt (cpos[0]+edit_t->wx,cpos[1]+edit_t->wy-50,cpos[2]+edit_t->wz+100, edit_t->wx,edit_t->wy,edit_t->wz, 0,0,1);
@@ -237,6 +238,7 @@ void graphics_step (Uint32 step)
 		glVertex3f(x,y,z+s);
 		glEnd();
 		glPopMatrix();
+#endif
 	}
 
 	//place sun
@@ -247,7 +249,9 @@ void graphics_step (Uint32 step)
 		glCallList (track.file_3d->list);
 	glPopMatrix();
 
+#ifdef __cplusplusx
   doTurdTrack();
+#endif
 
 	//loop through all geoms, see if they need rendering
 	geom_data *geom;

@@ -1,5 +1,7 @@
 #include "turd.h"
 
+#ifdef __cplusplusx
+
 void turd::setup( float x,float y,float z, float a,float b,float c ) {
 //	printf("x:%f y:%f z:%f a:%f b:%f c:%f\n", x,y,z, a,b,c);
 	this->x = x;
@@ -245,3 +247,4 @@ void turd::load(const char *filename) {
 	tri = new trimesh(this);
 }
 
+#endif

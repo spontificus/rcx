@@ -1,6 +1,10 @@
 #ifndef __INTERP_H__
 #define __INTERP_H__
+
+#include "shared.h"
 #include "turd.h"
+
+#ifdef __cplusplus
 
 class interp {
 public:
@@ -28,4 +32,5 @@ public:
 
 };
 
+#endif  // __cplusplus
 #endif

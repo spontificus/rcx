@@ -1,5 +1,8 @@
-
 #include "interp.h"
+
+void normalise(float *n);
+#ifdef __cplusplusx
+
 
 // creates an interpolation object from two control points
 void interp::init( int axis, turd *cur_turd, turd *nxt_turd ) {
@@ -145,3 +148,5 @@ void interp::draw(float t, float *p , float *n) {
 	normalise(n);
 
 }
+
+#endif

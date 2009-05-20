@@ -4,6 +4,8 @@
 
 #define VERSION "0.05" //supports alphanumeric versioning
 
+#define __cplusplusx
+
 extern car_struct *venom;
 extern script_struct *box; //keep track of our loaded debug box
 extern script_struct *sphere;

@@ -107,11 +107,14 @@ car_struct *focused_car;
 SDL_Surface *screen;
 GLdouble cpos[3];
 Uint32 flags;
+
+#ifdef __cplusplusx
 turd *turd_head;
 turd *edit_t;
 turd *edit_h;
 turd edit_b;
 int edit_m;
+#endif
 
 dWorldID world;
 dSpaceID space;
@@ -152,10 +155,12 @@ int main (int argc, char *argv[])
 
 	flags = SDL_OPENGL;
 	
+#ifdef __cplusplusx
 	turd_head = NULL;
 	edit_t = NULL;
 	edit_h = NULL;
 	edit_m = 1;
+#endif
 	
 
 	//issue

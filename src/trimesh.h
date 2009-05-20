@@ -1,5 +1,6 @@
 #ifndef __TRIMESH_H__
 #define __TRIMESH_H__
+#ifdef __cplusplus
 
 #include <ode/ode.h>
 #include "shared.h"
@@ -50,4 +51,5 @@ public:
 
 };
 
+#endif  // __cplusplus
 #endif

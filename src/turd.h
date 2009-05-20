@@ -3,6 +3,9 @@
 
 #include "shared.h"
 #include "trimesh.h"
+
+#ifdef __cplusplus
+
 class trimesh;
 
 class turd {
@@ -52,11 +55,9 @@ extern int edit_m;
 #define Y_AXIS 2
 #define Z_AXIS 3
 
-
-
-
 // function prototypes
 void t_backup( turd *t );
 void t_restore( turd *t );
 
+#endif  // __cplusplus
 #endif
