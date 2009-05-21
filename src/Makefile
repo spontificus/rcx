@@ -1,8 +1,8 @@
 SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c
 
 #normal args and libs
-LIBS    = sdl gl glu
-ARGS    = -O2 -pipe -Wall -march=native -mtune=native -lm  -DdSINGLE -lode
+LIBS    = sdl gl glu ode
+ARGS    = -O2 -pipe -Wall -march=native -mtune=native -lm
 
 #windows specific args and libs
 W32LIBS = `sdl-config --static-libs --cflags --libs` `ode-config --cflags --libs` -lm -lopengl32 -lglu32
@@ -11,6 +11,9 @@ W32ARGS = -O2 -pipe -Wall -march=i686   -mtune=i686   -lm
 
 normal: $(SOURCE)
 	gcc -o ../rcx main.c `pkg-config --cflags --libs $(LIBS)` $(ARGS)
+
+fedora: $(SOURCE)
+	gcc -o ../rcx main.c `pkg-config --cflags --libs sdl gl glu` `ode-config --cflags --libs` $(ARGS)
 
 #might cause ("nVidious") problems... :-P
 static: $(SOURCE)
