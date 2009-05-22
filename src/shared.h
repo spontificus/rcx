@@ -83,6 +83,38 @@ typedef struct file_3d_struct {
 //graphics_list *graphics_list_head = NULL;
 file_3d_struct *file_3d_head = NULL;
 
+//trimesh: stores rendering data for loaded trimesh (usually from 3d file)
+//can also be used for generating collision detection trimesh for ode
+//note: will replace "file_3d" when done
+typedef struct {
+	GLfloat colour[4];
+	GLfloat specular;
+	GLint shininess;
+} material;
+
+typedef struct trimesh_struct {
+	char *file; //TODO: store filename (to prevent duplicated loading)
+
+	GLfloat *vertices;
+	unsigned int vertex_count;	//note: might be overflown by big 3d files!
+
+	//currently, all 3d files must specify one normal for each vertex!
+	GLfloat *normals;
+	unsigned int normal_count;	//overflow warning!
+
+	material *materials;
+	unsigned int material_count;
+
+	unsigned int *material_indices;	//again, overflow posibility
+	unsigned int *indices;		//can also be overflown!
+	unsigned int index_count;	//this as well!
+
+	char *instructions; //'i' = index, 'm' = material, '\0' = end
+
+	struct trimesh_struct *next;
+} trimesh;
+
+trimesh *trimesh_head = NULL;
 
 //script: human readable (read: not _programming_) langue which will
 //describe what should be done when spawning an object (components, joints...),
@@ -155,6 +187,7 @@ typedef struct geom_data_struct {
 	dGeomID geom_id;
 
 	file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
+	trimesh *geom_trimesh; //will replace "file_3d" when complete
 
 	//Physics data:
 	//placeholder for more physics data

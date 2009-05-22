@@ -137,6 +137,7 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	
 	//collision contactpoint data
 	geom_data_head->file_3d = NULL; //default, isn't rendered
+	geom_data_head->geom_trimesh = NULL; //default, isn't rendered
 	geom_data_head->mu = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
@@ -409,6 +410,49 @@ file_3d_struct *allocate_file_3d (void)
 	return file_3d_head;
 }
 
+//it is assumed that all values are positive (non-zero)
+//currently no material storage is allocated
+trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
+			   unsigned int indices,  unsigned int materials)
+{
+	printlog(2, " > allocating trimesh storage");
+
+	trimesh *tmp_trimesh = (trimesh *)malloc (sizeof(trimesh));
+	//add to list
+	tmp_trimesh->next = trimesh_head;
+	trimesh_head = tmp_trimesh;
+
+	if (!tmp_trimesh->next)
+		printlog(2, " (first one)\n");
+	else
+		printlog(2, "\n");
+
+	//default values
+	tmp_trimesh->file = NULL; //filename - here ~no name~
+	printlog(2, "TODO: check for already loaded files\n");
+
+	//allocate storage for data
+	tmp_trimesh->vertices = (GLfloat *) calloc(vertices*3, sizeof(GLfloat));
+	tmp_trimesh->vertex_count = vertices;
+
+	tmp_trimesh->normals = (GLfloat *) calloc(normals*3, sizeof(GLfloat));
+	tmp_trimesh->normal_count = normals;
+
+	tmp_trimesh->materials= (material*) calloc(materials, sizeof(materials));
+	tmp_trimesh->material_count = materials;
+	
+
+	tmp_trimesh->material_indices = (unsigned int*) calloc(indices, sizeof(unsigned int));
+	tmp_trimesh->indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
+	tmp_trimesh->index_count = indices;
+
+
+	tmp_trimesh->instructions = (char*)calloc(indices+materials+1, sizeof(char));
+
+	printlog (2, "\n");
+	return tmp_trimesh;
+}
+
 //destroys an object
 void free_object(object_struct *target)
 {
@@ -575,6 +619,7 @@ void free_all (void)
 		free_object(object_head);
 
 	//only place where scripts and 3d lists are removed
+	
 	script_struct *script_tmp = script_head;
 	while (script_head)
 	{
@@ -585,6 +630,7 @@ void free_all (void)
 	}
 
 	//destroy loaded 3d files
+	//will soon be removed
 	file_3d_struct *file_3d_tmp;
 	while (file_3d_head)
 	{
@@ -593,6 +639,24 @@ void free_all (void)
 
 		glDeleteLists (file_3d_tmp->list, 1);
 		free (file_3d_tmp);
+	}
+
+	//destroy loaded trimeshes
+	trimesh *mesh;
+	while (trimesh_head)
+	{
+		//remove from list
+		mesh = trimesh_head;
+		trimesh_head = trimesh_head->next;
+
+		//free data
+		//free (mesh->file);
+		free (mesh->vertices);
+		free (mesh->normals);
+		free (mesh->indices);
+		free (mesh->materials);
+		free (mesh->material_indices);
+		free (mesh->instructions);
 	}
 
 	//no need to destroy track, since it's not allocated by program

@@ -94,7 +94,52 @@ int graphics_init(void)
 	return 0;
 }
 
+//new trimesh rendering method, instead of calling rendering list
+//TODO: some of this data (vertices) can be moved to video ram, which
+//would make the necessary data to send to gpu less (=higher fps)
+void render_trimesh (trimesh* target)
+{
+	//variables for fast looping
+	char *inst = target->instructions;
+	unsigned int *index = target->indices;
+	unsigned int *mat_index = target->material_indices;
+	GLfloat *vertex, *normal; //vectors
+	material *mat;
+	
+	glBegin (GL_TRIANGLES);
+	//future instructions might be different, like vertex and normal indices
+	//as sepparate (but since they are often specified at the same time,
+	//maybe not?)
+	while (1)
+	{
+		if (*inst == 'i') //vertex&normal index
+		{
+			normal = &target->normals[*index];
+			glNormal3f (normal[0], normal[1], normal[2]);
+			vertex = &target->vertices[*index];
+			glVertex3f (vertex[0], vertex[1], vertex[2]);
 
+			index += 3;
+		}
+		else if (*inst == 'm') //material "index"
+		{
+			mat = &target->materials[*mat_index];
+
+			glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE,mat->colour);
+			glMaterialfv (GL_FRONT, GL_SPECULAR, &mat->specular);
+			glMateriali  (GL_FRONT, GL_SHININESS, mat->shininess);
+
+			mat_index += 3;
+		}
+		else //assumed to be '\0'
+			break;
+
+		++inst;
+	}
+	glEnd();
+
+	//glMaterialfv (GL_FRONT, GL_SPECULAR, black);
+}
 
 dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
@@ -128,7 +173,7 @@ void graphics_step (Uint32 step)
 	const dReal *pos, *rot; //store rendering position
 	for (geom = geom_data_head; geom; geom = geom->next)
 	{
-		if (!geom->file_3d) //invisible
+		if (!geom->file_3d&&!geom->geom_trimesh) //invisible
 			continue;
 
 		glPushMatrix();
@@ -159,7 +204,11 @@ void graphics_step (Uint32 step)
 			glMultMatrixf (matrix);
 
 			//render
-			glCallList (geom->file_3d->list);
+			if (geom->file_3d) //old (obsolete) rendering method
+				glCallList (geom->file_3d->list);
+			if (geom->geom_trimesh) //new method
+				render_trimesh(geom->geom_trimesh);
+
 		glPopMatrix();
 	}
 
