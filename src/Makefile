@@ -1,8 +1,8 @@
-SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c trimesh.cpp turd.cpp interp.cpp
+SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c trimesh.cpp turd.cpp interp.cpp mglui.cpp
 
 #normal args and libs
 LIBS    = sdl gl glu
-ARGS    = -g -pipe -Wall -march=native -mtune=native -lm  -DdSINGLE -lode
+ARGS    = -g -pipe -Wall -march=native -mtune=native -lm  -DdSINGLE -lode -L. -lglui -lglut
 CC      = g++
 
 #windows specific args and libs

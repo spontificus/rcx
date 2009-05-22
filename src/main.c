@@ -216,6 +216,9 @@ int main (int argc, char *argv[])
 		return -1;
 
 	//<insert menu here>
+	glutInit(&argc, argv);
+	setupGLUI();
+	
 	
 	profile *prof = load_profile ((char *)"data/profiles/default");
 	if (!prof)
@@ -273,6 +276,7 @@ int main (int argc, char *argv[])
 		}
 		else //we got time left to draw frame on
 		{
+			//glutMainLoopEvent();
 			graphics_step(stepsize_ms);
 
 			realtime = SDL_GetTicks();

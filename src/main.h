@@ -1,6 +1,9 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 #include "shared.h"
+#include "mglui.h"
+#include <GL/freeglut_std.h>
+#include <GL/freeglut_ext.h>
 
 #define VERSION "0.05" //supports alphanumeric versioning
 
