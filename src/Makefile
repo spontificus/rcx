@@ -1,4 +1,4 @@
-SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c trimesh.cpp turd.cpp interp.cpp
+SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c trimesh.cpp turd.cpp interp.cpp orientation.cpp controlpoint.cpp patch.cpp tracksection.cpp
 
 #normal args and libs
 LIBS    = sdl gl glu
