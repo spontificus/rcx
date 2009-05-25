@@ -121,6 +121,7 @@ dSpaceID space;
 dJointGroupID contactgroup;
 profile *profile_head;
 GLuint tex_ch;
+Uint32 stepsize_ms;
 
 enum runenum runlevel;
 
@@ -254,7 +255,7 @@ int main (int argc, char *argv[])
 
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
 	Uint32 realtime; //real time (with possible delay since last update)
-	Uint32 stepsize_ms = (Uint32)(internal.stepsize*1000);
+	stepsize_ms = (Uint32)(internal.stepsize*1000);
 
 	printlog (0, "\n-> Starting Race\n");
 	runlevel = running;
@@ -276,8 +277,7 @@ int main (int argc, char *argv[])
 		}
 		else //we got time left to draw frame on
 		{
-			//glutMainLoopEvent();
-			graphics_step(stepsize_ms);
+			glutMainLoopEvent();
 
 			realtime = SDL_GetTicks();
 			if (simtime > realtime)

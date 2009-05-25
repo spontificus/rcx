@@ -6,6 +6,8 @@
 #include <GL/glu.h>
 #include "glui.h"
 
+void graphics_step();
+
 #ifdef __cplusplus
 
 void setupGLUI();

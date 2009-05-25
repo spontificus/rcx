@@ -166,9 +166,10 @@ int graphics_init(void)
 
 dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
-void graphics_step (Uint32 step)
+void graphics_step ()
 {
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 //	glLoadIdentity();
 
@@ -306,7 +307,7 @@ void graphics_loop (void)
 	while (runlevel == running)
 	{
 		time = SDL_GetTicks();
-		graphics_step(time-time_old);
+		graphics_step();
 		//TODO: sleep?
 	}
 }

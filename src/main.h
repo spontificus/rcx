@@ -16,6 +16,7 @@ extern car_struct *focused_car;
 
 extern struct internal_struct internal;
 extern struct track_struct track;
+extern Uint32 stepsize_ms;
 
 /* main.c */
 void printlog(int level, const char *text, ...);

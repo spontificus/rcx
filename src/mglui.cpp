@@ -53,16 +53,20 @@ void setupGLUI() {
 	GLUI *glui, *glui2;
 	
 	int main_window = glutCreateWindow( "GLUI Example 5" );
-	//glutHideWindow();
+	glutHideWindow();
 
   GLUI_Master.set_glutReshapeFunc( myGlutReshape );  
   GLUI_Master.set_glutKeyboardFunc( myGlutKeyboard );
   GLUI_Master.set_glutSpecialFunc( NULL );
   GLUI_Master.set_glutMouseFunc( myGlutMouse );
   glutMotionFunc( myGlutMotion );
+	glutDisplayFunc(graphics_step);
 	
 	glui = GLUI_Master.create_glui_subwindow( main_window, 
 					    GLUI_SUBWINDOW_RIGHT );
+
+glui->set_main_gfx_window(main_window);
+
 
   GLUI_Rollout *obj_panel = new GLUI_Rollout(glui, "Properties", false );
 }
