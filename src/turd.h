@@ -1,6 +1,10 @@
 #ifndef __TURD_H__
 #define __TURD_H__
 
+#define TRACK_X 11
+#define TRACK_Y 20
+
+
 #include "shared.h"
 #include "trimesh.h"
 

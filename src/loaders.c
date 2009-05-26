@@ -1038,8 +1038,8 @@ void doRoadPatch(trimesh *t, turd *bl, turd *br, turd *tl, turd *tr) {
 		v[1] = 0;
 		v[2] = 0;
 	
-		int xn = 5;
-		int yn = 10;
+		int xn = TRACK_X;
+		int yn = TRACK_Y;
 		
 		glBindTexture( GL_TEXTURE_2D, tex_ch );
 		
@@ -1110,7 +1110,7 @@ void drawRoad(turd *head) {
 		glMaterialfv (GL_FRONT, GL_AMBIENT, black);
 		glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
 		
-		head->tri->init(5, 10);
+		head->tri->init(TRACK_X, TRACK_Y);
 		
 		cur_turd = head;
 		while (cur_turd->nxt) {	
@@ -1135,7 +1135,7 @@ void drawRoad(turd *head) {
 		}
 			
 
-		head->tri->link(5, 10);
+		head->tri->link(TRACK_X, TRACK_Y);
 
 		//head->tri->drawDebug();
 		
