@@ -87,6 +87,9 @@ void trimesh::link(int numx, int numy) {
 	printf("num ver:%d  v:%d placed:%d\n", v_count, v_off, i_placed);
 	printf("num ind:%d  i:%d\n", i_count, i);
 */
+	printlog(1,"num vertices:%d\n", v_count);
+	printlog(1,"num indices:%d\n", i_count);
+	printlog(1,"num triangles:%d\n", i_count/3);
 	
 	dGeomTriMeshDataBuildSimple( dataid, ode_verts[0], v_count, ode_indices, i_count );
 	dGeomTriMeshSetData( meshid, dataid );
