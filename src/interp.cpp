@@ -8,6 +8,9 @@ void normalise(float *n);
 void interp::init( int axis, turd *cur_turd, turd *nxt_turd ) {
 		float dist;
 		float psdx,psdy,psdz, pedx,pedy,pedz;
+		float cur_nx,cur_ny,cur_nz, nxt_nx,nxt_ny,nxt_nz;
+		float *mvr;
+		
 		axis = axis;
 		
 		ps0x = cur_turd->wx;
@@ -24,30 +27,39 @@ void interp::init( int axis, turd *cur_turd, turd *nxt_turd ) {
 		// generate bezier control points as half distance along normal vectors
 		switch ( axis ) {
 			case X_AXIS:
-				psdx = cur_turd->xnx - ps0x;
-				psdy = cur_turd->xny - ps0y;
-				psdz = cur_turd->xnz - ps0z;
-				pedx = nxt_turd->xnx - pe0x;
-				pedy = nxt_turd->xny - pe0y;
-				pedz = nxt_turd->xnz - pe0z;
+				mvr = mbv(cur_turd->m, 1,0,0);
+				cur_nx = mvr[0];
+				cur_ny = mvr[1];
+				cur_nz = mvr[2];
+				
+				mvr = mbv(nxt_turd->m, 1,0,0);
+				nxt_nx = mvr[0];
+				nxt_ny = mvr[1];
+				nxt_nz = mvr[2];
 				break;
 			
 			case Y_AXIS:
-				psdx = cur_turd->ynx - ps0x;
-				psdy = cur_turd->yny - ps0y;
-				psdz = cur_turd->ynz - ps0z;
-				pedx = nxt_turd->ynx - pe0x;
-				pedy = nxt_turd->yny - pe0y;
-				pedz = nxt_turd->ynz - pe0z;				
+				mvr = mbv(cur_turd->m, 0,1,0);
+				cur_nx = mvr[0];
+				cur_ny = mvr[1];
+				cur_nz = mvr[2];
+				
+				mvr = mbv(nxt_turd->m, 0,1,0);
+				nxt_nx = mvr[0];
+				nxt_ny = mvr[1];
+				nxt_nz = mvr[2];
 				break;
 		
 			case Z_AXIS:
-				psdx = cur_turd->znx - ps0x;
-				psdy = cur_turd->zny - ps0y;
-				psdz = cur_turd->znz - ps0z;
-				pedx = nxt_turd->znx - pe0x;
-				pedy = nxt_turd->zny - pe0y;
-				pedz = nxt_turd->znz - pe0z;
+				mvr = mbv(cur_turd->m, 0,0,1);
+				cur_nx = mvr[0];
+				cur_ny = mvr[1];
+				cur_nz = mvr[2];
+				
+				mvr = mbv(nxt_turd->m, 0,0,1);
+				nxt_nx = mvr[0];
+				nxt_ny = mvr[1];
+				nxt_nz = mvr[2];
 				break;
 				
 			default:
@@ -55,6 +67,13 @@ void interp::init( int axis, turd *cur_turd, turd *nxt_turd ) {
 				exit(0);
 				break;
 		}
+		
+		psdx = cur_nx - ps0x;
+		psdy = cur_ny - ps0y;
+		psdz = cur_nz - ps0z;
+		pedx = nxt_nx - pe0x;
+		pedy = nxt_ny - pe0y;
+		pedz = nxt_nz - pe0z;
 		
 		scx = ps0x + psdx * dist;
 		scy = ps0y + psdy * dist;
@@ -64,13 +83,16 @@ void interp::init( int axis, turd *cur_turd, turd *nxt_turd ) {
 		tcy = pe0y - pedy * dist;
 		tcz = pe0z - pedz * dist;
 		
-		snx = cur_turd->anx;
-		sny = cur_turd->any;
-		snz = cur_turd->anz;
 		
-		enx = nxt_turd->anx;
-		eny = nxt_turd->any;
-		enz = nxt_turd->anz;
+		mvr = mbv(cur_turd->m, 0,0,1);
+		snx = mvr[0];
+		sny = mvr[1];
+		snz = mvr[2];
+				
+		mvr = mbv(nxt_turd->m, 0,0,1);
+		enx = mvr[0];
+		eny = mvr[1];
+		enz = mvr[2];
 
 }
 

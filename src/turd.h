@@ -26,10 +26,6 @@ public:
 
 	float x,y,z;
 	float a,b,c;
-	float xnx,xny,xnz;
-	float ynx,yny,ynz;
-	float znx,zny,znz;
-	float anx,any,anz;
 	float wx,wy,wz;
 	
 	GLfloat m[16];

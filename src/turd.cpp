@@ -24,29 +24,6 @@ void turd::makeMatricies() {
 	wy = mvr[1];
 	wz = mvr[2];
 
-	// (x-axis)
-	mvr = mbv(m, 1,0,0);
-	xnx = mvr[0];
-	xny = mvr[1];
-	xnz = mvr[2];
-
-	// direction of travel (y-axis)
-	mvr = mbv(m, 0,1,0);
-	ynx = mvr[0];
-	yny = mvr[1];
-	ynz = mvr[2];
-
-	// (z-axis)
-	mvr = mbv(m, 0,0,1);
-	znx = mvr[0];
-	zny = mvr[1];
-	znz = mvr[2];
-
-	// and the actual normal
-	mvr = mbv(m, 0,0,1);
-	anx = mvr[0] - wx;
-	any = mvr[1] - wy;
-	anz = mvr[2] - wz;
 }
 	
 	

@@ -12,6 +12,6 @@ float *orientation::getMatrix() {
 	return m;
 }
 
-void orientation::setMatrix() {
-
+void orientation::setMatrix(float *v) {
+	memcpy(m,v,16 * sizeof(float));
 }

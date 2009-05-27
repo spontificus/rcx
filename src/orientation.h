@@ -16,7 +16,7 @@ public:
 	orientation(float *v);
 	
 	float *getMatrix();
-	void setMatrix();
+	void setMatrix(float *v);
 
 };
 
