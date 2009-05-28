@@ -7,6 +7,9 @@
 
 #define MAX_WORDS 100
 
+#define TRACK_X 11
+#define TRACK_Y 20
+
 //read a line from file pointer, remove blanks and sepparate words
 //guaranteed to return at least one word, or (if nothing left), NULL
 int get_word_length(FILE *fp)
@@ -1592,8 +1595,8 @@ void doRoadPatch(struct trimesh_struct *t, struct turd_struct *bl, struct turd_s
 		v[1] = 0;
 		v[2] = 0;
 	
-		int xn = 5;
-		int yn = 10;
+		int xn = TRACK_X;
+		int yn = TRACK_Y;
 		
 		glBindTexture( GL_TEXTURE_2D, tex_ch );
 		
@@ -1665,7 +1668,7 @@ void drawRoad(struct turd_struct *head) {
 		glMaterialfv (GL_FRONT, GL_AMBIENT, black);
 		glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
 		
-		initTrimesh(head, 5, 10);
+		initTrimesh(head, TRACK_X, TRACK_Y);
 		
 		head->tri->i = 0;
 
@@ -1692,7 +1695,7 @@ void drawRoad(struct turd_struct *head) {
 		}
 			
 
-		linkTrimesh(head, 5, 10);
+		linkTrimesh(head, TRACK_X, TRACK_Y);
 
 		//debugTrimesh(head->tri);
 		
