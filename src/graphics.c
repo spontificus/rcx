@@ -101,7 +101,8 @@ void render_trimesh (trimesh* target)
 {
 	//variables for fast looping
 	char *inst = target->instructions;
-	unsigned int *index = target->indices;
+	unsigned int *v_index = target->vector_indices;
+	unsigned int *n_index = target->normal_indices;
 	unsigned int *mat_index = target->material_indices;
 	GLfloat *vertex, *normal; //vectors
 	material *mat;
@@ -114,19 +115,22 @@ void render_trimesh (trimesh* target)
 	{
 		if (*inst == 'i') //vertex&normal index
 		{
-			normal = &target->normals[*index];
+			normal = &target->normals[*n_index];
 			glNormal3f (normal[0], normal[1], normal[2]);
-			vertex = &target->vertices[*index];
+			vertex = &target->vertices[*v_index];
 			glVertex3f (vertex[0], vertex[1], vertex[2]);
 
-			index += 3;
+			v_index += 3;
+			n_index += 3;
+
 		}
 		else if (*inst == 'm') //material "index"
 		{
 			mat = &target->materials[*mat_index];
 
-			glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE,mat->colour);
-			glMaterialfv (GL_FRONT, GL_SPECULAR, &mat->specular);
+			glMaterialfv (GL_FRONT, GL_AMBIENT,mat->ambient);
+			glMaterialfv (GL_FRONT, GL_DIFFUSE,mat->diffuse);
+			glMaterialfv (GL_FRONT, GL_SPECULAR, mat->specular);
 			glMateriali  (GL_FRONT, GL_SHININESS, mat->shininess);
 
 			mat_index += 3;

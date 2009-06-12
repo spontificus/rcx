@@ -87,8 +87,9 @@ file_3d_struct *file_3d_head = NULL;
 //can also be used for generating collision detection trimesh for ode
 //note: will replace "file_3d" when done
 typedef struct {
-	GLfloat colour[4];
-	GLfloat specular;
+	GLfloat ambient[4];
+	GLfloat diffuse[4];
+	GLfloat specular[4];
 	GLint shininess;
 } material;
 
@@ -96,18 +97,19 @@ typedef struct trimesh_struct {
 	char *file; //TODO: store filename (to prevent duplicated loading)
 
 	GLfloat *vertices;
-	unsigned int vertex_count;	//note: might be overflown by big 3d files!
 
 	//currently, all 3d files must specify one normal for each vertex!
 	GLfloat *normals;
-	unsigned int normal_count;	//overflow warning!
+
+	//the following two are needed when creating ODE trimeshes
+	unsigned int vertex_count;	//note: might be overflown by big 3d files!
+	unsigned int index_count;	//this as well!
 
 	material *materials;
-	unsigned int material_count;
 
+	unsigned int *vector_indices;		//can also be overflown!
+	unsigned int *normal_indices;	//overflow
 	unsigned int *material_indices;	//again, overflow posibility
-	unsigned int *indices;		//can also be overflown!
-	unsigned int index_count;	//this as well!
 
 	char *instructions; //'i' = index, 'm' = material, '\0' = end
 

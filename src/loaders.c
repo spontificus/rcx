@@ -97,6 +97,8 @@ char *get_word (FILE *fp, bool newline_sensitive)
 	return (word);
 }
 
+//TODO: it _might_ be better to just allocate and read one line (not sepparate words, since
+//sscanf can process space when needed instead)
 char **get_word_list (FILE *fp)
 {
 	printlog(2, " > get_word_list\n");
@@ -240,6 +242,214 @@ int load_conf (char *name, char *memory, struct data_index index[])
   return 0;
  }
 }
+
+//load an obj (and the mtl file it specifies) as a trimesh (for rendering
+//and optional generation of ODE trimesh geom)
+//
+//warning: does not do a lot of error checking!
+//some limits includes requiring normals for each index, and only one mtl file
+trimesh *load_obj (char *file, float resize)
+{
+	printlog(1, "-> Loading obj file to trimesh: %s", file);
+	FILE *fp_obj;
+	FILE *fp_mtl;
+
+#ifdef windows
+	fp_obj = fopen(file, "rb");
+#else
+	fp_obj = fopen(file, "r");
+#endif
+
+	if (!fp_obj)
+	{
+		printlog(0, "ERROR opening file %s (doesn't exist?)\n", file);
+		return NULL;
+	}
+
+	char **word;
+	int vertices, normals, indices, materials, material_indices;
+	vertices=normals=indices=materials=material_indices=0;
+
+	//first get ammount of vertices, indices etc. Set last found mtl file
+	while ((word = get_word_list(fp_obj)))
+	{
+		if (!strcmp(word[0], "v"))
+			++vertices;
+		else if (!strcmp(word[0], "vn"))
+			++normals;
+		else if (!strcmp(word[0], "f"))
+			++indices;
+		else if (!strcmp(word[0], "usemtl"))
+			++material_indices;
+		else if (!strcmp(word[0], "mtllib"))
+		{
+			if (fp_mtl) //new file request found(!), close this one
+				fclose (fp_mtl);
+
+			#ifdef windows
+				fp_mtl = fopen(word[1], "rb");
+			#else
+				fp_mtl = fopen(word[1], "r");
+			#endif
+
+			if (!fp_mtl)
+			{
+				printlog(0, "ERROR: couldn't open file: %s", word[1]);
+				fclose (fp_obj); //basic cleanup
+				return NULL;
+			}
+		}
+		//else unrecognized!
+	}
+
+	if (!fp_mtl)
+	{
+		printlog(0, "ERROR: mtl file could not be opened!\n");
+		return NULL;
+	}
+
+	//count materials
+	while ((word = get_word_list(fp_mtl)))
+		if (!strcmp(word[0], "newmtl"))
+			++materials;
+
+	//print counts
+	printlog (1, "v:%u n:%u i:%u m:%u mi:%u\n", vertices, normals,
+			indices, materials, material_indices);
+
+	if (!(vertices&&normals&&indices&&materials))
+	{
+		printlog (0, "ERROR: vertices, normals, indices and materials must exist in files\n");
+		fclose (fp_obj);
+		fclose (fp_mtl);
+		return NULL;
+	}
+
+	//allocate
+	trimesh *mesh = allocate_trimesh(vertices, normals,
+			indices, materials, material_indices);
+
+	char *material_names[materials]; //for tmp storing names
+
+	//start loading, first mtl
+	fseek (fp_mtl, SEEK_SET, 0); //go to beginning
+
+	int i=-1;
+	while ((word = get_word_list(fp_mtl)))
+	{
+		if (!strcmp(word[0], "newmtl"))
+		{
+			//first store name for future lookups
+			material_names[i] = (char*) calloc(sizeof(word[1])+1, sizeof(char));
+			strcpy(material_names[i], word[1]);
+
+			//hmm... I might have forgotten something?
+			++i;
+		}
+		else if (i!=-1)
+		{
+			//"shinines" of specular colour
+			if (word[0][0] == 'N' &&word[0][1] == 's')
+				sscanf(word[1], "%i", &(mesh->materials+i)->shininess);
+
+			//ambient colour
+			else if (word[0][0] == 'K' &&word[0][1] == 'a')
+			{
+				if (sscanf(word[1], "%f", &(mesh->materials+i)->ambient[0])==1 &&
+				    sscanf(word[2], "%f", &(mesh->materials+i)->ambient[1])==1 &&
+				    sscanf(word[3], "%f", &(mesh->materials+i)->ambient[2])==1)
+					(mesh->materials+1)->ambient[3]=1.0f;
+			}
+
+			//diffuse colour
+			else if (word[0][0] == 'K' &&word[0][1] == 'd')
+			{
+				if (sscanf(word[1], "%f", &(mesh->materials+i)->diffuse[0])==1 &&
+				    sscanf(word[2], "%f", &(mesh->materials+i)->diffuse[1])==1 &&
+				    sscanf(word[3], "%f", &(mesh->materials+i)->diffuse[2])==1)
+					(mesh->materials+i)->diffuse[3]=1.0f;
+			}
+
+			//specular colour
+			else if (word[0][0] == 'K' &&word[0][1] == 's')
+			{
+				if (sscanf(word[1], "%f", &(mesh->materials+i)->specular[0])==1 &&
+				    sscanf(word[2], "%f", &(mesh->materials+i)->specular[1])==1 &&
+				    sscanf(word[3], "%f", &(mesh->materials+i)->specular[2])==1)
+					(mesh->materials+i)->specular[3]=1.0f;
+			}
+		}
+	}
+	
+	fclose (fp_mtl);
+
+	//load obj
+	//TODO: add resize option (preferably as float argument to function)
+	fseek (fp_obj, SEEK_SET, 0); //go to beginning
+	unsigned int v_count=0, n_count=0, i_count=0, inst_count=0, m_count=0;
+	GLfloat *vertex;
+	while ((word = get_word_list(fp_obj)))
+	{
+		//ingore g and s
+
+		//vector
+		if (word[0][0]=='v' && word[0][1]=='\0')
+		{
+			vertex = &(mesh->vertices[v_count]);
+			if (	sscanf(word[1], "%f", &vertex[0]) &&
+				sscanf(word[2], "%f", &vertex[1]) &&
+				sscanf(word[3], "%f", &vertex[2]))
+			{
+					v_count += 3;
+					vertex[0]*=resize;
+					vertex[1]*=resize;
+					vertex[2]*=resize;
+			}
+		}
+		//normal
+		else if (word[0][0]=='v' && word[0][1]=='n' && word[0][2]=='\0')
+		{
+			vertex = &(mesh->normals[n_count]);
+			if (	sscanf(word[1], "%f", &vertex[0]) &&
+				sscanf(word[2], "%f", &vertex[1]) &&
+				sscanf(word[3], "%f", &vertex[2]))
+					n_count += 3;
+		}
+		//index
+		else if (word[0][0]=='f' && word[0][1]=='\0')
+		{
+			if (sscanf(word[1], "%i/%i//", &mesh->vector_indices[i_count],
+						&mesh->normal_indices[i_count]) == 2)
+			{
+				++i_count;
+				mesh->instructions[inst_count++]='i';
+			}
+		}
+
+		//material
+		else if (!strcmp(word[0], "usemtl"))
+		{
+			for (i=0; i<materials; ++i)
+				if (!(strcmp(material_names[i], word[1])))
+					break;
+			if (i!=materials) //we found a match
+			{
+				mesh->material_indices[m_count] = i;
+				mesh->instructions[inst_count++]='m';
+			}
+		}
+	}
+	mesh->instructions[inst_count]='\0';
+	
+	fclose (fp_obj);
+
+	//And we're done!
+	for (i=0; i<materials; ++i)
+		free (material_names[i]);
+
+	return mesh;
+}
+
 
 #ifdef __cplusplus
 // required to iterate through an enum in C++

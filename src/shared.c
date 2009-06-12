@@ -411,9 +411,8 @@ file_3d_struct *allocate_file_3d (void)
 }
 
 //it is assumed that all values are positive (non-zero)
-//currently no material storage is allocated
 trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
-			   unsigned int indices,  unsigned int materials)
+	unsigned int indices, unsigned int materials, unsigned int material_indices)
 {
 	printlog(2, " > allocating trimesh storage");
 
@@ -433,21 +432,20 @@ trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
 
 	//allocate storage for data
 	tmp_trimesh->vertices = (GLfloat *) calloc(vertices*3, sizeof(GLfloat));
+	tmp_trimesh->normals = (GLfloat *) calloc(normals*3, sizeof(GLfloat));
+	tmp_trimesh->vector_indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
+	tmp_trimesh->normal_indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
+
+	tmp_trimesh->materials = (material*) calloc(materials, sizeof(materials));
+	tmp_trimesh->material_indices = (unsigned int*) calloc(material_indices, sizeof(unsigned int));
+
+	//needed when creating ode trimesh
+	tmp_trimesh->index_count = indices;
 	tmp_trimesh->vertex_count = vertices;
 
-	tmp_trimesh->normals = (GLfloat *) calloc(normals*3, sizeof(GLfloat));
-	tmp_trimesh->normal_count = normals;
-
-	tmp_trimesh->materials= (material*) calloc(materials, sizeof(materials));
-	tmp_trimesh->material_count = materials;
-	
-
-	tmp_trimesh->material_indices = (unsigned int*) calloc(indices, sizeof(unsigned int));
-	tmp_trimesh->indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
-	tmp_trimesh->index_count = indices;
-
-
-	tmp_trimesh->instructions = (char*)calloc(indices+materials+1, sizeof(char));
+	//describes which index to read next "instruction" from
+	//(currently only vertex+normal and material)
+	tmp_trimesh->instructions =(char*)calloc(indices+materials+1, sizeof(char));
 
 	printlog (2, "\n");
 	return tmp_trimesh;
@@ -653,7 +651,10 @@ void free_all (void)
 		//free (mesh->file);
 		free (mesh->vertices);
 		free (mesh->normals);
-		free (mesh->indices);
+
+		free (mesh->vector_indices);
+		free (mesh->normal_indices);
+		
 		free (mesh->materials);
 		free (mesh->material_indices);
 		free (mesh->instructions);
