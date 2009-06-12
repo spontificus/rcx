@@ -228,6 +228,8 @@ typedef struct body_data_struct {
 	//geom data bellongs to
 	dBodyID body_id;
 
+	trimesh *body_trimesh; //will replace "file_3d" when complete
+
 	//data for drag (air+water friction)
 	bool use_drag;
 	bool use_rotation_drag;

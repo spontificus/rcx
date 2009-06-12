@@ -135,9 +135,9 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	geom_data_head->event = false; //no collision event yet
 	geom_data_head->script = NULL; //nothing to run on collision (yet)
 	
-	//collision contactpoint data
 	geom_data_head->file_3d = NULL; //default, isn't rendered
 	geom_data_head->geom_trimesh = NULL; //default, isn't rendered
+	//collision contactpoint data
 	geom_data_head->mu = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
@@ -188,6 +188,8 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 	body_data_head->body_id = body;
 
 	//default values
+	body_data_head->body_trimesh = NULL; //default, isn't rendered
+
 	body_data_head->use_drag = false;
 	body_data_head->use_rotation_drag = false;
 

@@ -145,6 +145,32 @@ void render_trimesh (trimesh* target)
 	//glMaterialfv (GL_FRONT, GL_SPECULAR, black);
 }
 
+//multiply the rendering matrix to get the wanted position/rotation
+void mult_matrix (const dReal *pos, const dReal *rot)
+{
+	//create transformation matrix to render correct position
+	//and rotation (float)
+	GLfloat matrix[16];
+	matrix[0]=rot[0];
+	matrix[1]=rot[4];
+	matrix[2]=rot[8];
+	matrix[3]=0;
+	matrix[4]=rot[1];
+	matrix[5]=rot[5];
+	matrix[6]=rot[9];
+	matrix[7]=0;
+	matrix[8]=rot[2];
+	matrix[9]=rot[6];
+	matrix[10]=rot[10];
+	matrix[11]=0;
+	matrix[12]=pos[0];
+	matrix[13]=pos[1];
+	matrix[14]=pos[2];
+	matrix[15]=1;
+
+	glMultMatrixf (matrix);
+}
+
 dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
@@ -155,6 +181,12 @@ void graphics_step (Uint32 step)
 
 	glPushMatrix();
 
+	//
+	//TODO: here's a good place to put another push/pop block for OSD/HUD (2D graphics, like boxes and text)
+	//
+	
+	//
+	
 	const dReal *gpos;
 
 	if (!focused_car)
@@ -174,38 +206,13 @@ void graphics_step (Uint32 step)
 
 	//loop through all geoms, see if they need rendering
 	geom_data *geom;
-	const dReal *pos, *rot; //store rendering position
 	for (geom = geom_data_head; geom; geom = geom->next)
 	{
 		if (!geom->file_3d&&!geom->geom_trimesh) //invisible
 			continue;
 
 		glPushMatrix();
-			pos = dGeomGetPosition (geom->geom_id);
-			rot = dGeomGetRotation (geom->geom_id);
-
-
-			//create transformation matrix to render correct position
-			//and rotation (float)
-			GLfloat matrix[16];
-			matrix[0]=rot[0];
-			matrix[1]=rot[4];
-			matrix[2]=rot[8];
-			matrix[3]=0;
-			matrix[4]=rot[1];
-			matrix[5]=rot[5];
-			matrix[6]=rot[9];
-			matrix[7]=0;
-			matrix[8]=rot[2];
-			matrix[9]=rot[6];
-			matrix[10]=rot[10];
-			matrix[11]=0;
-			matrix[12]=pos[0];
-			matrix[13]=pos[1];
-			matrix[14]=pos[2];
-			matrix[15]=1;
-
-			glMultMatrixf (matrix);
+			mult_matrix (dGeomGetPosition (geom->geom_id), dGeomGetRotation (geom->geom_id));
 
 			//render
 			if (geom->file_3d) //old (obsolete) rendering method
@@ -215,6 +222,19 @@ void graphics_step (Uint32 step)
 
 		glPopMatrix();
 	}
+
+	//loop through bodies, see if any got trimesh ("file_3d" is now obsolete)
+	body_data *body;
+	for (body = body_data_head; body; body=body->next)
+		if (body->body_trimesh)
+		{
+			glPushMatrix();
+				mult_matrix (dBodyGetPosition (body->body_id), dBodyGetRotation (body->body_id));
+
+				render_trimesh(body->body_trimesh);
+			glPopMatrix();
+		}
+
 
 	glPopMatrix();
 
