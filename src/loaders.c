@@ -252,7 +252,7 @@ trimesh *load_obj (char *file, float resize)
 {
 	printlog(1, "-> Loading obj file to trimesh: %s", file);
 	FILE *fp_obj;
-	FILE *fp_mtl;
+	FILE *fp_mtl = NULL;
 
 #ifdef windows
 	fp_obj = fopen(file, "rb");
@@ -266,13 +266,23 @@ trimesh *load_obj (char *file, float resize)
 		return NULL;
 	}
 
+
 	char **word;
-	int vertices, normals, indices, materials, material_indices;
+	unsigned int vertices, normals, indices, materials, material_indices;
 	vertices=normals=indices=materials=material_indices=0;
+
+	const unsigned int MAX = -1; //overflow limit for unsigned int
 
 	//first get ammount of vertices, indices etc. Set last found mtl file
 	while ((word = get_word_list(fp_obj)))
 	{
+		if (vertices==MAX || normals==MAX || indices==MAX || material_indices==MAX) //bad for loading speed, but necessary to prevent overflow
+		{
+			printlog(0, "ERROR: OBJ was too bigg (overflows unsigned int)!\n");
+			fclose (fp_obj);
+			return NULL;
+		}
+
 		if (!strcmp(word[0], "v"))
 			++vertices;
 		else if (!strcmp(word[0], "vn"))
@@ -305,13 +315,20 @@ trimesh *load_obj (char *file, float resize)
 	if (!fp_mtl)
 	{
 		printlog(0, "ERROR: mtl file could not be opened!\n");
+		fclose (fp_obj);
 		return NULL;
 	}
 
 	//count materials
 	while ((word = get_word_list(fp_mtl)))
 		if (!strcmp(word[0], "newmtl"))
-			++materials;
+			if (++materials == MAX)
+			{
+				printlog(0, "ERROR: too many materials (overflows unsigned int)!\n");
+				fclose (fp_obj);
+				fclose (fp_mtl);
+				return NULL;
+			}
 
 	//print counts
 	printlog (1, "v:%u n:%u i:%u m:%u mi:%u\n", vertices, normals,
