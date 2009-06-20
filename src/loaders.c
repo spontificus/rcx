@@ -408,7 +408,8 @@ trimesh *load_obj (char *file, float resize)
 		{
 			//"shinines" of specular colour
 			if (word[0][0] == 'N' &&word[0][1] == 's')
-				sscanf(word[1], "%i", &(mesh->materials+i)->shininess);
+				if (!(sscanf(word[1], "%i", &(mesh->materials+i)->shininess)))
+					printlog(0, "WARNING: failed reading shinines %i\n", i);
 
 			//ambient colour
 			else if (word[0][0] == 'K' &&word[0][1] == 'a')
@@ -417,6 +418,8 @@ trimesh *load_obj (char *file, float resize)
 				    sscanf(word[2], "%f", &(mesh->materials+i)->ambient[1])==1 &&
 				    sscanf(word[3], "%f", &(mesh->materials+i)->ambient[2])==1)
 					(mesh->materials+1)->ambient[3]=1.0f;
+				else
+					printlog(0, "WARNING: failed reading ambient colour %i\n", i);
 			}
 
 			//diffuse colour
@@ -426,6 +429,8 @@ trimesh *load_obj (char *file, float resize)
 				    sscanf(word[2], "%f", &(mesh->materials+i)->diffuse[1])==1 &&
 				    sscanf(word[3], "%f", &(mesh->materials+i)->diffuse[2])==1)
 					(mesh->materials+i)->diffuse[3]=1.0f;
+				else
+					printlog(0, "WARNING: failed reading diffuse colour %i\n", i);
 			}
 
 			//specular colour
@@ -435,6 +440,8 @@ trimesh *load_obj (char *file, float resize)
 				    sscanf(word[2], "%f", &(mesh->materials+i)->specular[1])==1 &&
 				    sscanf(word[3], "%f", &(mesh->materials+i)->specular[2])==1)
 					(mesh->materials+i)->specular[3]=1.0f;
+				else
+					printlog(0, "WARNING: failed reading specular colour %i\n", i);
 			}
 		}
 	}
@@ -464,6 +471,8 @@ trimesh *load_obj (char *file, float resize)
 					vertex[1]*=resize;
 					vertex[2]*=resize;
 			}
+			else
+				printlog(0, "WARNING: failed reading vector %i\n", v_count);
 		}
 		//normal
 		else if (word[0][0]=='v' && word[0][1]=='n' && word[0][2]=='\0')
@@ -473,6 +482,8 @@ trimesh *load_obj (char *file, float resize)
 				sscanf(word[2], "%f", &vertex[1]) &&
 				sscanf(word[3], "%f", &vertex[2]))
 					n_count += 3;
+			else
+				printlog(0, "WARNING: failed reading normal %i\n", n_count);
 		}
 		//index
 		else if (word[0][0]=='f' && word[0][1]=='\0')
@@ -483,6 +494,8 @@ trimesh *load_obj (char *file, float resize)
 				++i_count;
 				mesh->instructions[inst_count++]='i';
 			}
+			else
+				printlog(0, "WARNING: failed reading index %i\n", i_count);
 		}
 
 		//material
@@ -496,6 +509,8 @@ trimesh *load_obj (char *file, float resize)
 				mesh->material_indices[m_count] = i;
 				mesh->instructions[inst_count++]='m';
 			}
+			else
+				printlog(0, "WARNING: failed identify material %c\n", word[1]);
 		}
 	}
 	mesh->instructions[inst_count]='\0';
