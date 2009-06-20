@@ -250,7 +250,44 @@ int load_conf (char *name, char *memory, struct data_index index[])
 //some limits includes requiring normals for each index, and only one mtl file
 trimesh *load_obj (char *file, float resize)
 {
-	printlog(1, "-> Loading obj file to trimesh: %s", file);
+	//nested function (for getting relative mtl path)
+	char *replace_file_in_path(char *path, char *file)
+	{
+		int file_l = strlen(file);
+		//find last /
+		int i;
+		for (i=strlen(path); 0<i; --i)
+			if (path[i] == '/')
+				break;
+
+		++i;
+
+		char *new_path;
+		//no / , just append
+		if (i==0)
+		{
+			new_path = (char*) calloc(strlen(path)+file_l+2, sizeof(char));
+			strcpy (new_path, path);
+			strcat (new_path, "/");
+			strcat (new_path, file);
+		}
+		else //got length before /
+		{
+			new_path = (char*) calloc(i+strlen(file)+2, sizeof(char));
+			int j;
+			for (j=0; j<i; ++j)
+				new_path[j]=path[j];
+			new_path[++j]='/';
+			for (j=0; j<file_l; ++j)
+				new_path[i+j]=file[j];
+			new_path[i+j]='\0';
+		}
+
+		return new_path;
+	}
+
+
+	printlog(1, "-> Loading obj file to trimesh: %s\n", file);
 	FILE *fp_obj;
 	FILE *fp_mtl = NULL;
 
@@ -265,7 +302,6 @@ trimesh *load_obj (char *file, float resize)
 		printlog(0, "ERROR opening file %s (doesn't exist?)\n", file);
 		return NULL;
 	}
-
 
 	char **word;
 	unsigned int vertices, normals, indices, materials, material_indices;
@@ -293,21 +329,26 @@ trimesh *load_obj (char *file, float resize)
 			++material_indices;
 		else if (!strcmp(word[0], "mtllib"))
 		{
-			if (fp_mtl) //new file request found(!), close this one
+			if (fp_mtl) //_new_ file request found(!), close this one
 				fclose (fp_mtl);
 
+			char *mtl_path = replace_file_in_path (file, word[1]);
+
 			#ifdef windows
-				fp_mtl = fopen(word[1], "rb");
+				fp_mtl = fopen(mtl_path, "rb");
 			#else
-				fp_mtl = fopen(word[1], "r");
+				fp_mtl = fopen(mtl_path, "r");
 			#endif
+
 
 			if (!fp_mtl)
 			{
-				printlog(0, "ERROR: couldn't open file: %s", word[1]);
+				printlog(0, "ERROR: couldn't open file: %s\n", mtl_path);
 				fclose (fp_obj); //basic cleanup
 				return NULL;
 			}
+
+			free (mtl_path);
 		}
 		//else unrecognized!
 	}
@@ -400,6 +441,7 @@ trimesh *load_obj (char *file, float resize)
 	
 	fclose (fp_mtl);
 
+	printf("done mtl\n");
 	//load obj
 	//TODO: add resize option (preferably as float argument to function)
 	fseek (fp_obj, SEEK_SET, 0); //go to beginning
@@ -460,6 +502,7 @@ trimesh *load_obj (char *file, float resize)
 	
 	fclose (fp_obj);
 
+	printf("done obj\n");
 	//And we're done!
 	for (i=0; i<materials; ++i)
 		free (material_names[i]);
@@ -718,8 +761,16 @@ script_struct *load_object(char *path)
 		strcpy (script->name, path);
 
 		//the debug box will only spawn one component - one "3D file"
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_box (script->graphics_debug1->list, 1,1,1, red,gray, 50);
+		//script->graphics_debug1 = allocate_file_3d();
+		//debug_draw_box (script->graphics_debug1->list, 1,1,1, red,gray, 50);
+		//load box.obj (first build path)
+		char obj[strlen(path) + strlen("/box.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/box.obj");
+
+		if (!(script->tmp_trimesh1 = load_obj (obj, 0.5)))
+			return NULL;
+
 		script->box = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/flipper"))
@@ -872,7 +923,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 //	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	//data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 
 	//done
 	//

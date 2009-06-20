@@ -133,6 +133,7 @@ typedef struct script_struct {
 	file_3d_struct *graphics_debug2;
 	file_3d_struct *graphics_debug3;
 
+	trimesh *tmp_trimesh1;
 	//temporary solution
 	bool box;
 	bool flipper;
