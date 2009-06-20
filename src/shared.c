@@ -645,6 +645,7 @@ void free_all (void)
 	trimesh *mesh;
 	while (trimesh_head)
 	{
+		printf("trimesh\n");
 		//remove from list
 		mesh = trimesh_head;
 		trimesh_head = trimesh_head->next;
@@ -652,15 +653,18 @@ void free_all (void)
 		//free data
 		//free (mesh->file);
 		free (mesh->vertices);
-		free (mesh->normals);
-
 		free (mesh->vector_indices);
+
+		free (mesh->normals);
 		free (mesh->normal_indices);
 		
-		free (mesh->materials);
-		free (mesh->material_indices);
-		free (mesh->instructions);
+		printf("FIXME!\n");
+		//free (mesh->materials);
+		//free (mesh->material_indices);
+		//free (mesh->instructions);
+		free (mesh);
 	}
+	printf("done\n");
 
 	//no need to destroy track, since it's not allocated by program
 }

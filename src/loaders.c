@@ -250,6 +250,7 @@ int load_conf (char *name, char *memory, struct data_index index[])
 //some limits includes requiring normals for each index, and only one mtl file
 trimesh *load_obj (char *file, float resize)
 {
+	int i;
 	//nested function (for getting relative mtl path)
 	char *replace_file_in_path(char *path, char *file)
 	{
@@ -324,7 +325,10 @@ trimesh *load_obj (char *file, float resize)
 		else if (!strcmp(word[0], "vn"))
 			++normals;
 		else if (!strcmp(word[0], "f"))
-			++indices;
+		{
+			for (i=1; word[i]; ++i);
+			indices += (i-1);
+		}
 		else if (!strcmp(word[0], "usemtl"))
 			++material_indices;
 		else if (!strcmp(word[0], "mtllib"))
@@ -392,24 +396,26 @@ trimesh *load_obj (char *file, float resize)
 	//start loading, first mtl
 	fseek (fp_mtl, SEEK_SET, 0); //go to beginning
 
-	int i=-1;
+	i=-1;
 	while ((word = get_word_list(fp_mtl)))
 	{
 		if (!strcmp(word[0], "newmtl"))
 		{
+			++i;
 			//first store name for future lookups
-			material_names[i] = (char*) calloc(sizeof(word[1])+1, sizeof(char));
+			material_names[i] = (char*) calloc(strlen(word[1])+1, sizeof(char));
 			strcpy(material_names[i], word[1]);
 
 			//hmm... I might have forgotten something?
-			++i;
 		}
 		else if (i!=-1)
 		{
 			//"shinines" of specular colour
 			if (word[0][0] == 'N' &&word[0][1] == 's')
+			{
 				if (!(sscanf(word[1], "%i", &(mesh->materials+i)->shininess)))
 					printlog(0, "WARNING: failed reading shinines %i\n", i);
+			}
 
 			//ambient colour
 			else if (word[0][0] == 'K' &&word[0][1] == 'a')
@@ -444,11 +450,12 @@ trimesh *load_obj (char *file, float resize)
 					printlog(0, "WARNING: failed reading specular colour %i\n", i);
 			}
 		}
+		else
+			printlog(0, "WARNING: ignoring %s\n", word[0]);
 	}
 	
 	fclose (fp_mtl);
 
-	printf("done mtl\n");
 	//load obj
 	//TODO: add resize option (preferably as float argument to function)
 	fseek (fp_obj, SEEK_SET, 0); //go to beginning
@@ -485,39 +492,49 @@ trimesh *load_obj (char *file, float resize)
 			else
 				printlog(0, "WARNING: failed reading normal %i\n", n_count);
 		}
-		//index
+		//indices
 		else if (word[0][0]=='f' && word[0][1]=='\0')
 		{
-			if (sscanf(word[1], "%i/%i//", &mesh->vector_indices[i_count],
+			for (i=1; word[i]; ++i)
+			{
+			//FIXME: make it ignore optional %i between //
+			if (sscanf(word[i], "%i//%i/", &mesh->vector_indices[i_count],
 						&mesh->normal_indices[i_count]) == 2)
 			{
+				mesh->vector_indices[i_count] -=1;
+				mesh->normal_indices[i_count] -=1;
 				++i_count;
 				mesh->instructions[inst_count++]='i';
 			}
 			else
 				printlog(0, "WARNING: failed reading index %i\n", i_count);
+			}
 		}
 
 		//material
 		else if (!strcmp(word[0], "usemtl"))
 		{
 			for (i=0; i<materials; ++i)
+			{
 				if (!(strcmp(material_names[i], word[1])))
+				{
+					printf("yes, %i (materials=%i)\n", i, materials);
 					break;
+				}
+			}
 			if (i!=materials) //we found a match
 			{
 				mesh->material_indices[m_count] = i;
 				mesh->instructions[inst_count++]='m';
 			}
 			else
-				printlog(0, "WARNING: failed identify material %c\n", word[1]);
+				printlog(0, "WARNING: failed identify material %s\n", word[1]);
 		}
 	}
 	mesh->instructions[inst_count]='\0';
 	
 	fclose (fp_obj);
 
-	printf("done obj\n");
 	//And we're done!
 	for (i=0; i<materials; ++i)
 		free (material_names[i]);

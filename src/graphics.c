@@ -107,7 +107,9 @@ void render_trimesh (trimesh* target)
 	GLfloat *vertex, *normal; //vectors
 	material *mat;
 	
-	glBegin (GL_TRIANGLES);
+	//printf("> %s\n", inst);
+	//printf("begin\n");
+	glBegin (GL_QUADS); //TODO: currently treats all indices as quads...
 	//future instructions might be different, like vertex and normal indices
 	//as sepparate (but since they are often specified at the same time,
 	//maybe not?)
@@ -115,17 +117,23 @@ void render_trimesh (trimesh* target)
 	{
 		if (*inst == 'i') //vertex&normal index
 		{
-			normal = &target->normals[*n_index];
+			//printf("vertex/normal\n");
+			//printf("ni> %u\n", *n_index);
+			normal = &target->normals[(*n_index)*3];
+			//printf("n> %f, %f, %f\n", normal[0], normal[1], normal[2]);
 			glNormal3f (normal[0], normal[1], normal[2]);
-			vertex = &target->vertices[*v_index];
+			//printf("vi> %u\n", *v_index);
+			vertex = &target->vertices[(*v_index)*3];
+			//printf("v> %f, %f, %f\n", vertex[0], vertex[1], vertex[2]);
 			glVertex3f (vertex[0], vertex[1], vertex[2]);
 
-			v_index += 3;
-			n_index += 3;
+			++v_index;
+			++n_index;
 
 		}
 		else if (*inst == 'm') //material "index"
 		{
+			//printf("material\n");
 			mat = &target->materials[*mat_index];
 
 			glMaterialfv (GL_FRONT, GL_AMBIENT,mat->ambient);
@@ -136,10 +144,14 @@ void render_trimesh (trimesh* target)
 			mat_index += 3;
 		}
 		else //assumed to be '\0'
+		{
+			//printf("break\n");
 			break;
+		}
 
 		++inst;
 	}
+	//printf("end\n");
 	glEnd();
 
 	//glMaterialfv (GL_FRONT, GL_SPECULAR, black);
