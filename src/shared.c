@@ -414,7 +414,8 @@ file_3d_struct *allocate_file_3d (void)
 
 //it is assumed that all values are positive (non-zero)
 trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
-	unsigned int indices, unsigned int materials, unsigned int material_indices)
+	unsigned int indices, unsigned int materials,
+	unsigned int material_indices, unsigned int modes)
 {
 	printlog(2, " > allocating trimesh storage");
 
@@ -438,16 +439,17 @@ trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
 	tmp_trimesh->vector_indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
 	tmp_trimesh->normal_indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
 
-	tmp_trimesh->materials = (material*) calloc(materials, sizeof(materials));
+	tmp_trimesh->materials = (material*) calloc(materials, sizeof(material));
 	tmp_trimesh->material_indices = (unsigned int*) calloc(material_indices, sizeof(unsigned int));
 
+	tmp_trimesh->modes = (GLenum*) calloc(modes, sizeof(GLenum));
 	//needed when creating ode trimesh
 	tmp_trimesh->index_count = indices;
 	tmp_trimesh->vertex_count = vertices;
 
 	//describes which index to read next "instruction" from
 	//(currently only vertex+normal and material)
-	tmp_trimesh->instructions =(char*)calloc(indices+materials+1, sizeof(char));
+	tmp_trimesh->instructions =(char*)calloc(indices+materials+modes+1, sizeof(char));
 
 	printlog (2, "\n");
 	return tmp_trimesh;
@@ -645,7 +647,6 @@ void free_all (void)
 	trimesh *mesh;
 	while (trimesh_head)
 	{
-		printf("trimesh\n");
 		//remove from list
 		mesh = trimesh_head;
 		trimesh_head = trimesh_head->next;
@@ -658,13 +659,15 @@ void free_all (void)
 		free (mesh->normals);
 		free (mesh->normal_indices);
 		
-		printf("FIXME!\n");
-		//free (mesh->materials);
-		//free (mesh->material_indices);
-		//free (mesh->instructions);
+		free (mesh->materials);
+		free (mesh->material_indices);
+
+		free (mesh->instructions);
+
+		free (mesh->modes);
+
 		free (mesh);
 	}
-	printf("done\n");
 
-	//no need to destroy track, since it's not allocated by program
+	//no need to destroy track (for now), since it's not allocated by program
 }

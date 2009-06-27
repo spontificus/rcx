@@ -4,6 +4,54 @@
 //
 //See main.c for licensing info
 
+FILE *open_file(char *path)
+{
+	FILE *fp;
+	#ifdef windows
+		fp = fopen(path, "rb");
+	#else
+		fp = fopen(path, "r");
+	#endif
+	return fp;
+}
+
+FILE *open_file_rel_to_file (char *path, char *file)
+{
+	int file_l = strlen(file);
+
+	//find last /
+	int i;
+	for (i=strlen(path); 0<i; --i)
+		if (path[i] == '/')
+			break;
+
+	++i;
+
+	char *new_path;
+	//no / , just append
+	if (i==0)
+	{
+		new_path = (char*) calloc(strlen(path)+file_l+2, sizeof(char));
+		strcpy (new_path, path);
+		strcat (new_path, "/");
+		strcat (new_path, file);
+	}
+	else //got length before /
+	{
+		new_path = (char*) calloc(i+strlen(file)+2, sizeof(char));
+		int j;
+		for (j=0; j<i; ++j)
+			new_path[j]=path[j];
+		new_path[++j]='/';
+		for (j=0; j<file_l; ++j)
+			new_path[i+j]=file[j];
+		new_path[i+j]='\0';
+	}
+
+	FILE *fp = open_file(new_path);
+	free (new_path);
+	return fp;
+}
 
 #define MAX_WORDS 100
 
@@ -136,6 +184,7 @@ void free_word_list (char **target)
 
 	for (i=0; target[i]!=NULL; ++i)
 		free (target[i]);
+
 	free (target);
 }
 
@@ -147,11 +196,12 @@ int load_conf (char *name, char *memory, struct data_index index[])
  printlog(1, "-> loading conf file: %s\n", name);
  FILE *fp;
 
-#ifdef windows
+/*#ifdef windows
  fp = fopen(name, "rb");
 #else
  fp = fopen(name, "r");
-#endif
+#endif*/
+ fp = open_file(name);
 
  if (!fp)
  {
@@ -251,52 +301,17 @@ int load_conf (char *name, char *memory, struct data_index index[])
 trimesh *load_obj (char *file, float resize)
 {
 	int i;
-	//nested function (for getting relative mtl path)
-	char *replace_file_in_path(char *path, char *file)
-	{
-		int file_l = strlen(file);
-		//find last /
-		int i;
-		for (i=strlen(path); 0<i; --i)
-			if (path[i] == '/')
-				break;
-
-		++i;
-
-		char *new_path;
-		//no / , just append
-		if (i==0)
-		{
-			new_path = (char*) calloc(strlen(path)+file_l+2, sizeof(char));
-			strcpy (new_path, path);
-			strcat (new_path, "/");
-			strcat (new_path, file);
-		}
-		else //got length before /
-		{
-			new_path = (char*) calloc(i+strlen(file)+2, sizeof(char));
-			int j;
-			for (j=0; j<i; ++j)
-				new_path[j]=path[j];
-			new_path[++j]='/';
-			for (j=0; j<file_l; ++j)
-				new_path[i+j]=file[j];
-			new_path[i+j]='\0';
-		}
-
-		return new_path;
-	}
-
 
 	printlog(1, "-> Loading obj file to trimesh: %s\n", file);
 	FILE *fp_obj;
 	FILE *fp_mtl = NULL;
 
-#ifdef windows
+/*#ifdef windows
 	fp_obj = fopen(file, "rb");
 #else
 	fp_obj = fopen(file, "r");
-#endif
+#endif*/
+	fp_obj = open_file(file);
 
 	if (!fp_obj)
 	{
@@ -305,10 +320,11 @@ trimesh *load_obj (char *file, float resize)
 	}
 
 	char **word;
-	unsigned int vertices, normals, indices, materials, material_indices;
-	vertices=normals=indices=materials=material_indices=0;
+	unsigned int vertices, normals, indices, materials, material_indices, modes;
+	vertices=normals=indices=materials=material_indices=modes=0;
 
 	const unsigned int MAX = -1; //overflow limit for unsigned int
+	int last_f_number = 0;
 
 	//first get ammount of vertices, indices etc. Set last found mtl file
 	while ((word = get_word_list(fp_obj)))
@@ -328,6 +344,9 @@ trimesh *load_obj (char *file, float resize)
 		{
 			for (i=1; word[i]; ++i);
 			indices += (i-1);
+
+			if (i!=last_f_number || i>4) //mode switch
+				++modes;
 		}
 		else if (!strcmp(word[0], "usemtl"))
 			++material_indices;
@@ -336,25 +355,28 @@ trimesh *load_obj (char *file, float resize)
 			if (fp_mtl) //_new_ file request found(!), close this one
 				fclose (fp_mtl);
 
-			char *mtl_path = replace_file_in_path (file, word[1]);
+			//char *mtl_path = replace_file_in_path (file, word[1]);
 
-			#ifdef windows
+			/*#ifdef windows
 				fp_mtl = fopen(mtl_path, "rb");
 			#else
 				fp_mtl = fopen(mtl_path, "r");
-			#endif
+			#endif*/
+			//fp_mtl = open_file(mtl_path);
 
+			fp_mtl = open_file_rel_to_file (file, word[1]);
 
 			if (!fp_mtl)
 			{
-				printlog(0, "ERROR: couldn't open file: %s\n", mtl_path);
+				printlog(0, "ERROR: couldn't open file: %s\n", word[1]);
 				fclose (fp_obj); //basic cleanup
 				return NULL;
 			}
 
-			free (mtl_path);
+			//free (mtl_path);
 		}
 		//else unrecognized!
+		free_word_list(word);
 	}
 
 	if (!fp_mtl)
@@ -366,6 +388,7 @@ trimesh *load_obj (char *file, float resize)
 
 	//count materials
 	while ((word = get_word_list(fp_mtl)))
+	{
 		if (!strcmp(word[0], "newmtl"))
 			if (++materials == MAX)
 			{
@@ -374,10 +397,12 @@ trimesh *load_obj (char *file, float resize)
 				fclose (fp_mtl);
 				return NULL;
 			}
+		free_word_list(word);
+	}
 
 	//print counts
-	printlog (1, "v:%u n:%u i:%u m:%u mi:%u\n", vertices, normals,
-			indices, materials, material_indices);
+	printlog (1, " (v:%u n:%u i:%u m:%u mi:%u Modes:%u)\n", vertices, normals,
+			indices, materials, material_indices, modes);
 
 	if (!(vertices&&normals&&indices&&materials))
 	{
@@ -389,7 +414,7 @@ trimesh *load_obj (char *file, float resize)
 
 	//allocate
 	trimesh *mesh = allocate_trimesh(vertices, normals,
-			indices, materials, material_indices);
+			indices, materials, material_indices, modes);
 
 	char *material_names[materials]; //for tmp storing names
 
@@ -408,12 +433,12 @@ trimesh *load_obj (char *file, float resize)
 
 			//hmm... I might have forgotten something?
 		}
-		else if (i!=-1)
+		else if (i>=0)
 		{
 			//"shinines" of specular colour
 			if (word[0][0] == 'N' &&word[0][1] == 's')
 			{
-				if (!(sscanf(word[1], "%i", &(mesh->materials+i)->shininess)))
+				if (!(sscanf(word[1], "%f", &(mesh->materials+i)->shininess)))
 					printlog(0, "WARNING: failed reading shinines %i\n", i);
 			}
 
@@ -423,7 +448,7 @@ trimesh *load_obj (char *file, float resize)
 				if (sscanf(word[1], "%f", &(mesh->materials+i)->ambient[0])==1 &&
 				    sscanf(word[2], "%f", &(mesh->materials+i)->ambient[1])==1 &&
 				    sscanf(word[3], "%f", &(mesh->materials+i)->ambient[2])==1)
-					(mesh->materials+1)->ambient[3]=1.0f;
+					(mesh->materials+i)->ambient[3]=1.0f;
 				else
 					printlog(0, "WARNING: failed reading ambient colour %i\n", i);
 			}
@@ -452,6 +477,7 @@ trimesh *load_obj (char *file, float resize)
 		}
 		else
 			printlog(0, "WARNING: ignoring %s\n", word[0]);
+		free_word_list(word);
 	}
 	
 	fclose (fp_mtl);
@@ -459,7 +485,8 @@ trimesh *load_obj (char *file, float resize)
 	//load obj
 	//TODO: add resize option (preferably as float argument to function)
 	fseek (fp_obj, SEEK_SET, 0); //go to beginning
-	unsigned int v_count=0, n_count=0, i_count=0, inst_count=0, m_count=0;
+	unsigned int v_count=0, n_count=0, i_count=0, inst_count=0, m_count=0, M_count=0;
+	last_f_number = 0;
 	GLfloat *vertex;
 	while ((word = get_word_list(fp_obj)))
 	{
@@ -504,11 +531,43 @@ trimesh *load_obj (char *file, float resize)
 				mesh->vector_indices[i_count] -=1;
 				mesh->normal_indices[i_count] -=1;
 				++i_count;
-				mesh->instructions[inst_count++]='i';
 			}
 			else
 				printlog(0, "WARNING: failed reading index %i\n", i_count);
 			}
+
+			--i;
+			if (i!=last_f_number || i>4)
+			{
+				mesh->instructions[inst_count++]='M';
+
+				GLenum new_mode;
+				switch (i)
+				{
+					case 1:
+						new_mode = GL_POINTS;
+						break;
+					case 2:
+						new_mode = GL_LINES;
+						break;
+					case 3:
+						new_mode = GL_TRIANGLES;
+						break;
+					case 4:
+						new_mode = GL_QUADS;
+						break;
+					default:
+						new_mode = GL_POLYGON;
+						break;
+				}
+
+				mesh->modes[M_count++] = new_mode;
+			}
+
+			int j;
+			for (j=0; j<i; ++j)
+				mesh->instructions[inst_count++]='i';
+
 		}
 
 		//material
@@ -517,19 +576,19 @@ trimesh *load_obj (char *file, float resize)
 			for (i=0; i<materials; ++i)
 			{
 				if (!(strcmp(material_names[i], word[1])))
-				{
-					printf("yes, %i (materials=%i)\n", i, materials);
 					break;
-				}
 			}
 			if (i!=materials) //we found a match
 			{
-				mesh->material_indices[m_count] = i;
+				//mesh->material_indices[m_count] = i;
+				mesh->material_indices[0] = 0;
 				mesh->instructions[inst_count++]='m';
 			}
 			else
 				printlog(0, "WARNING: failed identify material %s\n", word[1]);
+			++m_count;
 		}
+		free_word_list(word);
 	}
 	mesh->instructions[inst_count]='\0';
 	
@@ -599,11 +658,12 @@ profile *load_profile (char *path)
 	printlog(1, "-> loading key list: %s\n", list);
 	FILE *fp;
 
-#ifdef windows
+/*#ifdef windows
 	fp = fopen(list, "rb");
 #else
 	fp = fopen(list, "r");
-#endif
+#endif*/
+	fp = open_file(list);
 
 	if (!fp)
 	{
@@ -1444,11 +1504,12 @@ int load_track (char *path)
 	printlog(1, "-> Loading track object list: %s\n", path);
 	FILE *fp;
 
-#ifdef windows
+/*#ifdef windows
 	fp = fopen(list, "rb");
 #else
 	fp = fopen(list, "r");
-#endif
+#endif*/
+	fp = open_file(list);
 
 	if (!fp)
 	{

@@ -78,6 +78,8 @@ int graphics_init(void)
 
 	glDepthFunc (GL_LESS);
 	glEnable (GL_DEPTH_TEST);
+	glEnable (GL_NORMALIZE); //normalize normal vectors (most obj file normals are not unit)
+	//NOTE: this could also be solved by normalizing the vectors when loading (which should give better performance...)
 	glShadeModel (GL_SMOOTH); //by default, can be changed
 
 	graphics_resize (screen->w, screen->h);
@@ -106,52 +108,49 @@ void render_trimesh (trimesh* target)
 	unsigned int *mat_index = target->material_indices;
 	GLfloat *vertex, *normal; //vectors
 	material *mat;
+	GLenum *mode = target->modes;
 	
-	//printf("> %s\n", inst);
-	//printf("begin\n");
-	glBegin (GL_QUADS); //TODO: currently treats all indices as quads...
+	bool reset_gl = false;
 	//future instructions might be different, like vertex and normal indices
-	//as sepparate (but since they are often specified at the same time,
+	//sepparately (but since they are often specified at the same time,
 	//maybe not?)
 	while (1)
 	{
 		if (*inst == 'i') //vertex&normal index
 		{
-			//printf("vertex/normal\n");
-			//printf("ni> %u\n", *n_index);
 			normal = &target->normals[(*n_index)*3];
-			//printf("n> %f, %f, %f\n", normal[0], normal[1], normal[2]);
 			glNormal3f (normal[0], normal[1], normal[2]);
-			//printf("vi> %u\n", *v_index);
 			vertex = &target->vertices[(*v_index)*3];
-			//printf("v> %f, %f, %f\n", vertex[0], vertex[1], vertex[2]);
 			glVertex3f (vertex[0], vertex[1], vertex[2]);
 
 			++v_index;
 			++n_index;
 
 		}
+		else if (*inst == 'M') //opengl mode
+		{
+			if (reset_gl)
+				glEnd();
+			glBegin (*mode);
+			++mode;
+			reset_gl = true; //run glEnd before setting next mode
+		}
 		else if (*inst == 'm') //material "index"
 		{
-			//printf("material\n");
 			mat = &target->materials[*mat_index];
 
 			glMaterialfv (GL_FRONT, GL_AMBIENT,mat->ambient);
 			glMaterialfv (GL_FRONT, GL_DIFFUSE,mat->diffuse);
 			glMaterialfv (GL_FRONT, GL_SPECULAR, mat->specular);
-			glMateriali  (GL_FRONT, GL_SHININESS, mat->shininess);
+			glMaterialf  (GL_FRONT, GL_SHININESS, mat->shininess);
 
-			mat_index += 3;
+			++mat_index;
 		}
 		else //assumed to be '\0'
-		{
-			//printf("break\n");
 			break;
-		}
 
 		++inst;
 	}
-	//printf("end\n");
 	glEnd();
 
 	//glMaterialfv (GL_FRONT, GL_SPECULAR, black);

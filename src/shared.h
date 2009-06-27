@@ -90,7 +90,7 @@ typedef struct {
 	GLfloat ambient[4];
 	GLfloat diffuse[4];
 	GLfloat specular[4];
-	GLint shininess;
+	GLfloat shininess;
 } material;
 
 typedef struct trimesh_struct {
@@ -101,17 +101,20 @@ typedef struct trimesh_struct {
 	//currently, all 3d files must specify one normal for each vertex!
 	GLfloat *normals;
 
-	//the following two are needed when creating ODE trimeshes
 	unsigned int vertex_count;	//note: might be overflown by big 3d files!
 	unsigned int index_count;	//this as well!
 
 	material *materials;
 
-	unsigned int *vector_indices;		//can also be overflown!
+	unsigned int *vector_indices;	//can also be overflown!
 	unsigned int *normal_indices;	//overflow
 	unsigned int *material_indices;	//again, overflow posibility
 
-	char *instructions; //'i' = index, 'm' = material, '\0' = end
+	GLenum *modes;
+	//instructions:
+	//'i' = index, 'm' = material, 'M' = opengl mode
+	//'\0' = end
+	char *instructions;
 
 	struct trimesh_struct *next;
 } trimesh;
