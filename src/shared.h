@@ -111,10 +111,13 @@ typedef struct trimesh_struct {
 	unsigned int *material_indices;	//again, overflow posibility
 
 	GLenum *modes;
+
 	//instructions:
 	//'i' = index, 'm' = material, 'M' = opengl mode
 	//'\0' = end
 	char *instructions;
+
+	dTriIndex *geom_tri_indices;
 
 	struct trimesh_struct *next;
 } trimesh;
@@ -468,9 +471,11 @@ struct track_struct {
 	dReal density; //for air drag (friction)
 
 	dReal start[3];
+	dReal respawn; //respawn heigh (Z)
 
-	file_3d_struct *file_3d;
-	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
+	float obj_resize;
+	trimesh *track_trimesh;
+
 	object_struct *object;
 } track;
 //index:
@@ -488,6 +493,8 @@ struct data_index track_index[] = {
 	{"cfm",		'f',1,	offsetof(struct track_struct, cfm)},
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
+	{"respawn",	'f',1,	offsetof(struct track_struct, respawn)},
+	{"obj_resize",	'f',1,	offsetof(struct track_struct, obj_resize)},
 	{"",0,0}};//end
 
 

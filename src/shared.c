@@ -451,6 +451,8 @@ trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
 	//(currently only vertex+normal and material)
 	tmp_trimesh->instructions =(char*)calloc(indices+materials+modes+1, sizeof(char));
 
+	tmp_trimesh->geom_tri_indices = NULL; //this is up to the user to create
+
 	printlog (2, "\n");
 	return tmp_trimesh;
 }
@@ -662,9 +664,13 @@ void free_all (void)
 		free (mesh->materials);
 		free (mesh->material_indices);
 
+		free (mesh->modes);
+
 		free (mesh->instructions);
 
-		free (mesh->modes);
+		//only allocated for trimesh with collision geom
+		if (mesh->geom_tri_indices)
+			free (mesh->geom_tri_indices);
 
 		free (mesh);
 	}

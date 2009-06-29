@@ -602,6 +602,109 @@ trimesh *load_obj (char *file, float resize)
 }
 
 
+//translate a trimesh (for rendering) to an ode trimesh geom (for collision)
+dGeomID trimesh_to_geom (trimesh *mesh)
+{
+	printlog(1, "-> Translating trimesh to geometrical trimesh\n");
+	//ode trimeshes only supports triangles ("triangle mesh"...), so indices for faces with more vertices (in mode) than 3 must be translated.
+	//new indices are stored in a sepparate array in the trimesh.
+	//NOTE: this could be used for rendering as well (but will require more memory, and possibly more rendering time?)
+	int i;
+	unsigned int i_count = 0;
+	int v_count=0;
+	GLenum *modes = mesh->modes;
+	enum {none, triangles, quads, polygon} mode = none;
+	for (i=0; mesh->instructions[i]; ++i)
+	{
+		if (mesh->instructions[i] == 'M')
+		{
+			if (*modes == GL_TRIANGLES)
+				mode = triangles;
+			else if (*modes == GL_QUADS)
+				mode = quads;
+			else if (*modes == GL_POLYGON)
+				mode = polygon;
+
+			v_count=0;
+			++modes;
+		}
+
+		else if (mesh->instructions[i] == 'i')
+		{
+			++v_count;
+
+			if (mode == triangles && v_count%3 == 0)
+				++i_count;
+			else if (mode == quads && v_count%4 == 0)
+				i_count +=2;
+			else if (mode == polygon && v_count >2)
+				++i_count;
+		}
+	}
+	i_count *= 3;
+	mesh->geom_tri_indices = calloc (i_count, sizeof(dTriIndex));
+	
+	//translate
+	i_count = 0;
+	v_count = 0;
+	int corners =0;
+	mode = none;
+	modes = mesh->modes;
+	for (i=0; mesh->instructions[i]; ++i)
+	{
+		if (mesh->instructions[i] == 'M')
+		{
+			if (*modes == GL_TRIANGLES)
+				mode = triangles;
+			else if (*modes == GL_QUADS)
+				mode = quads;
+			else if (*modes == GL_POLYGON)
+				mode = polygon;
+			corners =0;
+		}
+		else if (mesh->instructions[i] == 'i')
+		{
+			if (mode == triangles)
+				mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
+			else if (mode == quads)
+			{
+				++corners;
+				if (corners <= 3)
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
+				else if (corners == 4)
+				{
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-1];
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count];
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-3];
+					++v_count;
+					corners = 0;
+				}
+			}
+			//this ok?
+			else if (mode == polygon)
+			{
+				++corners;
+				if (corners <= 3)
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
+				else
+				{
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-2];
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-1];
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count];
+					++v_count;
+				}
+			}
+		}
+	}
+
+
+	dTriMeshDataID data = dGeomTriMeshDataCreate();
+	dGeomTriMeshDataBuildSingle (data, (void*) mesh->vertices, sizeof(float)*3, mesh->vertex_count, (void*) mesh->geom_tri_indices, i_count, sizeof(dTriIndex)*3);
+	return dCreateTriMesh(0, data, 0,0,0);
+}
+
+
+
 #ifdef __cplusplus
 // required to iterate through an enum in C++
 template <class Enum>
@@ -1371,7 +1474,7 @@ int load_track (char *path)
 
 	free (conf);
 
-	//append forced data
+	//append forced data (lighting)
 	track.position[3] = 0.0f; //directional
 	track.ambient[3] = 1.0f; //a = 1.0f
 	track.diffuse[3] = 1.0f; //-''-
@@ -1389,12 +1492,42 @@ int load_track (char *path)
 
 	dWorldSetGravity (world,0,0,-track.gravity);
 
-	//(for now, use geoms to describe world)
-	track.object = allocate_object(true,false); //space + no jointgroup
+	//load track from obj (to rendering trimesh)
+	char *obj=(char *)calloc(strlen(path)+sizeof("/track.obj")
+				+1, sizeof(char));//+1 for \0
+	strcpy (obj,path);
+	strcat (obj,"/track.obj");
+
+	track.track_trimesh = load_obj (obj, track.obj_resize);
+	free (obj);
+
+	if (!track.track_trimesh)
+		return -1;
 
 	//tmp vars
 	dGeomID geom;
 	geom_data *data;
+
+	//maybe just create space instead of "object"?
+	track.object = allocate_object(true,false); //space + no jointgroup
+
+	//translate rendering trimesh to collision geom
+	geom = trimesh_to_geom (track.track_trimesh);
+	data = allocate_geom_data(geom, track.object);
+	data->mu = track.mu;
+	data->slip = track.slip;
+	data->erp = track.erp;
+	data->cfm = track.cfm;
+
+	//currently just create a plane for respawn level...
+	geom = dCreatePlane (0, 0,0,1,track.respawn);
+	data = allocate_geom_data(geom, track.object);
+	//data->mu = track.mu;
+	//data->slip = track.slip;
+	//data->erp = track.erp;
+	//data->cfm = track.cfm;
+	
+	/* old stuff
 	//ground plane
 	geom = dCreatePlane (0, 0,0,1,0);
 	data = allocate_geom_data(geom, track.object);
@@ -1495,6 +1628,7 @@ int load_track (char *path)
 	data->file_3d = allocate_file_3d();
 	debug_draw_box (data->file_3d->list, 8,12,1, gray, black, 0);
 
+	*/
 
 	//now lets load some objects!
 	char *list=(char *)calloc(strlen(path)+12+1,sizeof(char));//+1 for \0

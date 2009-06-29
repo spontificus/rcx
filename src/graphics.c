@@ -212,7 +212,7 @@ void graphics_step (Uint32 step)
 
 	//render world
 	glPushMatrix();
-		glCallList (track.file_3d->list);
+		render_trimesh (track.track_trimesh);
 	glPopMatrix();
 
 	//loop through all geoms, see if they need rendering

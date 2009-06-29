@@ -40,7 +40,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		return;
 	}
 
-	//both geoms are geoms, get component_data from geoms
+	//both geoms are geoms (not space), get component_data from geoms
 	geom_data *geom1, *geom2;
 	geom1 = (geom_data*) dGeomGetData (o1);
 	geom2 = (geom_data*) dGeomGetData (o2);
