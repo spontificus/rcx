@@ -101,6 +101,7 @@ int graphics_init(void)
 //would make the necessary data to send to gpu less (=higher fps)
 void render_trimesh (trimesh* target)
 {
+
 	//variables for fast looping
 	char *inst = target->instructions;
 	unsigned int *v_index = target->vector_indices;
