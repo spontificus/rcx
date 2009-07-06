@@ -877,53 +877,6 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 	glEndList();
 }
 
-void debug_draw_sphere_part(GLfloat x, GLfloat y, GLfloat z)
-{
-	glNormal3f (1.0f*x, -0.8f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-}
-
-void debug_draw_sphere (GLuint list, GLfloat d, GLfloat colour[],
-		GLfloat specular[], GLint shininess)
-{
-	printlog(2, " > Creating rendering list for debug sphere\n");
-	GLfloat radius = d/2;
-
-	glNewList (list, GL_COMPILE);
-	glEnable(GL_NORMALIZE); //easier to specify normals
-
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
-	glMaterialfv (GL_FRONT, GL_SPECULAR, specular);
-	glMateriali (GL_FRONT, GL_SHININESS, shininess);
-
-	glBegin (GL_TRIANGLES);
-	debug_draw_sphere_part(-radius	,radius		,radius);
-	debug_draw_sphere_part(radius	,radius		,radius);
-	debug_draw_sphere_part(-radius	,-radius	,radius);
-	debug_draw_sphere_part(radius	,-radius	,radius);
-	debug_draw_sphere_part(-radius	,radius		,-radius);
-	debug_draw_sphere_part(radius	,radius		,-radius);
-	debug_draw_sphere_part(-radius	,-radius	,-radius);
-	debug_draw_sphere_part(radius	,-radius	,-radius);
-	glEnd();
-
-	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-	glDisable(GL_NORMALIZE);
-	glEndList();
-}
 
 //load data for spawning object (object data), hard-coded debug version
 //(objects are loaded as script instructions, executed for spawning)
@@ -992,11 +945,19 @@ script_struct *load_object(char *path)
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
-		//draw approximate sphere
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug1->list,2, lblue,white,42);
-		script->graphics_debug2 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug2->list,1.6,white,white,42);
+		char obj1[strlen(path) + strlen("/sphere1.obj") + 1];
+		strcpy (obj1, path);
+		strcat (obj1, "/sphere1.obj");
+
+		if (!(script->tmp_trimesh1 = load_obj (obj1, 1.0))) //no resize
+			return NULL;
+
+		char obj2[strlen(path) + strlen("/sphere2.obj") + 1];
+		strcpy (obj2, path);
+		strcat (obj2, "/sphere2.obj");
+
+		if (!(script->tmp_trimesh2 = load_obj (obj2, 1.0))) //no resize
+			return NULL;
 
 		script->NH4 = true;
 	}
@@ -1008,11 +969,12 @@ script_struct *load_object(char *path)
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
-		//draw approximate sphere
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug1->list,2, lblue,white,42);
-//		script->graphics_debug2 = allocate_file_3d();
-//		debug_draw_sphere (script->graphics_debug2->list,1.6,white,white,42);
+		char obj[strlen(path) + strlen("/sphere.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/sphere.obj");
+
+		if (!(script->tmp_trimesh1 = load_obj (obj, 1.0))) //no resize
+			return NULL;
 
 		script->sphere = true;
 	}
@@ -1194,7 +1156,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	//data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 
 	dReal pos[4][3] = {
 		{0, 0, 1.052},
@@ -1225,7 +1188,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug2;
+	//data->file_3d = script->graphics_debug2;
+	data->geom_trimesh = script->tmp_trimesh2;
 
 	//connect to main sphere
 	
@@ -1244,27 +1208,26 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object(true, true);
 
-	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
-	geom_data *data = allocate_geom_data(geom, obj);
-	dBodyID body1 = dBodyCreate (world);
+	geom_data *data = allocate_geom_data(geom, NULL);
+	dBodyID body = dBodyCreate (world);
 
 	dMass m;
 	dMassSetSphere (&m,1,1); //radius
 	dMassAdjust (&m,60); //mass
-	dBodySetMass (body1, &m);
+	dBodySetMass (body, &m);
 
-	dGeomSetBody (geom, body1);
+	dGeomSetBody (geom, body);
 
-	dBodySetPosition (body1, x, y, z);
+	dBodySetPosition (body, x, y, z);
 
 	data->mu = 1;
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	//data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 	}
 	//
 	else if (script->building)

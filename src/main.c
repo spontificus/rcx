@@ -100,7 +100,8 @@ int main (int argc, char *argv[])
 	printf("	>	A and D		move camera along X axis\n");
 	printf("	>	W and S		move camera along Y axis\n");
 	printf("	>	F5:		spawn box\n");
-	printf("	>	F6:		spawn box (10s above ground)\n\n");
+	printf("	>	F6:		spawn box (10s above ground)\n");
+	printf("	>	F7:		spawn sphere\n\n");
 	//end of issue
 
 	if (argc != 1)
