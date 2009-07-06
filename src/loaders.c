@@ -524,16 +524,17 @@ trimesh *load_obj (char *file, float resize)
 		{
 			for (i=1; word[i]; ++i)
 			{
-			//FIXME: make it ignore optional %i between //
-			if (sscanf(word[i], "%i//%i/", &mesh->vector_indices[i_count],
-						&mesh->normal_indices[i_count]) == 2)
-			{
-				mesh->vector_indices[i_count] -=1;
-				mesh->normal_indices[i_count] -=1;
-				++i_count;
-			}
-			else
-				printlog(0, "WARNING: failed reading index %i\n", i_count);
+
+				//even if obj specifies texture mapping, ignore it.
+				if (	sscanf(word[i], "%i//%i/", &mesh->vector_indices[i_count], &mesh->normal_indices[i_count]) == 2 ||
+					sscanf(word[i], "%i/%*i/%i/", &mesh->vector_indices[i_count], &mesh->normal_indices[i_count]) == 2)
+				{
+					mesh->vector_indices[i_count] -=1;
+					mesh->normal_indices[i_count] -=1;
+					++i_count;
+				}
+				else
+					printlog(0, "WARNING: failed reading index %i\n", i_count);
 			}
 
 			--i;
