@@ -242,6 +242,12 @@ int load_conf (char *name, char *memory, struct data_index index[])
        argsize=sizeof(bool);
       break;
 
+      //string copy (WARNING: this requires a manual free, preferably in the appropriate <???>_free function)
+      case 's':
+       argscan="%s";
+       argsize=sizeof(char*);
+      break;
+
       case 'i':
        argscan="%i";
        argsize=sizeof(int);
@@ -274,6 +280,15 @@ int load_conf (char *name, char *memory, struct data_index index[])
      else if (argscan[1]=='f'&&strcmp(word[j+1],"inf") == 0)
       *(float*)(memory+index[i].offset+j*argsize) = 1.0f/0.0f;
 #endif
+
+     //while there's a GNU extension for the scanf family which makes it simple to copy strings, lets do it old school!
+     else if (argscan[1]=='s')
+     {
+	     char *str = calloc (strlen(word[j+1]) +1, sizeof(char));
+	     strcpy (str , word[j+1]);
+             *(char**)(memory+index[i].offset+j*argsize) = str;
+     }
+
      else
       if(sscanf(word[j+1],argscan,(memory+index[i].offset+j*argsize)) != 1)
             printlog(0, "ERROR: Parameter: %s - Error reading argument %i!\n", word[0],j);
@@ -1433,10 +1448,18 @@ int load_track (char *path)
 	strcpy (conf,path);
 	strcat (conf,"/track.conf");
 
+	track.obj = NULL; //in order to know if string is allocated (and needs free)
+
 	if (load_conf(conf, (char *)&track, track_index))
 		return -1;
 
 	free (conf);
+
+	if (!track.obj)
+	{
+		printlog(0, "ERROR: track needs to specify obj file!\n");
+		return -1;
+	}
 
 	//append forced data (lighting)
 	track.position[3] = 0.0f; //directional
@@ -1457,10 +1480,10 @@ int load_track (char *path)
 	dWorldSetGravity (world,0,0,-track.gravity);
 
 	//load track from obj (to rendering trimesh)
-	char *obj=(char *)calloc(strlen(path)+sizeof("/track.obj")
-				+1, sizeof(char));//+1 for \0
+	char *obj=(char *)calloc(strlen(path)+strlen(track.obj) +2, sizeof(char));//+2 for \0 and /
 	strcpy (obj,path);
-	strcat (obj,"/track.obj");
+	strcat (obj,"/");
+	strcat (obj,track.obj);
 
 	track.track_trimesh = load_obj (obj, track.obj_resize);
 	free (obj);

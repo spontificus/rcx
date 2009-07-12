@@ -474,11 +474,13 @@ struct track_struct {
 	dReal start[3];
 	dReal respawn; //respawn heigh (Z)
 
+	char *obj;
 	float obj_resize;
 	trimesh *track_trimesh;
 
 	object_struct *object;
 } track;
+
 //index:
 
 struct data_index track_index[] = {
@@ -495,6 +497,7 @@ struct data_index track_index[] = {
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
 	{"respawn",	'f',1,	offsetof(struct track_struct, respawn)},
+	{"obj",		's',1,	offsetof(struct track_struct, obj)},
 	{"obj_resize",	'f',1,	offsetof(struct track_struct, obj_resize)},
 	{"",0,0}};//end
 
