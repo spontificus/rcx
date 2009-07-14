@@ -318,6 +318,15 @@ trimesh *load_obj (char *file, float resize)
 	int i;
 
 	printlog(1, "-> Loading obj file to trimesh: %s\n", file);
+
+	trimesh *tmp;
+	for (tmp=trimesh_head; tmp; tmp=tmp->next)
+		if (!(strcmp(file, tmp->file)))
+		{
+			printlog(1, "   (already loaded)\n");
+			return tmp;
+		}
+
 	FILE *fp_obj;
 	FILE *fp_mtl = NULL;
 
@@ -416,7 +425,7 @@ trimesh *load_obj (char *file, float resize)
 	}
 
 	//print counts
-	printlog (1, " (v:%u n:%u i:%u m:%u mi:%u Modes:%u)\n", vertices, normals,
+	printlog (1, "   (v:%u n:%u i:%u m:%u mi:%u Modes:%u)\n", vertices, normals,
 			indices, materials, material_indices, modes);
 
 	if (!(vertices&&normals&&indices&&materials))
@@ -432,6 +441,11 @@ trimesh *load_obj (char *file, float resize)
 			indices, materials, material_indices, modes);
 
 	char *material_names[materials]; //for tmp storing names
+
+
+	//store filename (to prevent duplicated loading)
+	mesh->file = (char*) calloc (strlen(file)+1, sizeof(char));
+	strcpy (mesh->file, file);
 
 	//start loading, first mtl
 	fseek (fp_mtl, SEEK_SET, 0); //go to beginning

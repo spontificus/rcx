@@ -431,7 +431,6 @@ trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
 
 	//default values
 	tmp_trimesh->file = NULL; //filename - here ~no name~
-	printlog(2, "TODO: check for already loaded files\n");
 
 	//allocate storage for data
 	tmp_trimesh->vertices = (GLfloat *) calloc(vertices*3, sizeof(GLfloat));
@@ -654,7 +653,8 @@ void free_all (void)
 		trimesh_head = trimesh_head->next;
 
 		//free data
-		//free (mesh->file);
+		free (mesh->file); //filename
+
 		free (mesh->vertices);
 		free (mesh->vector_indices);
 

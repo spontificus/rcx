@@ -94,7 +94,7 @@ typedef struct {
 } material;
 
 typedef struct trimesh_struct {
-	char *file; //TODO: store filename (to prevent duplicated loading)
+	char *file; //store filename (to prevent duplicated loading)
 
 	GLfloat *vertices;
 
