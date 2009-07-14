@@ -142,6 +142,7 @@ typedef struct script_struct {
 	//temporary solution
 	trimesh *tmp_trimesh1;
 	trimesh *tmp_trimesh2;
+	trimesh *tmp_trimesh3;
 	bool box;
 	bool flipper;
 	bool NH4;

@@ -1012,32 +1012,29 @@ script_struct *load_object(char *path)
 		strcpy (script->name, path);
 
 		//create graphics
-		script->graphics_debug1 = allocate_file_3d(); //walls
-		script->graphics_debug2 = allocate_file_3d(); //floor/ceiling
-		script->graphics_debug3 = allocate_file_3d(); //pillars
+		//pillars
+		char obj[strlen(path) + strlen("/pillar.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/pillar.obj");
 
-		debug_draw_box (script->graphics_debug1->list, 4,0.4,2.7, dgray,black, 0);
-		debug_draw_box (script->graphics_debug2->list, 4,4,0.2, lgray,gray, 30);
+		if (!(script->tmp_trimesh3 = load_obj (obj, 1.0))) //no resize
+			return NULL;
 
-		glNewList (script->graphics_debug3->list, GL_COMPILE);
+		//wallss
+		char obj2[strlen(path) + strlen("/walls.obj") + 1];
+		strcpy (obj2, path);
+		strcat (obj2, "/wall.obj");
 
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, dgray);
-		glMaterialfv (GL_FRONT, GL_SPECULAR, gray);
-		glMateriali (GL_FRONT, GL_SHININESS, 30);
+		if (!(script->tmp_trimesh1 = load_obj (obj2, 1.0))) //no resize
+			return NULL;
 
-		glBegin (GL_QUAD_STRIP);
-		float v;
-		for (v=0; v<=2*M_PI; v+=2*M_PI/10)
-		{
-			glNormal3f (sin(v), cos(v), 0.0f);
-			glVertex3f(sin(v)/2, cos(v)/2, 2.5/2.0f);
-			glVertex3f(sin(v)/2, cos(v)/2, -2.5/2.0f);
-		}
-		glEnd();
+		//roofs
+		char obj3[strlen(path) + strlen("/roof.obj") + 1];
+		strcpy (obj3, path);
+		strcat (obj3, "/roof.obj");
 
-		glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-		glEndList();
+		if (!(script->tmp_trimesh2 = load_obj (obj3, 1.0))) //no resize
+			return NULL;
 
 		script->building = true;
 	}
@@ -1283,7 +1280,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body1[i], &m);
 
-			data->file_3d = script->graphics_debug1;
+			data->geom_trimesh = script->tmp_trimesh1;
 		}
 		
 		const dReal k = 1.5*4+0.4/2;
@@ -1339,7 +1336,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body2[i], &m);
 
-			data->file_3d = script->graphics_debug2;
+			data->geom_trimesh = script->tmp_trimesh2;
 		}
 
 		const dReal k2=2.7-0.2/2;
@@ -1403,7 +1400,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			//friction
 			data->mu = 1;
 			//Next, Graphics
-			data->file_3d = script->graphics_debug3;
+			data->geom_trimesh = script->tmp_trimesh3;
 		}
 
 		dBodySetPosition (body[0], x+2, y+2, z+2.5/2);
