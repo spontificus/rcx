@@ -135,7 +135,6 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	geom_data_head->event = false; //no collision event yet
 	geom_data_head->script = NULL; //nothing to run on collision (yet)
 	
-	geom_data_head->file_3d = NULL; //default, isn't rendered
 	geom_data_head->geom_trimesh = NULL; //default, isn't rendered
 	//collision contactpoint data
 	geom_data_head->mu = internal.mu;
@@ -335,11 +334,6 @@ car_struct *allocate_car(void)
 	car_head->name = NULL;
 	car_head->spawned = false;
 
-	int i;
-	for (i=0;i<CAR_MAX_BOXES;++i)
-		car_head->box_graphics[i] = NULL;
-	car_head->wheel_graphics = NULL;
-
 	car_head->drift_breaks = true; //if the user does nothing, lock wheels
 	car_head->breaks = false;
 	car_head->throttle = 0;
@@ -361,8 +355,18 @@ car_struct *allocate_car(void)
 	car_head->wheel_cfm   = 0.0;
 	
 	//set x in all boxes to 0 (disable)
+	int i;
 	for (i=0;i<CAR_MAX_BOXES;++i)
 		car_head->box[i][0]=0;
+
+	//obj filenames
+	car_head->obj_body = NULL;
+	for (i=0; i<4; ++i)
+		car_head->obj_wheel[i] = NULL;
+
+	car_head->body_resize=1.0;
+	car_head->wheel_resize=1.0;
+
 
 	//needed for keeping track for different things (mostly for graphics)
 	car_head->bodyid        = NULL;
@@ -388,29 +392,6 @@ car_struct *allocate_car(void)
 	return car_head;
 }
 
-//allocates new link in 3d rendering list
-file_3d_struct *allocate_file_3d (void)
-{
-	printlog(2, " > allocating 3d file storage");
-
-	file_3d_struct *tmp_3d = (file_3d_struct *)malloc (sizeof(file_3d_struct));
-	//add to list
-	tmp_3d->next = file_3d_head;
-	file_3d_head = tmp_3d;
-
-	if (!tmp_3d->next)
-		printlog(2, " (first one)\n");
-	else
-		printlog(2, "\n");
-
-	//default values
-	file_3d_head->file = NULL; //filename - here ~no name~
-	printlog(2, "TODO: check for already loaded files\n");
-	file_3d_head->list = glGenLists(1);
-
-	printlog (2, "\n");
-	return file_3d_head;
-}
 
 //it is assumed that all values are positive (non-zero)
 trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
@@ -591,7 +572,16 @@ void free_car (car_struct *target)
 	//remove car
 	free_object (target->object);
 
+	int i;
+	for (i=0; i<4; ++i)
+	{
+		if (target->obj_wheel[i])
+			free (target->obj_wheel[i]);
+		else
+			printlog(0, "WARNING: wheel obj not loaded?\n");
+	}
 
+	free (target->obj_body);
 	free (target->name);
 	free (target);
 }
@@ -630,18 +620,6 @@ void free_all (void)
 		free (script_head->name);
 		free (script_head);
 		script_head = script_tmp;
-	}
-
-	//destroy loaded 3d files
-	//will soon be removed
-	file_3d_struct *file_3d_tmp;
-	while (file_3d_head)
-	{
-		file_3d_tmp = file_3d_head; //copy from from list
-		file_3d_head = file_3d_head->next; //remove from list
-
-		glDeleteLists (file_3d_tmp->list, 1);
-		free (file_3d_tmp);
 	}
 
 	//destroy loaded trimeshes

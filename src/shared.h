@@ -70,22 +70,8 @@ struct data_index internal_index[] = {
 	{"",0,0}};
 
 
-//file_3d_struct: when a 3d file is loaded, we need a way to keep track of all
-//rendering lists, so as to prevent memory leaks when unloading data
-//typedef struct graphics_list_struct {
-typedef struct file_3d_struct {
-//	GLuint render_list;
-	GLuint list;
-	char *file; //filename (to prevent duplicated 3d loading)
-	struct file_3d_struct *next;
-} file_3d_struct;
-
-//graphics_list *graphics_list_head = NULL;
-file_3d_struct *file_3d_head = NULL;
-
 //trimesh: stores rendering data for loaded trimesh (usually from 3d file)
 //can also be used for generating collision detection trimesh for ode
-//note: will replace "file_3d" when done
 typedef struct {
 	GLfloat ambient[4];
 	GLfloat diffuse[4];
@@ -135,9 +121,6 @@ trimesh *trimesh_head = NULL;
 typedef struct script_struct {
 	char *name; //usefull if to see if the same object is requested more times
 	//placeholder for script data, now just a single variable (what to render)
-	file_3d_struct *graphics_debug1;
-	file_3d_struct *graphics_debug2;
-	file_3d_struct *graphics_debug3;
 
 	//temporary solution
 	trimesh *tmp_trimesh1;
@@ -197,8 +180,7 @@ typedef struct geom_data_struct {
 	//geom data bellongs to
 	dGeomID geom_id;
 
-	file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
-	trimesh *geom_trimesh; //will replace "file_3d" when complete
+	trimesh *geom_trimesh; //rendering (NULL if invisible)
 
 	//Physics data:
 	//placeholder for more physics data
@@ -237,7 +219,7 @@ typedef struct body_data_struct {
 	//geom data bellongs to
 	dBodyID body_id;
 
-	trimesh *body_trimesh; //will replace "file_3d" when complete
+	trimesh *body_trimesh; //rendering
 
 	//data for drag (air+water friction)
 	bool use_drag;
@@ -306,14 +288,17 @@ typedef struct car_struct {
 
 	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
 
-	file_3d_struct *wheel_graphics; //add right/left wheels
-	file_3d_struct *box_graphics[CAR_MAX_BOXES];
+
+	//filenames and resize values for obj files
+	trimesh *body_trimesh, *wheel_trimesh[4];
+	char *obj_body, *obj_wheel[4];
+	float body_resize, wheel_resize;
 
 	//just for keeping track
 	object_struct *object; //one object to store car components
 
 //	dGeomID body_geom; //for focusing
-	dBodyID bodyid,wheel_body[4]; //for "Finite Rotation" arror reduction
+	dBodyID bodyid,wheel_body[4]; //for "Finite Rotation" error reduction
 	dJointID joint[4]; //for applying forces on wheels
 
 	//flipover sensors
@@ -370,18 +355,24 @@ struct data_index car_index[] = {
 	{"box7",	'f',	6,	offsetof(struct car_struct, box[6][0])},
 	{"box8",	'f',	6,	offsetof(struct car_struct, box[7][0])},
 	{"box9",	'f',	6,	offsetof(struct car_struct, box[8][0])},
-	{"box10",'f',	6,	offsetof(struct car_struct, box[9][0])},
-	{"box11",'f',	6,	offsetof(struct car_struct, box[10][0])},
-	{"box12",'f',	6,	offsetof(struct car_struct, box[11][0])},
-	{"box13",'f',	6,	offsetof(struct car_struct, box[12][0])},
-	{"box14",'f',	6,	offsetof(struct car_struct, box[13][0])},
-	{"box15",'f',	6,	offsetof(struct car_struct, box[14][0])},
-	{"box16",'f',	6,	offsetof(struct car_struct, box[15][0])},
-	{"box17",'f',	6,	offsetof(struct car_struct, box[16][0])},
-	{"box18",'f',	6,	offsetof(struct car_struct, box[17][0])},
-	{"box19",'f',	6,	offsetof(struct car_struct, box[18][0])},
-	{"box20",'f',	6,	offsetof(struct car_struct, box[19][0])},
+	{"box10",	'f',	6,	offsetof(struct car_struct, box[9][0])},
+	{"box11",	'f',	6,	offsetof(struct car_struct, box[10][0])},
+	{"box12",	'f',	6,	offsetof(struct car_struct, box[11][0])},
+	{"box13",	'f',	6,	offsetof(struct car_struct, box[12][0])},
+	{"box14",	'f',	6,	offsetof(struct car_struct, box[13][0])},
+	{"box15",	'f',	6,	offsetof(struct car_struct, box[14][0])},
+	{"box16",	'f',	6,	offsetof(struct car_struct, box[15][0])},
+	{"box17",	'f',	6,	offsetof(struct car_struct, box[16][0])},
+	{"box18",	'f',	6,	offsetof(struct car_struct, box[17][0])},
+	{"box19",	'f',	6,	offsetof(struct car_struct, box[18][0])},
+	{"box20",	'f',	6,	offsetof(struct car_struct, box[19][0])},
 	
+	//obj files
+	{"obj_wheels",	's',	4,	offsetof(struct car_struct, obj_wheel)},
+	{"obj_body",	's',	1,	offsetof(struct car_struct, obj_body)},
+	{"obj_wheels_resize",'f',1,	offsetof(struct car_struct, wheel_resize)},
+	{"obj_body_resize",'f',	1,	offsetof(struct car_struct, body_resize)},
+
 	//the following is for sizes not yet determined
 	{"s",	'f',	4,	offsetof(struct car_struct, s[0])}, //flipover
 	{"w",	'f',	2,	offsetof(struct car_struct, w[0])}, //wheel

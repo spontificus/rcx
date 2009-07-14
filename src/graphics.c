@@ -219,21 +219,17 @@ void graphics_step (Uint32 step)
 	//loop through all geoms, see if they need rendering
 	geom_data *geom;
 	for (geom = geom_data_head; geom; geom = geom->next)
-	{
-		if (!geom->file_3d&&!geom->geom_trimesh) //invisible
-			continue;
+		if (geom->geom_trimesh)
+		{
+			glPushMatrix();
+				mult_matrix (dGeomGetPosition (geom->geom_id), dGeomGetRotation (geom->geom_id));
 
-		glPushMatrix();
-			mult_matrix (dGeomGetPosition (geom->geom_id), dGeomGetRotation (geom->geom_id));
+				//render
+				if (geom->geom_trimesh) //new method
+					render_trimesh(geom->geom_trimesh);
 
-			//render
-			if (geom->file_3d) //old (obsolete) rendering method
-				glCallList (geom->file_3d->list);
-			if (geom->geom_trimesh) //new method
-				render_trimesh(geom->geom_trimesh);
-
-		glPopMatrix();
-	}
+			glPopMatrix();
+		}
 
 	//loop through bodies, see if any got trimesh ("file_3d" is now obsolete)
 	body_data *body;

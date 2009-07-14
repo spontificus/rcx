@@ -196,11 +196,6 @@ int load_conf (char *name, char *memory, struct data_index index[])
  printlog(1, "-> loading conf file: %s\n", name);
  FILE *fp;
 
-/*#ifdef windows
- fp = fopen(name, "rb");
-#else
- fp = fopen(name, "r");
-#endif*/
  fp = open_file(name);
 
  if (!fp)
@@ -330,11 +325,6 @@ trimesh *load_obj (char *file, float resize)
 	FILE *fp_obj;
 	FILE *fp_mtl = NULL;
 
-/*#ifdef windows
-	fp_obj = fopen(file, "rb");
-#else
-	fp_obj = fopen(file, "r");
-#endif*/
 	fp_obj = open_file(file);
 
 	if (!fp_obj)
@@ -379,14 +369,6 @@ trimesh *load_obj (char *file, float resize)
 			if (fp_mtl) //_new_ file request found(!), close this one
 				fclose (fp_mtl);
 
-			//char *mtl_path = replace_file_in_path (file, word[1]);
-
-			/*#ifdef windows
-				fp_mtl = fopen(mtl_path, "rb");
-			#else
-				fp_mtl = fopen(mtl_path, "r");
-			#endif*/
-			//fp_mtl = open_file(mtl_path);
 
 			fp_mtl = open_file_rel_to_file (file, word[1]);
 
@@ -791,11 +773,6 @@ profile *load_profile (char *path)
 	printlog(1, "-> loading key list: %s\n", list);
 	FILE *fp;
 
-/*#ifdef windows
-	fp = fopen(list, "rb");
-#else
-	fp = fopen(list, "r");
-#endif*/
 	fp = open_file(list);
 
 	if (!fp)
@@ -838,75 +815,6 @@ profile *load_profile (char *path)
 }
 
 
-//the following a some basic color definitions (used for lights and materials)
-GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
-GLfloat dgray[]     = {0.2f, 0.2f, 0.2f, 1.0f};
-GLfloat gray[]      = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lgray[]     = {0.8f, 0.8f, 0.8f, 1.0f};
-GLfloat white[]     = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat red[]       = {1.0f, 0.0f, 0.0f, 1.0f};
-GLfloat green[]     = {0.0f, 1.0f, 0.0f, 1.0f};
-GLfloat lgreen[]    = {0.4f, 1.0f, 0.4f, 1.0f};
-GLfloat blue[]      = {0.0f, 0.0f, 1.0f, 1.0f};
-GLfloat lblue[]     = {0.6f, 0.6f, 1.0f, 1.0f};
-GLfloat yellow[]    = {1.0f, 1.0f, 0.0f, 1.0f};
-
-
-void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
-		GLfloat colour[], GLfloat specular[], GLint shininess)
-{
-	printlog(2, " > Creating rendering list for debug box\n");
-
-	glNewList (list, GL_COMPILE);
-
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
-	glMaterialfv (GL_FRONT, GL_SPECULAR, specular);
-	glMateriali (GL_FRONT, GL_SHININESS, shininess);
-
-	glBegin (GL_QUADS);
-	glNormal3f (0.0f, 0.0f, 1.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
-
-	glNormal3f (0.0f, 0.0f, -1.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), -(z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
-
-	glNormal3f (0.0f, -1.0f, 0.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
-
-	glNormal3f (0.0f, 1.0f, 0.0f);
-	glVertex3f (-(x/2.0f), (y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
-
-	glNormal3f (1.0f, 0.0f, 0.0f);
-	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
-
-	glNormal3f (-1.0f, 0.0f, 0.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), -(z/2.0f));
-	glEnd();
-
-	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-	glEndList();
-}
-
-
 //load data for spawning object (object data), hard-coded debug version
 //(objects are loaded as script instructions, executed for spawning)
 script_struct *load_object(char *path)
@@ -939,8 +847,6 @@ script_struct *load_object(char *path)
 		strcpy (script->name, path);
 
 		//the debug box will only spawn one component - one "3D file"
-		//script->graphics_debug1 = allocate_file_3d();
-		//debug_draw_box (script->graphics_debug1->list, 1,1,1, red,gray, 50);
 		//load box.obj (first build path)
 		char obj[strlen(path) + strlen("/box.obj") + 1];
 		strcpy (obj, path);
@@ -968,11 +874,7 @@ script_struct *load_object(char *path)
 
 		if (!script->tmp_trimesh1)
 			return NULL;
-		//script->graphics_debug1 = allocate_file_3d();
-		//script->graphics_debug2 = allocate_file_3d();
 
-		//debug_draw_box (script->graphics_debug1->list, 8,8,0.5, red,gray, 30);
-		//debug_draw_box (script->graphics_debug2->list, 3,3,2, lblue,black, 0);
 		script->flipper = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/NH4"))
@@ -1221,7 +1123,6 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 2.0;
 	
 	//Next, Graphics
-	//data->file_3d = script->graphics_debug2;
 	data->geom_trimesh = script->tmp_trimesh2;
 
 	//connect to main sphere
@@ -1259,7 +1160,6 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	//data->file_3d = script->graphics_debug1;
 	data->geom_trimesh = script->tmp_trimesh1;
 	}
 	//
@@ -1527,114 +1427,11 @@ int load_track (char *path)
 	//currently just create a plane for respawn level...
 	geom = dCreatePlane (0, 0,0,1,track.respawn);
 	data = allocate_geom_data(geom, track.object);
-	//data->mu = track.mu;
-	//data->slip = track.slip;
-	//data->erp = track.erp;
-	//data->cfm = track.cfm;
+	data->mu = track.mu;
+	data->slip = track.slip;
+	data->erp = track.erp;
+	data->cfm = track.cfm;
 	
-	/* old stuff
-	//ground plane
-	geom = dCreatePlane (0, 0,0,1,0);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	//4 more planes as walls
-	geom = dCreatePlane (0, 1,0,0,-100);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	geom = dCreatePlane (0, -1,0,0,-100);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	geom = dCreatePlane (0, 0,1,0,-100);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	geom = dCreatePlane (0, 0,-1,0,-100);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-
-	//since a plane is a non-placeable geom, the sepparate components will
-	//not be "rendered" separately, instead create one 3d image sepparately
-
-	track.file_3d = allocate_file_3d();
-	glNewList (track.file_3d->list, GL_COMPILE);
-	//the ground and walls for the environment box
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-	glNormal3f (0.0f, 0.0f, 1.0f);
-	glBegin (GL_QUADS);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 0.0f);
-	glEnd();
-
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, gray);
-	glBegin (GL_QUADS);
-	glNormal3f (1.0f, 0.0f, 0.0f);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glVertex3f (-100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, 100.0f, 10.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-
-	glNormal3f (0.0f, -1.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
-
-	glNormal3f (-1.0f, 0.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, -100.0f, 10.0f);
-	glVertex3f (100.0f, -100.0f, 0.0f);
-
-	glNormal3f (0.0f, 1.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glEnd();
-
-	glEndList();
-
-	//temp solution, ramp
-	geom = dCreateBox (0,8,12,1);
-	data = allocate_geom_data(geom, track.object);
-
-	dMatrix3 rot;
-	dRFromAxisAndAngle (rot, 1, 0, 0, 0.3);
-	dGeomSetPosition (geom, 0, 3, 1.5);
-	dGeomSetRotation (geom, rot);
-	
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	//render box using built in
-	data->file_3d = allocate_file_3d();
-	debug_draw_box (data->file_3d->list, 8,12,1, gray, black, 0);
-
-	*/
-
 	//now lets load some objects!
 	char *list=(char *)calloc(strlen(path)+12+1,sizeof(char));//+1 for \0
 	strcpy (list,path);
@@ -1643,11 +1440,6 @@ int load_track (char *path)
 	printlog(1, "-> Loading track object list: %s\n", path);
 	FILE *fp;
 
-/*#ifdef windows
-	fp = fopen(list, "rb");
-#else
-	fp = fopen(list, "r");
-#endif*/
 	fp = open_file(list);
 
 	if (!fp)
@@ -1760,61 +1552,22 @@ car_struct *load_car (char *path)
 	free (conf);
 
 	//graphics models
-	float w_r = target->w[0];
-	float w_w = target->w[1];
-	//wheels:
-	//(note: wheel axis is along z)
-	target->wheel_graphics = allocate_file_3d();
-	glNewList (target->wheel_graphics->list, GL_COMPILE);
-	//tyre
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
-	glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
-	glMateriali (GL_FRONT, GL_SHININESS, 30);
-
-	glBegin (GL_QUAD_STRIP);
-	float v;
-	for (v=0; v<=2*M_PI; v+=2*M_PI/10)
-	{
-		glNormal3f (sin(v), cos(v), 0.0f);
-		glVertex3f(w_r*sin(v), w_r*cos(v), -w_w/2.0f);
-		glVertex3f(w_r*sin(v), w_r*cos(v), w_w/2.0f);
-	}
-
-	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-	glEnd();
-	//rim
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, lgray);
-	glNormal3f (0.0f, 0.0f, 1.0f);
-	glBegin (GL_QUADS);
-		glVertex3f(w_r*0.9f, w_r/5, w_w/3.0f);
-		glVertex3f(w_r*0.9f, -w_r/5, w_w/3.0f);
-		glVertex3f(-w_r*0.9f, -w_r/5, w_w/3.0f);
-		glVertex3f(-w_r*0.9f, w_r/5, w_w/3.0f);
-
-		glVertex3f(w_r/5, w_r*0.9f, w_w/3.0f);
-		glVertex3f(w_r/5, -w_r*0.9f, w_w/3.0f);
-		glVertex3f(-w_r/5, -w_r*0.9f, w_w/3.0f);
-		glVertex3f(-w_r/5, w_r*0.9f, w_w/3.0f);
-	glEnd();
-
-	glEndList();
-
-	//loop through possible body geoms and make a model for them
 	int i;
-	for (i=0;i<CAR_MAX_BOXES;++i)
-		if (target->box[i][0])
-		{
-			target->box_graphics[i] = allocate_file_3d();
+	for (i=0; i<4; ++i)
+	{
+		char obj[strlen(path)+strlen(target->obj_wheel[i])+2];
+		strcpy (obj, path);
+		strcat (obj, "/");
+		strcat (obj, target->obj_wheel[i]);
 
-			GLfloat *b = target->box[i];
-			if (i==0)//first box
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], yellow, gray, 70);
-			else
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], lgreen, gray, 70);
-		}
+		target->wheel_trimesh[i] = load_obj (obj, 1.0);
+	}
+	char obj2[strlen(path)+strlen(target->obj_body)+2];
+	strcpy (obj2, path);
+	strcat (obj2, "/");
+	strcat (obj2, target->obj_body);
+
+	target->body_trimesh = load_obj (obj2, 1.0);
 
 	printlog(1, "\n");
 	return target;
@@ -1868,6 +1621,10 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 	dBodySetPosition (target->bodyid, x, y, z);
 
+	//graphics (obj file)
+	odata->body_trimesh = target->body_trimesh;
+
+	//add geoms
 	geom_data *gdata;
 	dGeomID geom;
 
@@ -1891,7 +1648,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 			gdata->erp = target->body_erp;
 			gdata->cfm = target->body_cfm;
 			//graphics
-			gdata->file_3d = target->box_graphics[i];
+			//gdata->file_3d = target->box_graphics[i];
 
 
 		}
@@ -1961,7 +1718,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 		odata->rot_drag[2] = target->wheel_rotation_drag[2];
 
 		//graphics
-		wheel_data[i]->file_3d = target->wheel_graphics;
+		wheel_data[i]->geom_trimesh = target->wheel_trimesh[i];
 		
 		//(we need easy access to wheel body ids if using finite rotation)
 		target->wheel_body[i] = wheel_body[i];
