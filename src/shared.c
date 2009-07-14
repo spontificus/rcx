@@ -677,7 +677,6 @@ void free_all (void)
 
 	//no need to destroy track (for now), since it's not allocated by program
 	//only free obj name (if allocated)
-	printf("%s\n", track.obj);
 	if (track.obj)
 		free (track.obj);
 }

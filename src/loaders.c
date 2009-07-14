@@ -945,11 +945,20 @@ script_struct *load_object(char *path)
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
-		script->graphics_debug1 = allocate_file_3d();
-		script->graphics_debug2 = allocate_file_3d();
+		//load obj
+		char obj[strlen(path) + strlen("/flipper.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/flipper.obj");
 
-		debug_draw_box (script->graphics_debug1->list, 8,8,0.5, red,gray, 30);
-		debug_draw_box (script->graphics_debug2->list, 3,3,2, lblue,black, 0);
+		script->tmp_trimesh1 = load_obj(obj, 1.0);
+
+		if (!script->tmp_trimesh1)
+			return NULL;
+		//script->graphics_debug1 = allocate_file_3d();
+		//script->graphics_debug2 = allocate_file_3d();
+
+		//debug_draw_box (script->graphics_debug1->list, 8,8,0.5, red,gray, 30);
+		//debug_draw_box (script->graphics_debug2->list, 3,3,2, lblue,black, 0);
 		script->flipper = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/NH4"))
@@ -1128,7 +1137,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 //	data->bounce = 4.0;
 	
 	//Graphics
-	data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 
 
 	//flipper sensor
@@ -1139,8 +1148,6 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 	data->flipper_geom = geom; //tmp debug solution
 
-	//graphics
-	data->file_3d = script->graphics_debug2;
 	//
 	}
 	//
