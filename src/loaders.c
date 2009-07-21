@@ -243,6 +243,11 @@ int load_conf (char *name, char *memory, struct data_index index[])
        argsize=sizeof(char*);
       break;
 
+      case 'c':
+       argscan="%c";
+       argsize=sizeof(char);
+      break;
+
       case 'i':
        argscan="%i";
        argsize=sizeof(int);
@@ -1553,6 +1558,7 @@ car_struct *load_car (char *path)
 
 	//graphics models
 	int i;
+	//wheels
 	for (i=0; i<4; ++i)
 	{
 		char obj[strlen(path)+strlen(target->obj_wheel[i])+2];
@@ -1562,6 +1568,69 @@ car_struct *load_car (char *path)
 
 		target->wheel_trimesh[i] = load_obj (obj, 1.0);
 	}
+
+	//transform wheel models to orient axis olong Z
+	printlog(1, "   (rotating wheel models: ");
+	int j, x;
+	GLfloat tmp_obj;
+	for (i=0; i<4; ++i)
+	{
+		bool skip = false;
+		//check if same model is loaded more than once (and thus only needs transformation once)
+		for (j=0; j<i; ++j)
+			if (!(strcmp(target->obj_wheel[i], target->obj_wheel[j])))
+				skip = true;
+
+		if (skip)
+			continue;
+
+
+		trimesh *wheel_mesh = target->wheel_trimesh[i];
+		//needs tranformation
+		if (target->obj_wheel_orient == 'x')
+		{
+			printlog(1, "x ");
+			for (x=0; x<(wheel_mesh->vertex_count); ++x)
+			{
+				tmp_obj = wheel_mesh->vertices[x*3]; //x to tmp
+				wheel_mesh->vertices[x*3] = wheel_mesh->vertices[x*3+2]; //z to x
+				wheel_mesh->vertices[x*3+2] = tmp_obj; //tmp (x) to z
+			}
+
+			for (x=0; x<(wheel_mesh->normal_count); ++x)
+			{
+				tmp_obj = wheel_mesh->normals[x*3]; //x to tmp
+				wheel_mesh->normals[x*3] = wheel_mesh->normals[x*3+2]; //z to x
+				wheel_mesh->normals[x*3+2] = tmp_obj; //tmp (x) to z
+			}
+		}
+		else if (target->obj_wheel_orient == 'y')
+		{
+			printlog(1, "y ");
+			for (x=0; x< (wheel_mesh->vertex_count); ++x)
+			{
+				tmp_obj = wheel_mesh->vertices[x*3+1]; //y to tmp
+				wheel_mesh->vertices[x*3+1] = wheel_mesh->vertices[x*3+2]; //z to y
+				wheel_mesh->vertices[x*3+2] = tmp_obj; //tmp (x) to z
+			}
+
+			for (x=0; x<(wheel_mesh->normal_count); ++x)
+			{
+				tmp_obj = wheel_mesh->normals[x*3+1]; //y to tmp
+				wheel_mesh->normals[x*3+1] = wheel_mesh->normals[x*3+2]; //z to y
+				wheel_mesh->normals[x*3+2] = tmp_obj; //tmp (x) to z
+			}
+		}
+		else if (target->obj_wheel_orient == 'z')
+			printlog(1, "z ");
+
+		//else (unknown direction) no transform
+		else 
+			printlog(1, "<unknown dimension %c> ", target->obj_wheel_orient);
+	}
+	printlog(1, ")\n");
+
+	//body
 	char obj2[strlen(path)+strlen(target->obj_body)+2];
 	strcpy (obj2, path);
 	strcat (obj2, "/");

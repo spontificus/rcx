@@ -89,6 +89,7 @@ typedef struct trimesh_struct {
 
 	unsigned int vertex_count;	//note: might be overflown by big 3d files!
 	unsigned int index_count;	//this as well!
+	unsigned int normal_count;	//overflow?
 
 	material *materials;
 
@@ -293,6 +294,7 @@ typedef struct car_struct {
 	trimesh *body_trimesh, *wheel_trimesh[4];
 	char *obj_body, *obj_wheel[4];
 	float body_resize, wheel_resize;
+	char obj_wheel_orient;
 
 	//just for keeping track
 	object_struct *object; //one object to store car components
@@ -372,6 +374,7 @@ struct data_index car_index[] = {
 	{"obj_body",	's',	1,	offsetof(struct car_struct, obj_body)},
 	{"obj_wheels_resize",'f',1,	offsetof(struct car_struct, wheel_resize)},
 	{"obj_body_resize",'f',	1,	offsetof(struct car_struct, body_resize)},
+	{"obj_wheels_orientation",'c',1,offsetof(struct car_struct, obj_wheel_orient)},
 
 	//the following is for sizes not yet determined
 	{"s",	'f',	4,	offsetof(struct car_struct, s[0])}, //flipover

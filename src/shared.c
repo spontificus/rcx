@@ -427,6 +427,8 @@ trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
 	tmp_trimesh->index_count = indices;
 	tmp_trimesh->vertex_count = vertices;
 
+	tmp_trimesh->normal_count = normals; //might simply be usefull?
+
 	//describes which index to read next "instruction" from
 	//(currently only vertex+normal and material)
 	tmp_trimesh->instructions =(char*)calloc(indices+materials+modes+1, sizeof(char));
