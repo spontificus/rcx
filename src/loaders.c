@@ -313,12 +313,16 @@ int load_conf (char *name, char *memory, struct data_index index[])
 //
 //warning: does not do a lot of error checking!
 //some limits includes requiring normals for each index, and only one mtl file
-trimesh *load_obj (char *file, float resize)
+trimesh *load_obj (char *file, float resize, float rotate[3])
 {
 	int i;
 
-	printlog(1, "-> Loading obj file to trimesh: %s\n", file);
+	printlog(1, "-> Loading obj file to trimesh: %s (resize: %f, rotate: %f %f %f)\n", file, resize, rotate[0], rotate[1], rotate[2]);
 
+	//now something fun, create rotation matrix (from Euler rotation angles, in degrees)
+	dMatrix3 rot;
+	dRFromEulerAngles (rot, rotate[0]*(M_PI/180), rotate[1]*(M_PI/180), rotate[2]*(M_PI/180));
+	
 	trimesh *tmp;
 	for (tmp=trimesh_head; tmp; tmp=tmp->next)
 		if (!(strcmp(file, tmp->file)))
@@ -504,6 +508,7 @@ trimesh *load_obj (char *file, float resize)
 	unsigned int v_count=0, n_count=0, i_count=0, inst_count=0, m_count=0, M_count=0;
 	last_f_number = 0;
 	GLfloat *vertex;
+	GLfloat vertex_tmp[3];
 	while ((word = get_word_list(fp_obj)))
 	{
 		//ingore g and s
@@ -512,14 +517,19 @@ trimesh *load_obj (char *file, float resize)
 		if (word[0][0]=='v' && word[0][1]=='\0')
 		{
 			vertex = &(mesh->vertices[v_count]);
-			if (	sscanf(word[1], "%f", &vertex[0]) &&
-				sscanf(word[2], "%f", &vertex[1]) &&
-				sscanf(word[3], "%f", &vertex[2]))
+			if (	sscanf(word[1], "%f", &vertex_tmp[0]) &&
+				sscanf(word[2], "%f", &vertex_tmp[1]) &&
+				sscanf(word[3], "%f", &vertex_tmp[2]))
 			{
 					v_count += 3;
-					vertex[0]*=resize;
-					vertex[1]*=resize;
-					vertex[2]*=resize;
+
+					//resize
+					vertex_tmp[0]*=resize;
+					vertex_tmp[1]*=resize;
+					vertex_tmp[2]*=resize;
+
+					//rotate:
+					dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
 			}
 			else
 				printlog(0, "WARNING: failed reading vector %i\n", v_count);
@@ -528,10 +538,15 @@ trimesh *load_obj (char *file, float resize)
 		else if (word[0][0]=='v' && word[0][1]=='n' && word[0][2]=='\0')
 		{
 			vertex = &(mesh->normals[n_count]);
-			if (	sscanf(word[1], "%f", &vertex[0]) &&
-				sscanf(word[2], "%f", &vertex[1]) &&
-				sscanf(word[3], "%f", &vertex[2]))
+			if (	sscanf(word[1], "%f", &vertex_tmp[0]) &&
+				sscanf(word[2], "%f", &vertex_tmp[1]) &&
+				sscanf(word[3], "%f", &vertex_tmp[2]))
+			{
 					n_count += 3;
+					
+					//rotate:
+					dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
+			}
 			else
 				printlog(0, "WARNING: failed reading normal %i\n", n_count);
 		}
@@ -597,8 +612,8 @@ trimesh *load_obj (char *file, float resize)
 			}
 			if (i!=materials) //we found a match
 			{
-				//mesh->material_indices[m_count] = i;
-				mesh->material_indices[0] = 0;
+				mesh->material_indices[m_count] = i;
+				//mesh->material_indices[0] = 0;
 				mesh->instructions[inst_count++]='m';
 			}
 			else
@@ -720,6 +735,68 @@ dGeomID trimesh_to_geom (trimesh *mesh)
 	return dCreateTriMesh(0, data, 0,0,0);
 }
 
+/*//transforms a trimesh (rotate it in one 90 degree step, mirror it)
+void trimesh_reorient (trimesh *mesh, char orient, bool mirror)
+{
+	printlog(1, "   (transforming trimesh: ");
+	int x;
+	GLfloat tmp;
+
+	if (orient == 'x')
+	{
+		printlog(1, "x");
+		for (x=0; x<(mesh->vertex_count); ++x)
+		{
+			tmp = mesh->vertices[x*3]; //x to tmp
+			mesh->vertices[x*3] = mesh->vertices[x*3+2]; //z to x
+			mesh->vertices[x*3+2] = tmp; //tmp (x) to z
+		}
+
+		for (x=0; x<(mesh->normal_count); ++x)
+		{
+			tmp = mesh->normals[x*3]; //x to tmp
+			mesh->normals[x*3] = mesh->normals[x*3+2]; //z to x
+			mesh->normals[x*3+2] = tmp; //tmp (x) to z
+		}
+	}
+	else if (orient == 'y')
+	{
+		printlog(1, "y");
+		for (x=0; x< (mesh->vertex_count); ++x)
+		{
+			tmp = mesh->vertices[x*3+1]; //y to tmp
+			mesh->vertices[x*3+1] = mesh->vertices[x*3+2]; //z to y
+			mesh->vertices[x*3+2] = tmp; //tmp (x) to z
+		}
+
+		for (x=0; x<(mesh->normal_count); ++x)
+		{
+			tmp = mesh->normals[x*3+1]; //y to tmp
+			mesh->normals[x*3+1] = mesh->normals[x*3+2]; //z to y
+			mesh->normals[x*3+2] = tmp; //tmp (x) to z
+		}
+	}
+	else if (orient == 'z')
+		printlog(1, "z");
+
+	//else (unknown direction) no transform
+	else 
+		printlog(1, "<unknown dimension %c>", orient);
+
+	if (mirror)
+	{
+		printlog(1, " and mirror");
+		for (x=0; x<(mesh->vertex_count); ++x)
+			mesh->vertices[2+x*3] *=-1; //reverse Z
+
+		for (x=0; x<(mesh->normal_count); ++x)
+			mesh->normals[2+x*3] *=-1; //reverse Z
+	}
+	printlog(1, ")\n");
+}*/
+
+
+
 
 
 #ifdef __cplusplus
@@ -826,6 +903,10 @@ script_struct *load_object(char *path)
 {
 	printlog(1, "-> Loading object: %s", path);
 
+	//we're not going to rotate any of the objs, vector for no rotation
+	float no_rotation[3] = {0,0,0};
+
+
 	script_struct *tmp = script_head;
 	//see if already loaded
 	while (tmp)
@@ -857,7 +938,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/box.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj, 0.5)))
+		if (!(script->tmp_trimesh1 = load_obj (obj, 0.5, no_rotation)))
 			return NULL;
 
 		script->box = true;
@@ -875,7 +956,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/flipper.obj");
 
-		script->tmp_trimesh1 = load_obj(obj, 1.0);
+		script->tmp_trimesh1 = load_obj(obj, 1.0, no_rotation);
 
 		if (!script->tmp_trimesh1)
 			return NULL;
@@ -894,14 +975,14 @@ script_struct *load_object(char *path)
 		strcpy (obj1, path);
 		strcat (obj1, "/sphere1.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj1, 1.0))) //no resize
+		if (!(script->tmp_trimesh1 = load_obj (obj1, 1.0, no_rotation))) //no resize
 			return NULL;
 
 		char obj2[strlen(path) + strlen("/sphere2.obj") + 1];
 		strcpy (obj2, path);
 		strcat (obj2, "/sphere2.obj");
 
-		if (!(script->tmp_trimesh2 = load_obj (obj2, 1.0))) //no resize
+		if (!(script->tmp_trimesh2 = load_obj (obj2, 1.0, no_rotation))) //no resize
 			return NULL;
 
 		script->NH4 = true;
@@ -918,7 +999,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/sphere.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj, 1.0))) //no resize
+		if (!(script->tmp_trimesh1 = load_obj (obj, 1.0, no_rotation))) //no resize
 			return NULL;
 
 		script->sphere = true;
@@ -938,7 +1019,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/pillar.obj");
 
-		if (!(script->tmp_trimesh3 = load_obj (obj, 1.0))) //no resize
+		if (!(script->tmp_trimesh3 = load_obj (obj, 1.0, no_rotation))) //no resize
 			return NULL;
 
 		//wallss
@@ -946,7 +1027,7 @@ script_struct *load_object(char *path)
 		strcpy (obj2, path);
 		strcat (obj2, "/wall.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj2, 1.0))) //no resize
+		if (!(script->tmp_trimesh1 = load_obj (obj2, 1.0, no_rotation))) //no resize
 			return NULL;
 
 		//roofs
@@ -954,7 +1035,7 @@ script_struct *load_object(char *path)
 		strcpy (obj3, path);
 		strcat (obj3, "/roof.obj");
 
-		if (!(script->tmp_trimesh2 = load_obj (obj3, 1.0))) //no resize
+		if (!(script->tmp_trimesh2 = load_obj (obj3, 1.0, no_rotation))) //no resize
 			return NULL;
 
 		script->building = true;
@@ -1408,7 +1489,7 @@ int load_track (char *path)
 	strcat (obj,"/");
 	strcat (obj,track.obj);
 
-	track.track_trimesh = load_obj (obj, track.obj_resize);
+	track.track_trimesh = load_obj (obj, track.obj_resize, track.obj_rotate);
 	free (obj);
 
 	if (!track.track_trimesh)
@@ -1566,13 +1647,11 @@ car_struct *load_car (char *path)
 		strcat (obj, "/");
 		strcat (obj, target->obj_wheel[i]);
 
-		target->wheel_trimesh[i] = load_obj (obj, 1.0);
+		target->wheel_trimesh[i] = load_obj (obj, target->wheel_resize, target->obj_wheel_rotate);
 	}
 
-	//transform wheel models to orient axis olong Z
-	printlog(1, "   (rotating wheel models: ");
-	int j, x;
-	GLfloat tmp_obj;
+	/*//transform wheel models to orient axis olong Z
+	int j;
 	for (i=0; i<4; ++i)
 	{
 		bool skip = false;
@@ -1584,51 +1663,8 @@ car_struct *load_car (char *path)
 		if (skip)
 			continue;
 
-
-		trimesh *wheel_mesh = target->wheel_trimesh[i];
-		//needs tranformation
-		if (target->obj_wheel_orient == 'x')
-		{
-			printlog(1, "x ");
-			for (x=0; x<(wheel_mesh->vertex_count); ++x)
-			{
-				tmp_obj = wheel_mesh->vertices[x*3]; //x to tmp
-				wheel_mesh->vertices[x*3] = wheel_mesh->vertices[x*3+2]; //z to x
-				wheel_mesh->vertices[x*3+2] = tmp_obj; //tmp (x) to z
-			}
-
-			for (x=0; x<(wheel_mesh->normal_count); ++x)
-			{
-				tmp_obj = wheel_mesh->normals[x*3]; //x to tmp
-				wheel_mesh->normals[x*3] = wheel_mesh->normals[x*3+2]; //z to x
-				wheel_mesh->normals[x*3+2] = tmp_obj; //tmp (x) to z
-			}
-		}
-		else if (target->obj_wheel_orient == 'y')
-		{
-			printlog(1, "y ");
-			for (x=0; x< (wheel_mesh->vertex_count); ++x)
-			{
-				tmp_obj = wheel_mesh->vertices[x*3+1]; //y to tmp
-				wheel_mesh->vertices[x*3+1] = wheel_mesh->vertices[x*3+2]; //z to y
-				wheel_mesh->vertices[x*3+2] = tmp_obj; //tmp (x) to z
-			}
-
-			for (x=0; x<(wheel_mesh->normal_count); ++x)
-			{
-				tmp_obj = wheel_mesh->normals[x*3+1]; //y to tmp
-				wheel_mesh->normals[x*3+1] = wheel_mesh->normals[x*3+2]; //z to y
-				wheel_mesh->normals[x*3+2] = tmp_obj; //tmp (x) to z
-			}
-		}
-		else if (target->obj_wheel_orient == 'z')
-			printlog(1, "z ");
-
-		//else (unknown direction) no transform
-		else 
-			printlog(1, "<unknown dimension %c> ", target->obj_wheel_orient);
-	}
-	printlog(1, ")\n");
+		trimesh_reorient (target->wheel_trimesh[i], target->obj_wheel_orient, target->obj_wheel_mirror);
+	}*/
 
 	//body
 	char obj2[strlen(path)+strlen(target->obj_body)+2];
@@ -1636,7 +1672,10 @@ car_struct *load_car (char *path)
 	strcat (obj2, "/");
 	strcat (obj2, target->obj_body);
 
-	target->body_trimesh = load_obj (obj2, 1.0);
+	target->body_trimesh = load_obj (obj2, target->body_resize, target->obj_body_rotate);
+
+	//transform body model for right orientation
+	//trimesh_reorient (target->body_trimesh, target->obj_body_orient, false);
 
 	printlog(1, "\n");
 	return target;

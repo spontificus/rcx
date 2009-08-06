@@ -367,6 +367,12 @@ car_struct *allocate_car(void)
 	car_head->body_resize=1.0;
 	car_head->wheel_resize=1.0;
 
+	for (i=0; i<3; ++i)
+	{
+		car_head->obj_wheel_rotate[i] = 0.0;
+		car_head->obj_body_rotate[i] = 0.0;
+	}
+
 
 	//needed for keeping track for different things (mostly for graphics)
 	car_head->bodyid        = NULL;
@@ -431,7 +437,7 @@ trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
 
 	//describes which index to read next "instruction" from
 	//(currently only vertex+normal and material)
-	tmp_trimesh->instructions =(char*)calloc(indices+materials+modes+1, sizeof(char));
+	tmp_trimesh->instructions =(char*)calloc(indices+material_indices+modes+1, sizeof(char));
 
 	tmp_trimesh->geom_tri_indices = NULL; //this is up to the user to create
 
