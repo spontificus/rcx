@@ -101,6 +101,11 @@ int main (int argc, char *argv[])
 	printf("	>	W and S		move camera along Y axis\n");
 	printf("	>	F5:		spawn box\n");
 	printf("	>	F6:		spawn box (10s above ground)\n\n");
+
+	//simple hack
+	printf("	By Mac's request :-)\n");
+	printf("	>	F:		freeze/unfreeze physics\n\n");
+
 	//end of issue
 
 	if (argc != 1)
@@ -168,11 +173,12 @@ int main (int argc, char *argv[])
 
 	printlog (0, "\n-> Starting Race\n");
 	runlevel = running;
-	while (runlevel == running)
+	while (runlevel == running || runlevel == paused)
 	{
 		event_step(stepsize_ms); //always check for events
 
-		physics_step();
+		if (runlevel == running)
+			physics_step();
 
 		simtime += stepsize_ms;
 

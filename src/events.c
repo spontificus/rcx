@@ -88,6 +88,20 @@ void event_step(Uint32 step)
 						spawn_object (sphere, 0,0,10);
 					break;
 
+					//HACKISH pause/freeze toggling
+					case SDLK_f:
+						if (runlevel == running)
+						{
+							printf("freezing!\n");
+							runlevel = paused;
+						}
+						else if (runlevel == paused)
+						{
+							printf("unfreezing!\n");
+							runlevel = running;
+						}
+					break;
+
 					default:
 						break;
 				}
