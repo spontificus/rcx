@@ -148,7 +148,7 @@ int main (int argc, char *argv[])
 		return -1;
 	}
 
-	if (load_track((char *)"data/worlds/Sandbox/tracks/Box"))
+	if (load_track((char *)"data/worlds/Sandbox/tracks/Desert"))
 		emergency_quit();
 
 	//load box for online spawning

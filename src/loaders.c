@@ -316,13 +316,26 @@ int load_conf (char *name, char *memory, struct data_index index[])
 trimesh *load_obj (char *file, float resize, float rotate[3])
 {
 	int i;
+	bool do_rotate = false, do_resize = false;
 
-	printlog(1, "-> Loading obj file to trimesh: %s (resize: %f, rotate: %f %f %f)\n", file, resize, rotate[0], rotate[1], rotate[2]);
+	printlog(1, "-> Loading obj file to trimesh: %s (resize: %f, rotate: %f %f %f)", file, resize, rotate[0], rotate[1], rotate[2]);
 
 	//now something fun, create rotation matrix (from Euler rotation angles, in degrees)
 	dMatrix3 rot;
-	dRFromEulerAngles (rot, rotate[0]*(M_PI/180), rotate[1]*(M_PI/180), rotate[2]*(M_PI/180));
+	if (rotate[0] || rotate[1] || rotate[2])
+	{
+		printlog(1, " (rotate)");
+		do_rotate = true;
+		dRFromEulerAngles (rot, rotate[0]*(M_PI/180), rotate[1]*(M_PI/180), rotate[2]*(M_PI/180));
+	}
+	if (resize)
+	{
+		printlog(1, " (resize)");
+		do_resize = true;
+	}
 	
+	printlog(1, "\n");
+
 	trimesh *tmp;
 	for (tmp=trimesh_head; tmp; tmp=tmp->next)
 		if (!(strcmp(file, tmp->file)))
@@ -359,11 +372,11 @@ trimesh *load_obj (char *file, float resize, float rotate[3])
 			return NULL;
 		}
 
-		if (!strcmp(word[0], "v"))
+		if (word[0][0] == 'v' && word[0][1] == '\0')
 			++vertices;
-		else if (!strcmp(word[0], "vn"))
+		else if (word[0][0] == 'v' && word[0][1] == 'n')
 			++normals;
-		else if (!strcmp(word[0], "f"))
+		else if (word[0][0] == 'f')
 		{
 			for (i=1; word[i]; ++i);
 			indices += (i-1);
@@ -524,12 +537,19 @@ trimesh *load_obj (char *file, float resize, float rotate[3])
 					v_count += 3;
 
 					//resize
-					vertex_tmp[0]*=resize;
-					vertex_tmp[1]*=resize;
-					vertex_tmp[2]*=resize;
+					if (do_resize)
+					{
+						vertex_tmp[0]*=resize;
+						vertex_tmp[1]*=resize;
+						vertex_tmp[2]*=resize;
+					}
 
 					//rotate:
-					dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
+					if (do_rotate)
+						dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
+					else //not!
+						for (i=0; i<3; ++i)
+							vertex[i] = vertex_tmp[i];
 			}
 			else
 				printlog(0, "WARNING: failed reading vector %i\n", v_count);
@@ -545,7 +565,11 @@ trimesh *load_obj (char *file, float resize, float rotate[3])
 					n_count += 3;
 					
 					//rotate:
-					dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
+					if (do_rotate)
+						dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
+					else //not!
+						for (i=0; i<3; ++i)
+							vertex[i] = vertex_tmp[i];
 			}
 			else
 				printlog(0, "WARNING: failed reading normal %i\n", n_count);
@@ -637,7 +661,7 @@ trimesh *load_obj (char *file, float resize, float rotate[3])
 //translate a trimesh (for rendering) to an ode trimesh geom (for collision)
 dGeomID trimesh_to_geom (trimesh *mesh)
 {
-	printlog(1, "-> Translating trimesh to geometrical trimesh\n");
+	printlog(1, "-> Translating trimesh to geometrical trimesh ");
 	//ode trimeshes only supports triangles ("triangle mesh"...), so indices for faces with more vertices (in mode) than 3 must be translated.
 	//new indices are stored in a sepparate array in the trimesh.
 	//NOTE: this could be used for rendering as well (but will require more memory, and possibly more rendering time?)
@@ -676,12 +700,15 @@ dGeomID trimesh_to_geom (trimesh *mesh)
 	i_count *= 3;
 	mesh->geom_tri_indices = calloc (i_count, sizeof(dTriIndex));
 	
+	printlog (1, "(%u triangles)\n", i_count/3);
+
 	//translate
 	i_count = 0;
 	v_count = 0;
 	int corners =0;
 	mode = none;
 	modes = mesh->modes;
+	unsigned int poly_first_vert=0, poly_last_vert=0;
 	for (i=0; mesh->instructions[i]; ++i)
 	{
 		if (mesh->instructions[i] == 'M')
@@ -693,6 +720,7 @@ dGeomID trimesh_to_geom (trimesh *mesh)
 			else if (*modes == GL_POLYGON)
 				mode = polygon;
 			corners =0;
+			++modes;
 		}
 		else if (mesh->instructions[i] == 'i')
 		{
@@ -716,15 +744,18 @@ dGeomID trimesh_to_geom (trimesh *mesh)
 			else if (mode == polygon)
 			{
 				++corners;
+				if (corners == 1)
+					poly_first_vert = mesh->vector_indices[v_count];
+
 				if (corners <= 3)
 					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
 				else
 				{
-					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-2];
-					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-1];
-					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count];
-					++v_count;
+					mesh->geom_tri_indices[i_count++] = poly_first_vert;
+					mesh->geom_tri_indices[i_count++] = poly_last_vert;
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
 				}
+				poly_last_vert = mesh->vector_indices[v_count-1];
 			}
 		}
 	}
@@ -1542,11 +1573,11 @@ int load_track (char *path)
 #endif
 		char **w;
 		w = get_word_list(fp);
-		if (w[0][0]!='>'||w[1]=='\0')
+		if (!w||w[0][0]!='>')
 		{
 			printlog(0, "ERROR: expected first word to be load request (> object)\n");
-			free_word_list(w);
-			return -1;
+			if (w)
+				free_word_list(w);
 		}
 		else
 		{
@@ -1597,8 +1628,8 @@ int load_track (char *path)
 				}
 				free_word_list(w);
 			}
-			fclose (fp);
 		}
+		fclose (fp);
 	}
 	//that's it!
 	printlog(1, "\n");
