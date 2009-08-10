@@ -1529,7 +1529,7 @@ int load_track (char *path)
 	strcat (obj,"/");
 	strcat (obj,track.obj);
 
-	track.track_trimesh = load_obj (obj, track.obj_resize, track.obj_rotate, track.obj_move);
+	track.track_trimesh = load_obj (obj, track.obj_resize, track.obj_rotate, track.obj_offset);
 	free (obj);
 
 	if (!track.track_trimesh)
@@ -1687,7 +1687,7 @@ car_struct *load_car (char *path)
 		strcat (obj, "/");
 		strcat (obj, target->obj_wheel[i]);
 
-		target->wheel_trimesh[i] = load_obj (obj, target->wheel_resize, target->obj_wheel_rotate, target->obj_wheel_move);
+		target->wheel_trimesh[i] = load_obj (obj, target->wheel_resize, target->obj_wheel_rotate, target->obj_wheel_offset);
 	}
 
 	/*//transform wheel models to orient axis olong Z
@@ -1712,7 +1712,7 @@ car_struct *load_car (char *path)
 	strcat (obj2, "/");
 	strcat (obj2, target->obj_body);
 
-	target->body_trimesh = load_obj (obj2, target->body_resize, target->obj_body_rotate, target->obj_body_move);
+	target->body_trimesh = load_obj (obj2, target->body_resize, target->obj_body_rotate, target->obj_body_offset);
 
 	//transform body model for right orientation
 	//trimesh_reorient (target->body_trimesh, target->obj_body_orient, false);
