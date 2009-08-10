@@ -175,6 +175,19 @@ void car_physics_step(void)
 		if (antigrav) //TODO
 		{
 //			dBodyAddRelForce (carp->bodyid,0,0, carp->dir*100);
+
+			//elevate suspension (simulated, needs opposing force to body)
+			const dReal *r = dBodyGetRotation (carp->bodyid);
+			dReal force_x=-(carp->dir*carp->suspension_ef)*r[2];
+			dReal force_y=-(carp->dir*carp->suspension_ef)*r[6];
+			dReal force_z=-(carp->dir*carp->suspension_ef)*r[10];
+			//wheels
+			dBodyAddForce (carp->wheel_body[0], force_x, force_y, force_z);
+			dBodyAddForce (carp->wheel_body[1], force_x, force_y, force_z);
+			dBodyAddForce (carp->wheel_body[2], force_x, force_y, force_z);
+			dBodyAddForce (carp->wheel_body[3], force_x, force_y, force_z);
+			//body
+			dBodyAddForce (carp->bodyid, -4*force_x, -4*force_y, -4*force_z);
 		}
 
 		//control
