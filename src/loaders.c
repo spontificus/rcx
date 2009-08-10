@@ -313,10 +313,10 @@ int load_conf (char *name, char *memory, struct data_index index[])
 //
 //warning: does not do a lot of error checking!
 //some limits includes requiring normals for each index, and only one mtl file
-trimesh *load_obj (char *file, float resize, float rotate[3])
+trimesh *load_obj (char *file, float resize, float rotate[3], float move[3])
 {
 	int i;
-	bool do_rotate = false, do_resize = false;
+	bool do_rotate = false, do_resize = false, do_move = false;
 
 	printlog(1, "-> Loading obj file to trimesh: %s (resize: %f, rotate: %f %f %f)", file, resize, rotate[0], rotate[1], rotate[2]);
 
@@ -332,6 +332,11 @@ trimesh *load_obj (char *file, float resize, float rotate[3])
 	{
 		printlog(1, " (resize)");
 		do_resize = true;
+	}
+	if (move[0] || move[1] || move[2])
+	{
+		printlog(1, " (move)");
+		do_move = true;
 	}
 	
 	printlog(1, "\n");
@@ -550,6 +555,10 @@ trimesh *load_obj (char *file, float resize, float rotate[3])
 					else //not!
 						for (i=0; i<3; ++i)
 							vertex[i] = vertex_tmp[i];
+
+					if (do_move)
+						for (i=0; i<3; ++i)
+							vertex[i] += move[i];
 			}
 			else
 				printlog(0, "WARNING: failed reading vector %i\n", v_count);
@@ -934,8 +943,8 @@ script_struct *load_object(char *path)
 {
 	printlog(1, "-> Loading object: %s", path);
 
-	//we're not going to rotate any of the objs, vector for no rotation
-	float no_rotation[3] = {0,0,0};
+	//we're not going to rotate or move any of the objs, vector for nothing
+	float no_nothing[3] = {0,0,0};
 
 
 	script_struct *tmp = script_head;
@@ -969,7 +978,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/box.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj, 0.5, no_rotation)))
+		if (!(script->tmp_trimesh1 = load_obj (obj, 0.5, no_nothing, no_nothing)))
 			return NULL;
 
 		script->box = true;
@@ -987,7 +996,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/flipper.obj");
 
-		script->tmp_trimesh1 = load_obj(obj, 1.0, no_rotation);
+		script->tmp_trimesh1 = load_obj(obj, 1.0, no_nothing, no_nothing);
 
 		if (!script->tmp_trimesh1)
 			return NULL;
@@ -1006,14 +1015,14 @@ script_struct *load_object(char *path)
 		strcpy (obj1, path);
 		strcat (obj1, "/sphere1.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj1, 1.0, no_rotation))) //no resize
+		if (!(script->tmp_trimesh1 = load_obj (obj1, 1.0, no_nothing, no_nothing))) //no resize
 			return NULL;
 
 		char obj2[strlen(path) + strlen("/sphere2.obj") + 1];
 		strcpy (obj2, path);
 		strcat (obj2, "/sphere2.obj");
 
-		if (!(script->tmp_trimesh2 = load_obj (obj2, 1.0, no_rotation))) //no resize
+		if (!(script->tmp_trimesh2 = load_obj (obj2, 1.0, no_nothing, no_nothing))) //no resize
 			return NULL;
 
 		script->NH4 = true;
@@ -1030,7 +1039,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/sphere.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj, 1.0, no_rotation))) //no resize
+		if (!(script->tmp_trimesh1 = load_obj (obj, 1.0, no_nothing, no_nothing))) //no resize
 			return NULL;
 
 		script->sphere = true;
@@ -1050,7 +1059,7 @@ script_struct *load_object(char *path)
 		strcpy (obj, path);
 		strcat (obj, "/pillar.obj");
 
-		if (!(script->tmp_trimesh3 = load_obj (obj, 1.0, no_rotation))) //no resize
+		if (!(script->tmp_trimesh3 = load_obj (obj, 1.0, no_nothing, no_nothing))) //no resize
 			return NULL;
 
 		//wallss
@@ -1058,7 +1067,7 @@ script_struct *load_object(char *path)
 		strcpy (obj2, path);
 		strcat (obj2, "/wall.obj");
 
-		if (!(script->tmp_trimesh1 = load_obj (obj2, 1.0, no_rotation))) //no resize
+		if (!(script->tmp_trimesh1 = load_obj (obj2, 1.0, no_nothing, no_nothing))) //no resize
 			return NULL;
 
 		//roofs
@@ -1066,7 +1075,7 @@ script_struct *load_object(char *path)
 		strcpy (obj3, path);
 		strcat (obj3, "/roof.obj");
 
-		if (!(script->tmp_trimesh2 = load_obj (obj3, 1.0, no_rotation))) //no resize
+		if (!(script->tmp_trimesh2 = load_obj (obj3, 1.0, no_nothing, no_nothing))) //no resize
 			return NULL;
 
 		script->building = true;
@@ -1520,7 +1529,7 @@ int load_track (char *path)
 	strcat (obj,"/");
 	strcat (obj,track.obj);
 
-	track.track_trimesh = load_obj (obj, track.obj_resize, track.obj_rotate);
+	track.track_trimesh = load_obj (obj, track.obj_resize, track.obj_rotate, track.obj_move);
 	free (obj);
 
 	if (!track.track_trimesh)
@@ -1678,7 +1687,7 @@ car_struct *load_car (char *path)
 		strcat (obj, "/");
 		strcat (obj, target->obj_wheel[i]);
 
-		target->wheel_trimesh[i] = load_obj (obj, target->wheel_resize, target->obj_wheel_rotate);
+		target->wheel_trimesh[i] = load_obj (obj, target->wheel_resize, target->obj_wheel_rotate, target->obj_wheel_move);
 	}
 
 	/*//transform wheel models to orient axis olong Z
@@ -1703,7 +1712,7 @@ car_struct *load_car (char *path)
 	strcat (obj2, "/");
 	strcat (obj2, target->obj_body);
 
-	target->body_trimesh = load_obj (obj2, target->body_resize, target->obj_body_rotate);
+	target->body_trimesh = load_obj (obj2, target->body_resize, target->obj_body_rotate, target->obj_body_move);
 
 	//transform body model for right orientation
 	//trimesh_reorient (target->body_trimesh, target->obj_body_orient, false);

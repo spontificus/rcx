@@ -290,11 +290,11 @@ typedef struct car_struct {
 	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
 
 
-	//filenames and resize values for obj files
+	//filenames and values for obj files
 	trimesh *body_trimesh, *wheel_trimesh[4];
 	char *obj_body, *obj_wheel[4];
 	float body_resize, wheel_resize;
-	float obj_wheel_rotate[3], obj_body_rotate[3];
+	float obj_wheel_rotate[3], obj_wheel_move[3], obj_body_rotate[3], obj_body_move[3];
 
 	//just for keeping track
 	object_struct *object; //one object to store car components
@@ -375,7 +375,9 @@ struct data_index car_index[] = {
 	{"obj_wheels_resize",'f',1,	offsetof(struct car_struct, wheel_resize)},
 	{"obj_body_resize",'f',	1,	offsetof(struct car_struct, body_resize)},
 	{"obj_wheels_rotate",'f',3,	offsetof(struct car_struct, obj_wheel_rotate)},
+	{"obj_wheels_move",'f',	3,	offsetof(struct car_struct, obj_wheel_move)},
 	{"obj_body_rotate",'f',3,	offsetof(struct car_struct, obj_body_rotate)},
+	{"obj_body_move",'f',	3,	offsetof(struct car_struct, obj_body_move)},
 
 	//the following is for sizes not yet determined
 	{"s",	'f',	4,	offsetof(struct car_struct, s[0])}, //flipover
@@ -472,7 +474,7 @@ struct track_struct {
 
 	char *obj;
 	float obj_resize;
-	float obj_rotate[3];
+	float obj_rotate[3], obj_move[3];
 	trimesh *track_trimesh;
 
 	object_struct *object;
@@ -497,6 +499,7 @@ struct data_index track_index[] = {
 	{"obj",		's',1,	offsetof(struct track_struct, obj)},
 	{"obj_resize",	'f',1,	offsetof(struct track_struct, obj_resize)},
 	{"obj_rotate",	'f',3,	offsetof(struct track_struct, obj_rotate)},
+	{"obj_move",	'f',3,	offsetof(struct track_struct, obj_move)},
 	{"",0,0}};//end
 
 
