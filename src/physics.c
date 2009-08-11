@@ -137,7 +137,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 void car_physics_step(void)
 {
 	car_struct *carp = car_head;
-	bool antigrav;
+	bool driving;
 	while (carp != NULL)
 	{
 		//some loaded cars might not participate in race...
@@ -151,28 +151,28 @@ void car_physics_step(void)
 
 		//both sensors are triggered, not flipping, only antigrav
 		if (carp->sensor1->event && carp->sensor2->event)
-			antigrav = true;
+			driving = true;
 		//only one sensor, flipping+antigrav
 		else if (carp->sensor1->event)
 		{
-			antigrav = true;
+			driving = true;
 			carp->dir = 1.0;
 		}
 		//same
 		else if (carp->sensor2->event)
 		{
-			antigrav = true;
+			driving = true;
 			carp->dir = -1.0;
 		}
 		//no sensor active, no flipping, no antigrav
 		else
-			antigrav = false;
+			driving = false;
 
 		//sensors have been read, reset them
 		carp->sensor1->event = false;
 		carp->sensor2->event = false;
 
-		if (antigrav) //TODO
+		if (driving) //TODO
 		{
 //			dBodyAddRelForce (carp->bodyid,0,0, carp->dir*100);
 
