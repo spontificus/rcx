@@ -228,7 +228,7 @@ int load_conf (char *name, char *memory, struct data_index index[])
       break;
 
       case 'd':
-       argscan="%d";
+       argscan="%lf";
        argsize=sizeof(double);
       break;
 
@@ -313,12 +313,12 @@ int load_conf (char *name, char *memory, struct data_index index[])
 //
 //warning: does not do a lot of error checking!
 //some limits includes requiring normals for each index, and only one mtl file
-trimesh *load_obj (char *file, float resize, float rotate[3], float move[3])
+trimesh *load_obj (char *file, float resize, float rotate[3], float offset[3])
 {
 	int i;
 	bool do_rotate = false, do_resize = false, do_move = false;
 
-	printlog(1, "-> Loading obj file to trimesh: %s (resize: %f, rotate: %f %f %f)", file, resize, rotate[0], rotate[1], rotate[2]);
+	printlog(1, "-> Loading obj file to trimesh: %s (resize: %f, rotate: %f %f %f, offset: %f %f %f)", file, resize, rotate[0], rotate[1], rotate[2], offset[0], offset[1], offset[2]);
 
 	//now something fun, create rotation matrix (from Euler rotation angles, in degrees)
 	dMatrix3 rot;
@@ -328,12 +328,12 @@ trimesh *load_obj (char *file, float resize, float rotate[3], float move[3])
 		do_rotate = true;
 		dRFromEulerAngles (rot, rotate[0]*(M_PI/180), rotate[1]*(M_PI/180), rotate[2]*(M_PI/180));
 	}
-	if (resize)
+	if (resize != 1.0)
 	{
 		printlog(1, " (resize)");
 		do_resize = true;
 	}
-	if (move[0] || move[1] || move[2])
+	if (offset[0] || offset[1] || offset[2])
 	{
 		printlog(1, " (move)");
 		do_move = true;
@@ -558,7 +558,7 @@ trimesh *load_obj (char *file, float resize, float rotate[3], float move[3])
 
 					if (do_move)
 						for (i=0; i<3; ++i)
-							vertex[i] += move[i];
+							vertex[i] += offset[i];
 			}
 			else
 				printlog(0, "WARNING: failed reading vector %i\n", v_count);

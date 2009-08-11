@@ -36,6 +36,7 @@ struct internal_struct {
 	//graphics
 	int threshold;
 	int res[2]; //resolution
+	GLdouble perspective[2];
 	int dist;
 	bool force;
 	float angle;
@@ -62,7 +63,8 @@ struct data_index internal_index[] = {
 	//graphics
 	{"graphics_threshold",	'i',1, offsetof(struct internal_struct, threshold)},
 	{"resolution",		'i',2, offsetof(struct internal_struct, res)},
-	{"eye_distance",		'i',1, offsetof(struct internal_struct, dist)},
+	{"perspective",		'd',2, offsetof(struct internal_struct, perspective)},
+	{"eye_distance",	'i',1, offsetof(struct internal_struct, dist)},
 	{"force_angle",		'b',1, offsetof(struct internal_struct, force)},
 	{"view_angle",		'f',1, offsetof(struct internal_struct, angle)},
 	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen)},

@@ -40,7 +40,7 @@ void graphics_resize (int w, int h)
 		printlog(1, "Angle forced to: %f degrees. And you are an evil person...\n", angle);
 	}
 
-	gluPerspective (angle, (GLdouble) w/h, 1, 1000);
+	gluPerspective (angle, (GLdouble) w/h, internal.perspective[0], internal.perspective[1]);
 
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
