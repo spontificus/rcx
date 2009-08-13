@@ -138,6 +138,96 @@ void car_physics_step(void)
 {
 	car_struct *carp = car_head;
 	bool driving;
+
+	void set_elevation(dReal z)
+	{
+		//change the anchor without changing the attachement position on wheels
+		void set_wheel_anchor(int num, dReal jx, dReal x, dReal y, dReal z, bool right_side)
+		{
+			dBodyID body = carp->wheel_body[num];
+			dBodyID car_body = carp->bodyid;
+
+			//each wheel is moved to new neutral position (last position+rotation backed up)
+			const dReal *tmp;
+			dVector3 v;
+			dReal back_pos[3];
+			dMatrix3 back_rot;
+			int i;
+
+			tmp = dBodyGetPosition(body);
+			for (i=0; i<3; ++i)
+				back_pos[i] = tmp[i];
+			tmp = dBodyGetRotation(body);
+			for (i=0; i<12; ++i)
+				back_rot[i] = tmp[i];
+
+			//move (relative to body)
+			dBodyGetRelPointPos (car_body, x, y, z, v);
+			dBodySetPosition (body, v[0], v[1], v[2]);
+			//need to make rotation based on car body rotation
+			tmp = dBodyGetRotation (car_body);
+			dMatrix3 tmp_rot;
+			
+			//for better performance, do rotation of matrix manually...
+			if (right_side)
+			{
+			tmp_rot[0] = -tmp[2];
+			tmp_rot[4] = -tmp[6];
+			tmp_rot[8] = -tmp[10];
+
+			tmp_rot[2] = tmp[0];
+			tmp_rot[6] = tmp[4];
+			tmp_rot[10] = tmp[8];
+			}
+			else
+			{
+			tmp_rot[0] = tmp[2];
+			tmp_rot[4] = tmp[6];
+			tmp_rot[8] = tmp[10];
+
+			tmp_rot[2] = -tmp[0];
+			tmp_rot[6] = -tmp[4];
+			tmp_rot[10] = -tmp[8];
+			}
+
+			tmp_rot[1] = tmp[1];
+			tmp_rot[5] = tmp[5];
+			tmp_rot[9] = tmp[9];
+
+			tmp_rot[3] = 0;
+			tmp_rot[7] = 0;
+			tmp_rot[11] = 0;
+
+
+			//
+
+			dBodySetRotation (body, tmp_rot);
+
+			//set anchor
+			dJointID joint = carp->joint[num];
+			dBodyGetRelPointPos (car_body, jx, y, z, v);
+
+			dJointSetHinge2Axis1 (joint, tmp[2], tmp[6], tmp[10]);
+			dJointSetHinge2Axis2 (joint, tmp[0], tmp[4], tmp[8]);
+			dJointSetHinge2Anchor (joint, v[0], v[1], v[2]);
+
+			//restore earlier position/rotation
+			dBodySetPosition (body, back_pos[0], back_pos[1], back_pos[2]);
+			dBodySetRotation (body, back_rot);
+		}
+
+		//see if elevation doesn't match driving side (needs changing)
+		if (z != carp->current_elevation) 
+		{
+			carp->current_elevation = z; //it correct now
+
+			set_wheel_anchor(0, carp->jx, carp->wp[0], carp->wp[1], z, true);
+			set_wheel_anchor(1, carp->jx, carp->wp[0], -carp->wp[1], z, true);
+			set_wheel_anchor(2, -carp->jx, -carp->wp[0], -carp->wp[1], z, false);
+			set_wheel_anchor(3, -carp->jx, -carp->wp[0], carp->wp[1], z, false);
+		}
+	}
+
 	while (carp != NULL)
 	{
 		//some loaded cars might not participate in race...
@@ -157,37 +247,30 @@ void car_physics_step(void)
 		{
 			driving = true;
 			carp->dir = 1.0;
+			set_elevation(-carp->elevation);
 		}
 		//same
 		else if (carp->sensor2->event)
 		{
 			driving = true;
 			carp->dir = -1.0;
+			set_elevation(carp->elevation);
 		}
 		//no sensor active, no flipping, no antigrav
 		else
+		{
 			driving = false;
+			set_elevation(0);
+		}
 
 		//sensors have been read, reset them
 		carp->sensor1->event = false;
 		carp->sensor2->event = false;
 
+		//start fixing things
+
 		if (driving) //TODO
 		{
-//			dBodyAddRelForce (carp->bodyid,0,0, carp->dir*100);
-
-			//elevate suspension (simulated, needs opposing force to body)
-			const dReal *r = dBodyGetRotation (carp->bodyid);
-			dReal force_x=-(carp->dir*carp->suspension_ef)*r[2];
-			dReal force_y=-(carp->dir*carp->suspension_ef)*r[6];
-			dReal force_z=-(carp->dir*carp->suspension_ef)*r[10];
-			//wheels
-			dBodyAddForce (carp->wheel_body[0], force_x, force_y, force_z);
-			dBodyAddForce (carp->wheel_body[1], force_x, force_y, force_z);
-			dBodyAddForce (carp->wheel_body[2], force_x, force_y, force_z);
-			dBodyAddForce (carp->wheel_body[3], force_x, force_y, force_z);
-			//body
-			dBodyAddForce (carp->bodyid, -4*force_x, -4*force_y, -4*force_z);
 		}
 
 		//control

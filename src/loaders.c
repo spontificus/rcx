@@ -1505,6 +1505,9 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dJointSetHinge2Anchor (target->joint[2],x-target->jx,y-target->wp[1],z);
 	dJointSetHinge2Anchor (target->joint[3],x-target->jx,y+target->wp[1],z);
 
+	//reset direction and suspension indicators
+	target->dir=0;
+	target->current_elevation=0;
 }
 
 
