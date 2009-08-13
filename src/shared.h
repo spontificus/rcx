@@ -36,6 +36,7 @@ struct internal_struct {
 	//graphics
 	int threshold;
 	int res[2]; //resolution
+	GLdouble perspective[2];
 	int dist;
 	bool force;
 	float angle;
@@ -62,7 +63,8 @@ struct data_index internal_index[] = {
 	//graphics
 	{"graphics_threshold",	'i',1, offsetof(struct internal_struct, threshold)},
 	{"resolution",		'i',2, offsetof(struct internal_struct, res)},
-	{"eye_distance",		'i',1, offsetof(struct internal_struct, dist)},
+	{"perspective",		'd',2, offsetof(struct internal_struct, perspective)},
+	{"eye_distance",	'i',1, offsetof(struct internal_struct, dist)},
 	{"force_angle",		'b',1, offsetof(struct internal_struct, force)},
 	{"view_angle",		'f',1, offsetof(struct internal_struct, angle)},
 	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen)},
@@ -70,19 +72,46 @@ struct data_index internal_index[] = {
 	{"",0,0}};
 
 
-//file_3d_struct: when a 3d file is loaded, we need a way to keep track of all
-//rendering lists, so as to prevent memory leaks when unloading data
-//typedef struct graphics_list_struct {
-typedef struct file_3d_struct {
-//	GLuint render_list;
-	GLuint list;
-	char *file; //filename (to prevent duplicated 3d loading)
-	struct file_3d_struct *next;
-} file_3d_struct;
+//trimesh: stores rendering data for loaded trimesh (usually from 3d file)
+//can also be used for generating collision detection trimesh for ode
+typedef struct {
+	GLfloat ambient[4];
+	GLfloat diffuse[4];
+	GLfloat specular[4];
+	GLfloat shininess;
+} material;
 
-//graphics_list *graphics_list_head = NULL;
-file_3d_struct *file_3d_head = NULL;
+typedef struct trimesh_struct {
+	char *file; //store filename (to prevent duplicated loading)
 
+	GLfloat *vertices;
+
+	//currently, all 3d files must specify one normal for each vertex!
+	GLfloat *normals;
+
+	unsigned int vertex_count;	//note: might be overflown by big 3d files!
+	unsigned int index_count;	//this as well!
+	unsigned int normal_count;	//overflow?
+
+	material *materials;
+
+	unsigned int *vector_indices;	//can also be overflown!
+	unsigned int *normal_indices;	//overflow
+	unsigned int *material_indices;	//again, overflow posibility
+
+	GLenum *modes;
+
+	//instructions:
+	//'i' = index, 'm' = material, 'M' = opengl mode
+	//'\0' = end
+	char *instructions;
+
+	dTriIndex *geom_tri_indices;
+
+	struct trimesh_struct *next;
+} trimesh;
+
+trimesh *trimesh_head = NULL;
 
 //script: human readable (read: not _programming_) langue which will
 //describe what should be done when spawning an object (components, joints...),
@@ -95,11 +124,11 @@ file_3d_struct *file_3d_head = NULL;
 typedef struct script_struct {
 	char *name; //usefull if to see if the same object is requested more times
 	//placeholder for script data, now just a single variable (what to render)
-	file_3d_struct *graphics_debug1;
-	file_3d_struct *graphics_debug2;
-	file_3d_struct *graphics_debug3;
 
 	//temporary solution
+	trimesh *tmp_trimesh1;
+	trimesh *tmp_trimesh2;
+	trimesh *tmp_trimesh3;
 	bool box;
 	bool flipper;
 	bool NH4;
@@ -154,7 +183,7 @@ typedef struct geom_data_struct {
 	//geom data bellongs to
 	dGeomID geom_id;
 
-	file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
+	trimesh *geom_trimesh; //rendering (NULL if invisible)
 
 	//Physics data:
 	//placeholder for more physics data
@@ -192,6 +221,8 @@ typedef struct body_data_struct {
 	object_struct *object_parent;
 	//geom data bellongs to
 	dBodyID body_id;
+
+	trimesh *body_trimesh; //rendering
 
 	//data for drag (air+water friction)
 	bool use_drag;
@@ -260,14 +291,18 @@ typedef struct car_struct {
 
 	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
 
-	file_3d_struct *wheel_graphics; //add right/left wheels
-	file_3d_struct *box_graphics[CAR_MAX_BOXES];
+
+	//filenames and values for obj files
+	trimesh *body_trimesh, *wheel_trimesh[4];
+	char *obj_body, *obj_wheel[4];
+	float body_resize, wheel_resize;
+	float obj_wheel_rotate[3], obj_wheel_offset[3], obj_body_rotate[3], obj_body_offset[3];
 
 	//just for keeping track
 	object_struct *object; //one object to store car components
 
 //	dGeomID body_geom; //for focusing
-	dBodyID bodyid,wheel_body[4]; //for "Finite Rotation" arror reduction
+	dBodyID bodyid,wheel_body[4]; //for "Finite Rotation" error reduction
 	dJointID joint[4]; //for applying forces on wheels
 
 	//flipover sensors
@@ -326,18 +361,28 @@ struct data_index car_index[] = {
 	{"box7",	'f',	6,	offsetof(struct car_struct, box[6][0])},
 	{"box8",	'f',	6,	offsetof(struct car_struct, box[7][0])},
 	{"box9",	'f',	6,	offsetof(struct car_struct, box[8][0])},
-	{"box10",'f',	6,	offsetof(struct car_struct, box[9][0])},
-	{"box11",'f',	6,	offsetof(struct car_struct, box[10][0])},
-	{"box12",'f',	6,	offsetof(struct car_struct, box[11][0])},
-	{"box13",'f',	6,	offsetof(struct car_struct, box[12][0])},
-	{"box14",'f',	6,	offsetof(struct car_struct, box[13][0])},
-	{"box15",'f',	6,	offsetof(struct car_struct, box[14][0])},
-	{"box16",'f',	6,	offsetof(struct car_struct, box[15][0])},
-	{"box17",'f',	6,	offsetof(struct car_struct, box[16][0])},
-	{"box18",'f',	6,	offsetof(struct car_struct, box[17][0])},
-	{"box19",'f',	6,	offsetof(struct car_struct, box[18][0])},
-	{"box20",'f',	6,	offsetof(struct car_struct, box[19][0])},
+	{"box10",	'f',	6,	offsetof(struct car_struct, box[9][0])},
+	{"box11",	'f',	6,	offsetof(struct car_struct, box[10][0])},
+	{"box12",	'f',	6,	offsetof(struct car_struct, box[11][0])},
+	{"box13",	'f',	6,	offsetof(struct car_struct, box[12][0])},
+	{"box14",	'f',	6,	offsetof(struct car_struct, box[13][0])},
+	{"box15",	'f',	6,	offsetof(struct car_struct, box[14][0])},
+	{"box16",	'f',	6,	offsetof(struct car_struct, box[15][0])},
+	{"box17",	'f',	6,	offsetof(struct car_struct, box[16][0])},
+	{"box18",	'f',	6,	offsetof(struct car_struct, box[17][0])},
+	{"box19",	'f',	6,	offsetof(struct car_struct, box[18][0])},
+	{"box20",	'f',	6,	offsetof(struct car_struct, box[19][0])},
 	
+	//obj files
+	{"obj_wheels",		's',	4,	offsetof(struct car_struct, obj_wheel)},
+	{"obj_body",		's',	1,	offsetof(struct car_struct, obj_body)},
+	{"obj_wheels_resize",	'f',	1,	offsetof(struct car_struct, wheel_resize)},
+	{"obj_body_resize",	'f',	1,	offsetof(struct car_struct, body_resize)},
+	{"obj_wheels_rotate",	'f',	3,	offsetof(struct car_struct, obj_wheel_rotate)},
+	{"obj_wheels_offset",	'f',	3,	offsetof(struct car_struct, obj_wheel_offset)},
+	{"obj_body_rotate",	'f',	3,	offsetof(struct car_struct, obj_body_rotate)},
+	{"obj_body_offset",	'f',	3,	offsetof(struct car_struct, obj_body_offset)},
+
 	//the following is for sizes not yet determined
 	{"s",	'f',	4,	offsetof(struct car_struct, s[0])}, //flipover
 	{"w",	'f',	2,	offsetof(struct car_struct, w[0])}, //wheel
@@ -429,11 +474,16 @@ struct track_struct {
 	dReal density; //for air drag (friction)
 
 	dReal start[3];
+	dReal respawn; //respawn heigh (Z)
 
-	file_3d_struct *file_3d;
-	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
+	char *obj;
+	float obj_resize;
+	float obj_rotate[3], obj_offset[3];
+	trimesh *track_trimesh;
+
 	object_struct *object;
 } track;
+
 //index:
 
 struct data_index track_index[] = {
@@ -449,6 +499,11 @@ struct data_index track_index[] = {
 	{"cfm",		'f',1,	offsetof(struct track_struct, cfm)},
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
+	{"respawn",	'f',1,	offsetof(struct track_struct, respawn)},
+	{"obj",		's',1,	offsetof(struct track_struct, obj)},
+	{"obj_resize",	'f',1,	offsetof(struct track_struct, obj_resize)},
+	{"obj_rotate",	'f',3,	offsetof(struct track_struct, obj_rotate)},
+	{"obj_offset",	'f',3,	offsetof(struct track_struct, obj_offset)},
 	{"",0,0}};//end
 
 

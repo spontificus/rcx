@@ -135,8 +135,8 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	geom_data_head->event = false; //no collision event yet
 	geom_data_head->script = NULL; //nothing to run on collision (yet)
 	
+	geom_data_head->geom_trimesh = NULL; //default, isn't rendered
 	//collision contactpoint data
-	geom_data_head->file_3d = NULL; //default, isn't rendered
 	geom_data_head->mu = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
@@ -187,6 +187,8 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 	body_data_head->body_id = body;
 
 	//default values
+	body_data_head->body_trimesh = NULL; //default, isn't rendered
+
 	body_data_head->use_drag = false;
 	body_data_head->use_rotation_drag = false;
 
@@ -332,11 +334,6 @@ car_struct *allocate_car(void)
 	car_head->name = NULL;
 	car_head->spawned = false;
 
-	int i;
-	for (i=0;i<CAR_MAX_BOXES;++i)
-		car_head->box_graphics[i] = NULL;
-	car_head->wheel_graphics = NULL;
-
 	car_head->drift_breaks = true; //if the user does nothing, lock wheels
 	car_head->breaks = false;
 	car_head->throttle = 0;
@@ -358,8 +355,24 @@ car_struct *allocate_car(void)
 	car_head->wheel_cfm   = 0.0;
 	
 	//set x in all boxes to 0 (disable)
+	int i;
 	for (i=0;i<CAR_MAX_BOXES;++i)
 		car_head->box[i][0]=0;
+
+	//obj filenames
+	car_head->obj_body = NULL;
+	for (i=0; i<4; ++i)
+		car_head->obj_wheel[i] = NULL;
+
+	car_head->body_resize=1.0;
+	car_head->wheel_resize=1.0;
+
+	for (i=0; i<3; ++i)
+	{
+		car_head->obj_wheel_rotate[i] = 0.0;
+		car_head->obj_body_rotate[i] = 0.0;
+	}
+
 
 	//needed for keeping track for different things (mostly for graphics)
 	car_head->bodyid        = NULL;
@@ -385,28 +398,51 @@ car_struct *allocate_car(void)
 	return car_head;
 }
 
-//allocates new link in 3d rendering list
-file_3d_struct *allocate_file_3d (void)
+
+//it is assumed that all values are positive (non-zero)
+trimesh *allocate_trimesh (unsigned int vertices, unsigned int normals,
+	unsigned int indices, unsigned int materials,
+	unsigned int material_indices, unsigned int modes)
 {
-	printlog(2, " > allocating 3d file storage");
+	printlog(2, " > allocating trimesh storage");
 
-	file_3d_struct *tmp_3d = (file_3d_struct *)malloc (sizeof(file_3d_struct));
+	trimesh *tmp_trimesh = (trimesh *)malloc (sizeof(trimesh));
 	//add to list
-	tmp_3d->next = file_3d_head;
-	file_3d_head = tmp_3d;
+	tmp_trimesh->next = trimesh_head;
+	trimesh_head = tmp_trimesh;
 
-	if (!tmp_3d->next)
+	if (!tmp_trimesh->next)
 		printlog(2, " (first one)\n");
 	else
 		printlog(2, "\n");
 
 	//default values
-	file_3d_head->file = NULL; //filename - here ~no name~
-	printlog(2, "TODO: check for already loaded files\n");
-	file_3d_head->list = glGenLists(1);
+	tmp_trimesh->file = NULL; //filename - here ~no name~
+
+	//allocate storage for data
+	tmp_trimesh->vertices = (GLfloat *) calloc(vertices*3, sizeof(GLfloat));
+	tmp_trimesh->normals = (GLfloat *) calloc(normals*3, sizeof(GLfloat));
+	tmp_trimesh->vector_indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
+	tmp_trimesh->normal_indices = (unsigned int*) calloc(indices,sizeof(unsigned int));
+
+	tmp_trimesh->materials = (material*) calloc(materials, sizeof(material));
+	tmp_trimesh->material_indices = (unsigned int*) calloc(material_indices, sizeof(unsigned int));
+
+	tmp_trimesh->modes = (GLenum*) calloc(modes, sizeof(GLenum));
+	//needed when creating ode trimesh
+	tmp_trimesh->index_count = indices;
+	tmp_trimesh->vertex_count = vertices;
+
+	tmp_trimesh->normal_count = normals; //might simply be usefull?
+
+	//describes which index to read next "instruction" from
+	//(currently only vertex+normal and material)
+	tmp_trimesh->instructions =(char*)calloc(indices+material_indices+modes+1, sizeof(char));
+
+	tmp_trimesh->geom_tri_indices = NULL; //this is up to the user to create
 
 	printlog (2, "\n");
-	return file_3d_head;
+	return tmp_trimesh;
 }
 
 //destroys an object
@@ -544,7 +580,16 @@ void free_car (car_struct *target)
 	//remove car
 	free_object (target->object);
 
+	int i;
+	for (i=0; i<4; ++i)
+	{
+		if (target->obj_wheel[i])
+			free (target->obj_wheel[i]);
+		else
+			printlog(0, "WARNING: wheel obj not loaded?\n");
+	}
 
+	free (target->obj_body);
 	free (target->name);
 	free (target);
 }
@@ -575,6 +620,7 @@ void free_all (void)
 		free_object(object_head);
 
 	//only place where scripts and 3d lists are removed
+	
 	script_struct *script_tmp = script_head;
 	while (script_head)
 	{
@@ -584,16 +630,39 @@ void free_all (void)
 		script_head = script_tmp;
 	}
 
-	//destroy loaded 3d files
-	file_3d_struct *file_3d_tmp;
-	while (file_3d_head)
+	//destroy loaded trimeshes
+	trimesh *mesh;
+	while (trimesh_head)
 	{
-		file_3d_tmp = file_3d_head; //copy from from list
-		file_3d_head = file_3d_head->next; //remove from list
+		//remove from list
+		mesh = trimesh_head;
+		trimesh_head = trimesh_head->next;
 
-		glDeleteLists (file_3d_tmp->list, 1);
-		free (file_3d_tmp);
+		//free data
+		free (mesh->file); //filename
+
+		free (mesh->vertices);
+		free (mesh->vector_indices);
+
+		free (mesh->normals);
+		free (mesh->normal_indices);
+		
+		free (mesh->materials);
+		free (mesh->material_indices);
+
+		free (mesh->modes);
+
+		free (mesh->instructions);
+
+		//only allocated for trimesh with collision geom
+		if (mesh->geom_tri_indices)
+			free (mesh->geom_tri_indices);
+
+		free (mesh);
 	}
 
-	//no need to destroy track, since it's not allocated by program
+	//no need to destroy track (for now), since it's not allocated by program
+	//only free obj name (if allocated)
+	if (track.obj)
+		free (track.obj);
 }

@@ -4,6 +4,54 @@
 //
 //See main.c for licensing info
 
+FILE *open_file(char *path)
+{
+	FILE *fp;
+	#ifdef windows
+		fp = fopen(path, "rb");
+	#else
+		fp = fopen(path, "r");
+	#endif
+	return fp;
+}
+
+FILE *open_file_rel_to_file (char *path, char *file)
+{
+	int file_l = strlen(file);
+
+	//find last /
+	int i;
+	for (i=strlen(path); 0<i; --i)
+		if (path[i] == '/')
+			break;
+
+	++i;
+
+	char *new_path;
+	//no / , just append
+	if (i==0)
+	{
+		new_path = (char*) calloc(strlen(path)+file_l+2, sizeof(char));
+		strcpy (new_path, path);
+		strcat (new_path, "/");
+		strcat (new_path, file);
+	}
+	else //got length before /
+	{
+		new_path = (char*) calloc(i+strlen(file)+2, sizeof(char));
+		int j;
+		for (j=0; j<i; ++j)
+			new_path[j]=path[j];
+		new_path[++j]='/';
+		for (j=0; j<file_l; ++j)
+			new_path[i+j]=file[j];
+		new_path[i+j]='\0';
+	}
+
+	FILE *fp = open_file(new_path);
+	free (new_path);
+	return fp;
+}
 
 #define MAX_WORDS 100
 
@@ -97,6 +145,8 @@ char *get_word (FILE *fp, bool newline_sensitive)
 	return (word);
 }
 
+//TODO: it _might_ be better to just allocate and read one line (not sepparate words, since
+//sscanf can process space when needed instead)
 char **get_word_list (FILE *fp)
 {
 	printlog(2, " > get_word_list\n");
@@ -134,6 +184,7 @@ void free_word_list (char **target)
 
 	for (i=0; target[i]!=NULL; ++i)
 		free (target[i]);
+
 	free (target);
 }
 
@@ -145,11 +196,7 @@ int load_conf (char *name, char *memory, struct data_index index[])
  printlog(1, "-> loading conf file: %s\n", name);
  FILE *fp;
 
-#ifdef windows
- fp = fopen(name, "rb");
-#else
- fp = fopen(name, "r");
-#endif
+ fp = open_file(name);
 
  if (!fp)
  {
@@ -181,13 +228,24 @@ int load_conf (char *name, char *memory, struct data_index index[])
       break;
 
       case 'd':
-       argscan="%d";
+       argscan="%lf";
        argsize=sizeof(double);
       break;
 
       case 'b':
        argscan="%b";
        argsize=sizeof(bool);
+      break;
+
+      //string copy (WARNING: this requires a manual free, preferably in the appropriate <???>_free function)
+      case 's':
+       argscan="%s";
+       argsize=sizeof(char*);
+      break;
+
+      case 'c':
+       argscan="%c";
+       argsize=sizeof(char);
       break;
 
       case 'i':
@@ -222,6 +280,15 @@ int load_conf (char *name, char *memory, struct data_index index[])
      else if (argscan[1]=='f'&&strcmp(word[j+1],"inf") == 0)
       *(float*)(memory+index[i].offset+j*argsize) = 1.0f/0.0f;
 #endif
+
+     //while there's a GNU extension for the scanf family which makes it simple to copy strings, lets do it old school!
+     else if (argscan[1]=='s')
+     {
+	     char *str = calloc (strlen(word[j+1]) +1, sizeof(char));
+	     strcpy (str , word[j+1]);
+             *(char**)(memory+index[i].offset+j*argsize) = str;
+     }
+
      else
       if(sscanf(word[j+1],argscan,(memory+index[i].offset+j*argsize)) != 1)
             printlog(0, "ERROR: Parameter: %s - Error reading argument %i!\n", word[0],j);
@@ -240,6 +307,537 @@ int load_conf (char *name, char *memory, struct data_index index[])
   return 0;
  }
 }
+
+//load an obj (and the mtl file it specifies) as a trimesh (for rendering
+//and optional generation of ODE trimesh geom)
+//
+//warning: does not do a lot of error checking!
+//some limits includes requiring normals for each index, and only one mtl file
+trimesh *load_obj (char *file, float resize, float rotate[3], float offset[3])
+{
+	int i;
+	bool do_rotate = false, do_resize = false, do_move = false;
+
+	printlog(1, "-> Loading obj file to trimesh: %s (resize: %f, rotate: %f %f %f, offset: %f %f %f)", file, resize, rotate[0], rotate[1], rotate[2], offset[0], offset[1], offset[2]);
+
+	//now something fun, create rotation matrix (from Euler rotation angles, in degrees)
+	dMatrix3 rot;
+	if (rotate[0] || rotate[1] || rotate[2])
+	{
+		printlog(1, " (rotate)");
+		do_rotate = true;
+		dRFromEulerAngles (rot, rotate[0]*(M_PI/180), rotate[1]*(M_PI/180), rotate[2]*(M_PI/180));
+	}
+	if (resize != 1.0)
+	{
+		printlog(1, " (resize)");
+		do_resize = true;
+	}
+	if (offset[0] || offset[1] || offset[2])
+	{
+		printlog(1, " (move)");
+		do_move = true;
+	}
+	
+	printlog(1, "\n");
+
+	trimesh *tmp;
+	for (tmp=trimesh_head; tmp; tmp=tmp->next)
+		if (!(strcmp(file, tmp->file)))
+		{
+			printlog(1, "   (already loaded)\n");
+			return tmp;
+		}
+
+	FILE *fp_obj;
+	FILE *fp_mtl = NULL;
+
+	fp_obj = open_file(file);
+
+	if (!fp_obj)
+	{
+		printlog(0, "ERROR opening file %s (doesn't exist?)\n", file);
+		return NULL;
+	}
+
+	char **word;
+	unsigned int vertices, normals, indices, materials, material_indices, modes;
+	vertices=normals=indices=materials=material_indices=modes=0;
+
+	const unsigned int MAX = -1; //overflow limit for unsigned int
+	int last_f_number = 0;
+
+	//first get ammount of vertices, indices etc. Set last found mtl file
+	while ((word = get_word_list(fp_obj)))
+	{
+		if (vertices==MAX || normals==MAX || indices==MAX || material_indices==MAX) //bad for loading speed, but necessary to prevent overflow
+		{
+			printlog(0, "ERROR: OBJ was too bigg (overflows unsigned int)!\n");
+			fclose (fp_obj);
+			return NULL;
+		}
+
+		if (word[0][0] == 'v' && word[0][1] == '\0')
+			++vertices;
+		else if (word[0][0] == 'v' && word[0][1] == 'n')
+			++normals;
+		else if (word[0][0] == 'f')
+		{
+			for (i=1; word[i]; ++i);
+			indices += (i-1);
+
+			if (i!=last_f_number || i>4) //mode switch
+				++modes;
+		}
+		else if (!strcmp(word[0], "usemtl"))
+			++material_indices;
+		else if (!strcmp(word[0], "mtllib"))
+		{
+			if (fp_mtl) //_new_ file request found(!), close this one
+				fclose (fp_mtl);
+
+
+			fp_mtl = open_file_rel_to_file (file, word[1]);
+
+			if (!fp_mtl)
+			{
+				printlog(0, "ERROR: couldn't open file: %s\n", word[1]);
+				fclose (fp_obj); //basic cleanup
+				return NULL;
+			}
+
+			//free (mtl_path);
+		}
+		//else unrecognized!
+		free_word_list(word);
+	}
+
+	if (!fp_mtl)
+	{
+		printlog(0, "ERROR: mtl file could not be opened!\n");
+		fclose (fp_obj);
+		return NULL;
+	}
+
+	//count materials
+	while ((word = get_word_list(fp_mtl)))
+	{
+		if (!strcmp(word[0], "newmtl"))
+			if (++materials == MAX)
+			{
+				printlog(0, "ERROR: too many materials (overflows unsigned int)!\n");
+				fclose (fp_obj);
+				fclose (fp_mtl);
+				return NULL;
+			}
+		free_word_list(word);
+	}
+
+	//print counts
+	printlog (1, "   (v:%u n:%u i:%u m:%u mi:%u Modes:%u)\n", vertices, normals,
+			indices, materials, material_indices, modes);
+
+	if (!(vertices&&normals&&indices&&materials))
+	{
+		printlog (0, "ERROR: vertices, normals, indices and materials must exist in files\n");
+		fclose (fp_obj);
+		fclose (fp_mtl);
+		return NULL;
+	}
+
+	//allocate
+	trimesh *mesh = allocate_trimesh(vertices, normals,
+			indices, materials, material_indices, modes);
+
+	char *material_names[materials]; //for tmp storing names
+
+
+	//store filename (to prevent duplicated loading)
+	mesh->file = (char*) calloc (strlen(file)+1, sizeof(char));
+	strcpy (mesh->file, file);
+
+	//start loading, first mtl
+	fseek (fp_mtl, SEEK_SET, 0); //go to beginning
+
+	i=-1;
+	while ((word = get_word_list(fp_mtl)))
+	{
+		if (!strcmp(word[0], "newmtl"))
+		{
+			++i;
+			//first store name for future lookups
+			material_names[i] = (char*) calloc(strlen(word[1])+1, sizeof(char));
+			strcpy(material_names[i], word[1]);
+
+			//hmm... I might have forgotten something?
+		}
+		else if (i>=0)
+		{
+			//"shinines" of specular colour
+			if (word[0][0] == 'N' &&word[0][1] == 's')
+			{
+				if (!(sscanf(word[1], "%f", &(mesh->materials+i)->shininess)))
+					printlog(0, "WARNING: failed reading shinines %i\n", i);
+			}
+
+			//ambient colour
+			else if (word[0][0] == 'K' &&word[0][1] == 'a')
+			{
+				if (sscanf(word[1], "%f", &(mesh->materials+i)->ambient[0])==1 &&
+				    sscanf(word[2], "%f", &(mesh->materials+i)->ambient[1])==1 &&
+				    sscanf(word[3], "%f", &(mesh->materials+i)->ambient[2])==1)
+					(mesh->materials+i)->ambient[3]=1.0f;
+				else
+					printlog(0, "WARNING: failed reading ambient colour %i\n", i);
+			}
+
+			//diffuse colour
+			else if (word[0][0] == 'K' &&word[0][1] == 'd')
+			{
+				if (sscanf(word[1], "%f", &(mesh->materials+i)->diffuse[0])==1 &&
+				    sscanf(word[2], "%f", &(mesh->materials+i)->diffuse[1])==1 &&
+				    sscanf(word[3], "%f", &(mesh->materials+i)->diffuse[2])==1)
+					(mesh->materials+i)->diffuse[3]=1.0f;
+				else
+					printlog(0, "WARNING: failed reading diffuse colour %i\n", i);
+			}
+
+			//specular colour
+			else if (word[0][0] == 'K' &&word[0][1] == 's')
+			{
+				if (sscanf(word[1], "%f", &(mesh->materials+i)->specular[0])==1 &&
+				    sscanf(word[2], "%f", &(mesh->materials+i)->specular[1])==1 &&
+				    sscanf(word[3], "%f", &(mesh->materials+i)->specular[2])==1)
+					(mesh->materials+i)->specular[3]=1.0f;
+				else
+					printlog(0, "WARNING: failed reading specular colour %i\n", i);
+			}
+		}
+		else
+			printlog(0, "WARNING: ignoring %s\n", word[0]);
+		free_word_list(word);
+	}
+	
+	fclose (fp_mtl);
+
+	//load obj
+	//TODO: add resize option (preferably as float argument to function)
+	fseek (fp_obj, SEEK_SET, 0); //go to beginning
+	unsigned int v_count=0, n_count=0, i_count=0, inst_count=0, m_count=0, M_count=0;
+	last_f_number = 0;
+	GLfloat *vertex;
+	GLfloat vertex_tmp[3];
+	while ((word = get_word_list(fp_obj)))
+	{
+		//ingore g and s
+
+		//vector
+		if (word[0][0]=='v' && word[0][1]=='\0')
+		{
+			vertex = &(mesh->vertices[v_count]);
+			if (	sscanf(word[1], "%f", &vertex_tmp[0]) &&
+				sscanf(word[2], "%f", &vertex_tmp[1]) &&
+				sscanf(word[3], "%f", &vertex_tmp[2]))
+			{
+					v_count += 3;
+
+					//resize
+					if (do_resize)
+					{
+						vertex_tmp[0]*=resize;
+						vertex_tmp[1]*=resize;
+						vertex_tmp[2]*=resize;
+					}
+
+					//rotate:
+					if (do_rotate)
+						dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
+					else //not!
+						for (i=0; i<3; ++i)
+							vertex[i] = vertex_tmp[i];
+
+					if (do_move)
+						for (i=0; i<3; ++i)
+							vertex[i] += offset[i];
+			}
+			else
+				printlog(0, "WARNING: failed reading vector %i\n", v_count);
+		}
+		//normal
+		else if (word[0][0]=='v' && word[0][1]=='n' && word[0][2]=='\0')
+		{
+			vertex = &(mesh->normals[n_count]);
+			if (	sscanf(word[1], "%f", &vertex_tmp[0]) &&
+				sscanf(word[2], "%f", &vertex_tmp[1]) &&
+				sscanf(word[3], "%f", &vertex_tmp[2]))
+			{
+					n_count += 3;
+					
+					//rotate:
+					if (do_rotate)
+						dMultiply1 (vertex, rot, vertex_tmp,	3,3,1);
+					else //not!
+						for (i=0; i<3; ++i)
+							vertex[i] = vertex_tmp[i];
+			}
+			else
+				printlog(0, "WARNING: failed reading normal %i\n", n_count);
+		}
+		//indices
+		else if (word[0][0]=='f' && word[0][1]=='\0')
+		{
+			for (i=1; word[i]; ++i)
+			{
+
+				//even if obj specifies texture mapping, ignore it.
+				if (	sscanf(word[i], "%i//%i/", &mesh->vector_indices[i_count], &mesh->normal_indices[i_count]) == 2 ||
+					sscanf(word[i], "%i/%*i/%i/", &mesh->vector_indices[i_count], &mesh->normal_indices[i_count]) == 2)
+				{
+					mesh->vector_indices[i_count] -=1;
+					mesh->normal_indices[i_count] -=1;
+					++i_count;
+				}
+				else
+					printlog(0, "WARNING: failed reading index %i\n", i_count);
+			}
+
+			--i;
+			if (i!=last_f_number || i>4)
+			{
+				mesh->instructions[inst_count++]='M';
+
+				GLenum new_mode;
+				switch (i)
+				{
+					case 1:
+						new_mode = GL_POINTS;
+						break;
+					case 2:
+						new_mode = GL_LINES;
+						break;
+					case 3:
+						new_mode = GL_TRIANGLES;
+						break;
+					case 4:
+						new_mode = GL_QUADS;
+						break;
+					default:
+						new_mode = GL_POLYGON;
+						break;
+				}
+
+				mesh->modes[M_count++] = new_mode;
+			}
+
+			int j;
+			for (j=0; j<i; ++j)
+				mesh->instructions[inst_count++]='i';
+
+		}
+
+		//material
+		else if (!strcmp(word[0], "usemtl"))
+		{
+			for (i=0; i<materials; ++i)
+			{
+				if (!(strcmp(material_names[i], word[1])))
+					break;
+			}
+			if (i!=materials) //we found a match
+			{
+				mesh->material_indices[m_count] = i;
+				//mesh->material_indices[0] = 0;
+				mesh->instructions[inst_count++]='m';
+			}
+			else
+				printlog(0, "WARNING: failed identify material %s\n", word[1]);
+			++m_count;
+		}
+		free_word_list(word);
+	}
+	mesh->instructions[inst_count]='\0';
+	
+	fclose (fp_obj);
+
+	//And we're done!
+	for (i=0; i<materials; ++i)
+		free (material_names[i]);
+
+	return mesh;
+}
+
+
+//translate a trimesh (for rendering) to an ode trimesh geom (for collision)
+dGeomID trimesh_to_geom (trimesh *mesh)
+{
+	printlog(1, "-> Translating trimesh to geometrical trimesh ");
+	//ode trimeshes only supports triangles ("triangle mesh"...), so indices for faces with more vertices (in mode) than 3 must be translated.
+	//new indices are stored in a sepparate array in the trimesh.
+	//NOTE: this could be used for rendering as well (but will require more memory, and possibly more rendering time?)
+	int i;
+	unsigned int i_count = 0;
+	int v_count=0;
+	GLenum *modes = mesh->modes;
+	enum {none, triangles, quads, polygon} mode = none;
+	for (i=0; mesh->instructions[i]; ++i)
+	{
+		if (mesh->instructions[i] == 'M')
+		{
+			if (*modes == GL_TRIANGLES)
+				mode = triangles;
+			else if (*modes == GL_QUADS)
+				mode = quads;
+			else if (*modes == GL_POLYGON)
+				mode = polygon;
+
+			v_count=0;
+			++modes;
+		}
+
+		else if (mesh->instructions[i] == 'i')
+		{
+			++v_count;
+
+			if (mode == triangles && v_count%3 == 0)
+				++i_count;
+			else if (mode == quads && v_count%4 == 0)
+				i_count +=2;
+			else if (mode == polygon && v_count >2)
+				++i_count;
+		}
+	}
+	i_count *= 3;
+	mesh->geom_tri_indices = calloc (i_count, sizeof(dTriIndex));
+	
+	printlog (1, "(%u triangles)\n", i_count/3);
+
+	//translate
+	i_count = 0;
+	v_count = 0;
+	int corners =0;
+	mode = none;
+	modes = mesh->modes;
+	unsigned int poly_first_vert=0, poly_last_vert=0;
+	for (i=0; mesh->instructions[i]; ++i)
+	{
+		if (mesh->instructions[i] == 'M')
+		{
+			if (*modes == GL_TRIANGLES)
+				mode = triangles;
+			else if (*modes == GL_QUADS)
+				mode = quads;
+			else if (*modes == GL_POLYGON)
+				mode = polygon;
+			corners =0;
+			++modes;
+		}
+		else if (mesh->instructions[i] == 'i')
+		{
+			if (mode == triangles)
+				mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
+			else if (mode == quads)
+			{
+				++corners;
+				if (corners <= 3)
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
+				else if (corners == 4)
+				{
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-1];
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count];
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count-3];
+					++v_count;
+					corners = 0;
+				}
+			}
+			//this ok?
+			else if (mode == polygon)
+			{
+				++corners;
+				if (corners == 1)
+					poly_first_vert = mesh->vector_indices[v_count];
+
+				if (corners <= 3)
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
+				else
+				{
+					mesh->geom_tri_indices[i_count++] = poly_first_vert;
+					mesh->geom_tri_indices[i_count++] = poly_last_vert;
+					mesh->geom_tri_indices[i_count++] = mesh->vector_indices[v_count++];
+				}
+				poly_last_vert = mesh->vector_indices[v_count-1];
+			}
+		}
+	}
+
+
+	dTriMeshDataID data = dGeomTriMeshDataCreate();
+	dGeomTriMeshDataBuildSingle (data, (void*) mesh->vertices, sizeof(float)*3, mesh->vertex_count, (void*) mesh->geom_tri_indices, i_count, sizeof(dTriIndex)*3);
+	return dCreateTriMesh(0, data, 0,0,0);
+}
+
+/*//transforms a trimesh (rotate it in one 90 degree step, mirror it)
+void trimesh_reorient (trimesh *mesh, char orient, bool mirror)
+{
+	printlog(1, "   (transforming trimesh: ");
+	int x;
+	GLfloat tmp;
+
+	if (orient == 'x')
+	{
+		printlog(1, "x");
+		for (x=0; x<(mesh->vertex_count); ++x)
+		{
+			tmp = mesh->vertices[x*3]; //x to tmp
+			mesh->vertices[x*3] = mesh->vertices[x*3+2]; //z to x
+			mesh->vertices[x*3+2] = tmp; //tmp (x) to z
+		}
+
+		for (x=0; x<(mesh->normal_count); ++x)
+		{
+			tmp = mesh->normals[x*3]; //x to tmp
+			mesh->normals[x*3] = mesh->normals[x*3+2]; //z to x
+			mesh->normals[x*3+2] = tmp; //tmp (x) to z
+		}
+	}
+	else if (orient == 'y')
+	{
+		printlog(1, "y");
+		for (x=0; x< (mesh->vertex_count); ++x)
+		{
+			tmp = mesh->vertices[x*3+1]; //y to tmp
+			mesh->vertices[x*3+1] = mesh->vertices[x*3+2]; //z to y
+			mesh->vertices[x*3+2] = tmp; //tmp (x) to z
+		}
+
+		for (x=0; x<(mesh->normal_count); ++x)
+		{
+			tmp = mesh->normals[x*3+1]; //y to tmp
+			mesh->normals[x*3+1] = mesh->normals[x*3+2]; //z to y
+			mesh->normals[x*3+2] = tmp; //tmp (x) to z
+		}
+	}
+	else if (orient == 'z')
+		printlog(1, "z");
+
+	//else (unknown direction) no transform
+	else 
+		printlog(1, "<unknown dimension %c>", orient);
+
+	if (mirror)
+	{
+		printlog(1, " and mirror");
+		for (x=0; x<(mesh->vertex_count); ++x)
+			mesh->vertices[2+x*3] *=-1; //reverse Z
+
+		for (x=0; x<(mesh->normal_count); ++x)
+			mesh->normals[2+x*3] *=-1; //reverse Z
+	}
+	printlog(1, ")\n");
+}*/
+
+
+
+
 
 #ifdef __cplusplus
 // required to iterate through an enum in C++
@@ -297,11 +895,7 @@ profile *load_profile (char *path)
 	printlog(1, "-> loading key list: %s\n", list);
 	FILE *fp;
 
-#ifdef windows
-	fp = fopen(list, "rb");
-#else
-	fp = fopen(list, "r");
-#endif
+	fp = open_file(list);
 
 	if (!fp)
 	{
@@ -343,127 +937,15 @@ profile *load_profile (char *path)
 }
 
 
-//the following a some basic color definitions (used for lights and materials)
-GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
-GLfloat dgray[]     = {0.2f, 0.2f, 0.2f, 1.0f};
-GLfloat gray[]      = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lgray[]     = {0.8f, 0.8f, 0.8f, 1.0f};
-GLfloat white[]     = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat red[]       = {1.0f, 0.0f, 0.0f, 1.0f};
-GLfloat green[]     = {0.0f, 1.0f, 0.0f, 1.0f};
-GLfloat lgreen[]    = {0.4f, 1.0f, 0.4f, 1.0f};
-GLfloat blue[]      = {0.0f, 0.0f, 1.0f, 1.0f};
-GLfloat lblue[]     = {0.6f, 0.6f, 1.0f, 1.0f};
-GLfloat yellow[]    = {1.0f, 1.0f, 0.0f, 1.0f};
-
-
-void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
-		GLfloat colour[], GLfloat specular[], GLint shininess)
-{
-	printlog(2, " > Creating rendering list for debug box\n");
-
-	glNewList (list, GL_COMPILE);
-
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
-	glMaterialfv (GL_FRONT, GL_SPECULAR, specular);
-	glMateriali (GL_FRONT, GL_SHININESS, shininess);
-
-	glBegin (GL_QUADS);
-	glNormal3f (0.0f, 0.0f, 1.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
-
-	glNormal3f (0.0f, 0.0f, -1.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), -(z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
-
-	glNormal3f (0.0f, -1.0f, 0.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
-
-	glNormal3f (0.0f, 1.0f, 0.0f);
-	glVertex3f (-(x/2.0f), (y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
-
-	glNormal3f (1.0f, 0.0f, 0.0f);
-	glVertex3f ((x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f ((x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f ((x/2.0f), (y/2.0f), -(z/2.0f));
-
-	glNormal3f (-1.0f, 0.0f, 0.0f);
-	glVertex3f (-(x/2.0f), -(y/2.0f), -(z/2.0f));
-	glVertex3f (-(x/2.0f), -(y/2.0f), (z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), (z/2.0f));
-	glVertex3f (-(x/2.0f), (y/2.0f), -(z/2.0f));
-	glEnd();
-
-	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-	glEndList();
-}
-
-void debug_draw_sphere_part(GLfloat x, GLfloat y, GLfloat z)
-{
-	glNormal3f (1.0f*x, -0.8f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-}
-
-void debug_draw_sphere (GLuint list, GLfloat d, GLfloat colour[],
-		GLfloat specular[], GLint shininess)
-{
-	printlog(2, " > Creating rendering list for debug sphere\n");
-	GLfloat radius = d/2;
-
-	glNewList (list, GL_COMPILE);
-	glEnable(GL_NORMALIZE); //easier to specify normals
-
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, colour);
-	glMaterialfv (GL_FRONT, GL_SPECULAR, specular);
-	glMateriali (GL_FRONT, GL_SHININESS, shininess);
-
-	glBegin (GL_TRIANGLES);
-	debug_draw_sphere_part(-radius	,radius		,radius);
-	debug_draw_sphere_part(radius	,radius		,radius);
-	debug_draw_sphere_part(-radius	,-radius	,radius);
-	debug_draw_sphere_part(radius	,-radius	,radius);
-	debug_draw_sphere_part(-radius	,radius		,-radius);
-	debug_draw_sphere_part(radius	,radius		,-radius);
-	debug_draw_sphere_part(-radius	,-radius	,-radius);
-	debug_draw_sphere_part(radius	,-radius	,-radius);
-	glEnd();
-
-	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-	glDisable(GL_NORMALIZE);
-	glEndList();
-}
-
 //load data for spawning object (object data), hard-coded debug version
 //(objects are loaded as script instructions, executed for spawning)
 script_struct *load_object(char *path)
 {
 	printlog(1, "-> Loading object: %s", path);
+
+	//we're not going to rotate or move any of the objs, vector for nothing
+	float no_nothing[3] = {0,0,0};
+
 
 	script_struct *tmp = script_head;
 	//see if already loaded
@@ -491,8 +973,14 @@ script_struct *load_object(char *path)
 		strcpy (script->name, path);
 
 		//the debug box will only spawn one component - one "3D file"
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_box (script->graphics_debug1->list, 1,1,1, red,gray, 50);
+		//load box.obj (first build path)
+		char obj[strlen(path) + strlen("/box.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/box.obj");
+
+		if (!(script->tmp_trimesh1 = load_obj (obj, 0.5, no_nothing, no_nothing)))
+			return NULL;
+
 		script->box = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/flipper"))
@@ -503,11 +991,16 @@ script_struct *load_object(char *path)
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
-		script->graphics_debug1 = allocate_file_3d();
-		script->graphics_debug2 = allocate_file_3d();
+		//load obj
+		char obj[strlen(path) + strlen("/flipper.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/flipper.obj");
 
-		debug_draw_box (script->graphics_debug1->list, 8,8,0.5, red,gray, 30);
-		debug_draw_box (script->graphics_debug2->list, 3,3,2, lblue,black, 0);
+		script->tmp_trimesh1 = load_obj(obj, 1.0, no_nothing, no_nothing);
+
+		if (!script->tmp_trimesh1)
+			return NULL;
+
 		script->flipper = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/NH4"))
@@ -518,11 +1011,19 @@ script_struct *load_object(char *path)
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
-		//draw approximate sphere
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug1->list,2, lblue,white,42);
-		script->graphics_debug2 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug2->list,1.6,white,white,42);
+		char obj1[strlen(path) + strlen("/sphere1.obj") + 1];
+		strcpy (obj1, path);
+		strcat (obj1, "/sphere1.obj");
+
+		if (!(script->tmp_trimesh1 = load_obj (obj1, 1.0, no_nothing, no_nothing))) //no resize
+			return NULL;
+
+		char obj2[strlen(path) + strlen("/sphere2.obj") + 1];
+		strcpy (obj2, path);
+		strcat (obj2, "/sphere2.obj");
+
+		if (!(script->tmp_trimesh2 = load_obj (obj2, 1.0, no_nothing, no_nothing))) //no resize
+			return NULL;
 
 		script->NH4 = true;
 	}
@@ -534,11 +1035,12 @@ script_struct *load_object(char *path)
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
 		strcpy (script->name, path);
 
-		//draw approximate sphere
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug1->list,2, lblue,white,42);
-//		script->graphics_debug2 = allocate_file_3d();
-//		debug_draw_sphere (script->graphics_debug2->list,1.6,white,white,42);
+		char obj[strlen(path) + strlen("/sphere.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/sphere.obj");
+
+		if (!(script->tmp_trimesh1 = load_obj (obj, 1.0, no_nothing, no_nothing))) //no resize
+			return NULL;
 
 		script->sphere = true;
 	}
@@ -552,32 +1054,29 @@ script_struct *load_object(char *path)
 		strcpy (script->name, path);
 
 		//create graphics
-		script->graphics_debug1 = allocate_file_3d(); //walls
-		script->graphics_debug2 = allocate_file_3d(); //floor/ceiling
-		script->graphics_debug3 = allocate_file_3d(); //pillars
+		//pillars
+		char obj[strlen(path) + strlen("/pillar.obj") + 1];
+		strcpy (obj, path);
+		strcat (obj, "/pillar.obj");
 
-		debug_draw_box (script->graphics_debug1->list, 4,0.4,2.7, dgray,black, 0);
-		debug_draw_box (script->graphics_debug2->list, 4,4,0.2, lgray,gray, 30);
+		if (!(script->tmp_trimesh3 = load_obj (obj, 1.0, no_nothing, no_nothing))) //no resize
+			return NULL;
 
-		glNewList (script->graphics_debug3->list, GL_COMPILE);
+		//wallss
+		char obj2[strlen(path) + strlen("/walls.obj") + 1];
+		strcpy (obj2, path);
+		strcat (obj2, "/wall.obj");
 
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, dgray);
-		glMaterialfv (GL_FRONT, GL_SPECULAR, gray);
-		glMateriali (GL_FRONT, GL_SHININESS, 30);
+		if (!(script->tmp_trimesh1 = load_obj (obj2, 1.0, no_nothing, no_nothing))) //no resize
+			return NULL;
 
-		glBegin (GL_QUAD_STRIP);
-		float v;
-		for (v=0; v<=2*M_PI; v+=2*M_PI/10)
-		{
-			glNormal3f (sin(v), cos(v), 0.0f);
-			glVertex3f(sin(v)/2, cos(v)/2, 2.5/2.0f);
-			glVertex3f(sin(v)/2, cos(v)/2, -2.5/2.0f);
-		}
-		glEnd();
+		//roofs
+		char obj3[strlen(path) + strlen("/roof.obj") + 1];
+		strcpy (obj3, path);
+		strcat (obj3, "/roof.obj");
 
-		glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-		glEndList();
+		if (!(script->tmp_trimesh2 = load_obj (obj3, 1.0, no_nothing, no_nothing))) //no resize
+			return NULL;
 
 		script->building = true;
 	}
@@ -645,7 +1144,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 //	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	//data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 
 	//done
 	//
@@ -676,7 +1176,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 //	data->bounce = 4.0;
 	
 	//Graphics
-	data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 
 
 	//flipper sensor
@@ -687,8 +1187,6 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 	data->flipper_geom = geom; //tmp debug solution
 
-	//graphics
-	data->file_3d = script->graphics_debug2;
 	//
 	}
 	//
@@ -719,7 +1217,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	//data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 
 	dReal pos[4][3] = {
 		{0, 0, 1.052},
@@ -750,7 +1249,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug2;
+	data->geom_trimesh = script->tmp_trimesh2;
 
 	//connect to main sphere
 	
@@ -769,27 +1268,25 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object(true, true);
 
-	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
-	geom_data *data = allocate_geom_data(geom, obj);
-	dBodyID body1 = dBodyCreate (world);
+	geom_data *data = allocate_geom_data(geom, NULL);
+	dBodyID body = dBodyCreate (world);
 
 	dMass m;
 	dMassSetSphere (&m,1,1); //radius
 	dMassAdjust (&m,60); //mass
-	dBodySetMass (body1, &m);
+	dBodySetMass (body, &m);
 
-	dGeomSetBody (geom, body1);
+	dGeomSetBody (geom, body);
 
-	dBodySetPosition (body1, x, y, z);
+	dBodySetPosition (body, x, y, z);
 
 	data->mu = 1;
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	data->geom_trimesh = script->tmp_trimesh1;
 	}
 	//
 	else if (script->building)
@@ -823,7 +1320,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body1[i], &m);
 
-			data->file_3d = script->graphics_debug1;
+			data->geom_trimesh = script->tmp_trimesh1;
 		}
 		
 		const dReal k = 1.5*4+0.4/2;
@@ -879,7 +1376,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body2[i], &m);
 
-			data->file_3d = script->graphics_debug2;
+			data->geom_trimesh = script->tmp_trimesh2;
 		}
 
 		const dReal k2=2.7-0.2/2;
@@ -943,7 +1440,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			//friction
 			data->mu = 1;
 			//Next, Graphics
-			data->file_3d = script->graphics_debug3;
+			data->geom_trimesh = script->tmp_trimesh3;
 		}
 
 		dBodySetPosition (body[0], x+2, y+2, z+2.5/2);
@@ -995,12 +1492,20 @@ int load_track (char *path)
 	strcpy (conf,path);
 	strcat (conf,"/track.conf");
 
+	track.obj = NULL; //in order to know if string is allocated (and needs free)
+
 	if (load_conf(conf, (char *)&track, track_index))
 		return -1;
 
 	free (conf);
 
-	//append forced data
+	if (!track.obj)
+	{
+		printlog(0, "ERROR: track needs to specify obj file!\n");
+		return -1;
+	}
+
+	//append forced data (lighting)
 	track.position[3] = 0.0f; //directional
 	track.ambient[3] = 1.0f; //a = 1.0f
 	track.diffuse[3] = 1.0f; //-''-
@@ -1018,113 +1523,41 @@ int load_track (char *path)
 
 	dWorldSetGravity (world,0,0,-track.gravity);
 
-	//(for now, use geoms to describe world)
-	track.object = allocate_object(true,false); //space + no jointgroup
+	//load track from obj (to rendering trimesh)
+	char *obj=(char *)calloc(strlen(path)+strlen(track.obj) +2, sizeof(char));//+2 for \0 and /
+	strcpy (obj,path);
+	strcat (obj,"/");
+	strcat (obj,track.obj);
+
+	track.track_trimesh = load_obj (obj, track.obj_resize, track.obj_rotate, track.obj_offset);
+	free (obj);
+
+	if (!track.track_trimesh)
+		return -1;
 
 	//tmp vars
 	dGeomID geom;
 	geom_data *data;
-	//ground plane
-	geom = dCreatePlane (0, 0,0,1,0);
+
+	//maybe just create space instead of "object"?
+	track.object = allocate_object(true,false); //space + no jointgroup
+
+	//translate rendering trimesh to collision geom
+	geom = trimesh_to_geom (track.track_trimesh);
 	data = allocate_geom_data(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
 
-	//4 more planes as walls
-	geom = dCreatePlane (0, 1,0,0,-100);
+	//currently just create a plane for respawn level...
+	geom = dCreatePlane (0, 0,0,1,track.respawn);
 	data = allocate_geom_data(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
-
-	geom = dCreatePlane (0, -1,0,0,-100);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	geom = dCreatePlane (0, 0,1,0,-100);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	geom = dCreatePlane (0, 0,-1,0,-100);
-	data = allocate_geom_data(geom, track.object);
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-
-	//since a plane is a non-placeable geom, the sepparate components will
-	//not be "rendered" separately, instead create one 3d image sepparately
-
-	track.file_3d = allocate_file_3d();
-	glNewList (track.file_3d->list, GL_COMPILE);
-	//the ground and walls for the environment box
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
-	glNormal3f (0.0f, 0.0f, 1.0f);
-	glBegin (GL_QUADS);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 0.0f);
-	glEnd();
-
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, gray);
-	glBegin (GL_QUADS);
-	glNormal3f (1.0f, 0.0f, 0.0f);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glVertex3f (-100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, 100.0f, 10.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-
-	glNormal3f (0.0f, -1.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 0.0f);
-	glVertex3f (-100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
-
-	glNormal3f (-1.0f, 0.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 0.0f);
-	glVertex3f (100.0f, 100.0f, 10.0f);
-	glVertex3f (100.0f, -100.0f, 10.0f);
-	glVertex3f (100.0f, -100.0f, 0.0f);
-
-	glNormal3f (0.0f, 1.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 0.0f);
-	glVertex3f (100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, -100.0f, 10.0f);
-	glVertex3f (-100.0f, -100.0f, 0.0f);
-	glEnd();
-
-	glEndList();
-
-	//temp solution, ramp
-	geom = dCreateBox (0,8,12,1);
-	data = allocate_geom_data(geom, track.object);
-
-	dMatrix3 rot;
-	dRFromAxisAndAngle (rot, 1, 0, 0, 0.3);
-	dGeomSetPosition (geom, 0, 3, 1.5);
-	dGeomSetRotation (geom, rot);
 	
-	data->mu = track.mu;
-	data->slip = track.slip;
-	data->erp = track.erp;
-	data->cfm = track.cfm;
-
-	//render box using built in
-	data->file_3d = allocate_file_3d();
-	debug_draw_box (data->file_3d->list, 8,12,1, gray, black, 0);
-
-
 	//now lets load some objects!
 	char *list=(char *)calloc(strlen(path)+12+1,sizeof(char));//+1 for \0
 	strcpy (list,path);
@@ -1133,11 +1566,7 @@ int load_track (char *path)
 	printlog(1, "-> Loading track object list: %s\n", path);
 	FILE *fp;
 
-#ifdef windows
-	fp = fopen(list, "rb");
-#else
-	fp = fopen(list, "r");
-#endif
+	fp = open_file(list);
 
 	if (!fp)
 	{
@@ -1153,11 +1582,11 @@ int load_track (char *path)
 #endif
 		char **w;
 		w = get_word_list(fp);
-		if (w[0][0]!='>'||w[1]=='\0')
+		if (!w||w[0][0]!='>')
 		{
 			printlog(0, "ERROR: expected first word to be load request (> object)\n");
-			free_word_list(w);
-			return -1;
+			if (w)
+				free_word_list(w);
 		}
 		else
 		{
@@ -1208,8 +1637,8 @@ int load_track (char *path)
 				}
 				free_word_list(w);
 			}
-			fclose (fp);
 		}
+		fclose (fp);
 	}
 	//that's it!
 	printlog(1, "\n");
@@ -1249,61 +1678,44 @@ car_struct *load_car (char *path)
 	free (conf);
 
 	//graphics models
-	float w_r = target->w[0];
-	float w_w = target->w[1];
-	//wheels:
-	//(note: wheel axis is along z)
-	target->wheel_graphics = allocate_file_3d();
-	glNewList (target->wheel_graphics->list, GL_COMPILE);
-	//tyre
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
-	glMaterialfv (GL_FRONT, GL_SPECULAR, dgray);
-	glMateriali (GL_FRONT, GL_SHININESS, 30);
-
-	glBegin (GL_QUAD_STRIP);
-	float v;
-	for (v=0; v<=2*M_PI; v+=2*M_PI/10)
+	int i;
+	//wheels
+	for (i=0; i<4; ++i)
 	{
-		glNormal3f (sin(v), cos(v), 0.0f);
-		glVertex3f(w_r*sin(v), w_r*cos(v), -w_w/2.0f);
-		glVertex3f(w_r*sin(v), w_r*cos(v), w_w/2.0f);
+		char obj[strlen(path)+strlen(target->obj_wheel[i])+2];
+		strcpy (obj, path);
+		strcat (obj, "/");
+		strcat (obj, target->obj_wheel[i]);
+
+		target->wheel_trimesh[i] = load_obj (obj, target->wheel_resize, target->obj_wheel_rotate, target->obj_wheel_offset);
 	}
 
-	glMaterialfv (GL_FRONT, GL_SPECULAR, black);
+	/*//transform wheel models to orient axis olong Z
+	int j;
+	for (i=0; i<4; ++i)
+	{
+		bool skip = false;
+		//check if same model is loaded more than once (and thus only needs transformation once)
+		for (j=0; j<i; ++j)
+			if (!(strcmp(target->obj_wheel[i], target->obj_wheel[j])))
+				skip = true;
 
-	glEnd();
-	//rim
-	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, lgray);
-	glNormal3f (0.0f, 0.0f, 1.0f);
-	glBegin (GL_QUADS);
-		glVertex3f(w_r*0.9f, w_r/5, w_w/3.0f);
-		glVertex3f(w_r*0.9f, -w_r/5, w_w/3.0f);
-		glVertex3f(-w_r*0.9f, -w_r/5, w_w/3.0f);
-		glVertex3f(-w_r*0.9f, w_r/5, w_w/3.0f);
+		if (skip)
+			continue;
 
-		glVertex3f(w_r/5, w_r*0.9f, w_w/3.0f);
-		glVertex3f(w_r/5, -w_r*0.9f, w_w/3.0f);
-		glVertex3f(-w_r/5, -w_r*0.9f, w_w/3.0f);
-		glVertex3f(-w_r/5, w_r*0.9f, w_w/3.0f);
-	glEnd();
+		trimesh_reorient (target->wheel_trimesh[i], target->obj_wheel_orient, target->obj_wheel_mirror);
+	}*/
 
-	glEndList();
+	//body
+	char obj2[strlen(path)+strlen(target->obj_body)+2];
+	strcpy (obj2, path);
+	strcat (obj2, "/");
+	strcat (obj2, target->obj_body);
 
-	//loop through possible body geoms and make a model for them
-	int i;
-	for (i=0;i<CAR_MAX_BOXES;++i)
-		if (target->box[i][0])
-		{
-			target->box_graphics[i] = allocate_file_3d();
+	target->body_trimesh = load_obj (obj2, target->body_resize, target->obj_body_rotate, target->obj_body_offset);
 
-			GLfloat *b = target->box[i];
-			if (i==0)//first box
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], yellow, gray, 70);
-			else
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], lgreen, gray, 70);
-		}
+	//transform body model for right orientation
+	//trimesh_reorient (target->body_trimesh, target->obj_body_orient, false);
 
 	printlog(1, "\n");
 	return target;
@@ -1357,6 +1769,10 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 	dBodySetPosition (target->bodyid, x, y, z);
 
+	//graphics (obj file)
+	odata->body_trimesh = target->body_trimesh;
+
+	//add geoms
 	geom_data *gdata;
 	dGeomID geom;
 
@@ -1380,7 +1796,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 			gdata->erp = target->body_erp;
 			gdata->cfm = target->body_cfm;
 			//graphics
-			gdata->file_3d = target->box_graphics[i];
+			//gdata->file_3d = target->box_graphics[i];
 
 
 		}
@@ -1450,7 +1866,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 		odata->rot_drag[2] = target->wheel_rotation_drag[2];
 
 		//graphics
-		wheel_data[i]->file_3d = target->wheel_graphics;
+		wheel_data[i]->geom_trimesh = target->wheel_trimesh[i];
 		
 		//(we need easy access to wheel body ids if using finite rotation)
 		target->wheel_body[i] = wheel_body[i];

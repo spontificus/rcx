@@ -40,7 +40,7 @@ void graphics_resize (int w, int h)
 		printlog(1, "Angle forced to: %f degrees. And you are an evil person...\n", angle);
 	}
 
-	gluPerspective (angle, (GLdouble) w/h, 1, 1000);
+	gluPerspective (angle, (GLdouble) w/h, internal.perspective[0], internal.perspective[1]);
 
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
@@ -78,6 +78,8 @@ int graphics_init(void)
 
 	glDepthFunc (GL_LESS);
 	glEnable (GL_DEPTH_TEST);
+	glEnable (GL_NORMALIZE); //normalize normal vectors (most obj file normals are not unit)
+	//NOTE: this could also be solved by normalizing the vectors when loading (which should give better performance...)
 	glShadeModel (GL_SMOOTH); //by default, can be changed
 
 	graphics_resize (screen->w, screen->h);
@@ -94,7 +96,92 @@ int graphics_init(void)
 	return 0;
 }
 
+//new trimesh rendering method, instead of calling rendering list
+//TODO: some of this data (vertices) can be moved to video ram, which
+//would make the necessary data to send to gpu less (=higher fps)
+void render_trimesh (trimesh* target)
+{
 
+	//variables for fast looping
+	char *inst = target->instructions;
+	unsigned int *v_index = target->vector_indices;
+	unsigned int *n_index = target->normal_indices;
+	unsigned int *mat_index = target->material_indices;
+	GLfloat *vertex, *normal; //vectors
+	material *mat;
+	GLenum *mode = target->modes;
+	
+	bool reset_gl = false;
+	//future instructions might be different, like vertex and normal indices
+	//sepparately (but since they are often specified at the same time,
+	//maybe not?)
+	while (1)
+	{
+		if (*inst == 'i') //vertex&normal index
+		{
+			normal = &target->normals[(*n_index)*3];
+			glNormal3f (normal[0], normal[1], normal[2]);
+			vertex = &target->vertices[(*v_index)*3];
+			glVertex3f (vertex[0], vertex[1], vertex[2]);
+
+			++v_index;
+			++n_index;
+
+		}
+		else if (*inst == 'M') //opengl mode
+		{
+			if (reset_gl)
+				glEnd();
+			glBegin (*mode);
+			++mode;
+			reset_gl = true; //run glEnd before setting next mode
+		}
+		else if (*inst == 'm') //material "index"
+		{
+			mat = &target->materials[*mat_index];
+
+			glMaterialfv (GL_FRONT, GL_AMBIENT,mat->ambient);
+			glMaterialfv (GL_FRONT, GL_DIFFUSE,mat->diffuse);
+			glMaterialfv (GL_FRONT, GL_SPECULAR, mat->specular);
+			glMaterialf  (GL_FRONT, GL_SHININESS, mat->shininess);
+
+			++mat_index;
+		}
+		else //assumed to be '\0'
+			break;
+
+		++inst;
+	}
+	glEnd();
+
+	//glMaterialfv (GL_FRONT, GL_SPECULAR, black);
+}
+
+//multiply the rendering matrix to get the wanted position/rotation
+void mult_matrix (const dReal *pos, const dReal *rot)
+{
+	//create transformation matrix to render correct position
+	//and rotation (float)
+	GLfloat matrix[16];
+	matrix[0]=rot[0];
+	matrix[1]=rot[4];
+	matrix[2]=rot[8];
+	matrix[3]=0;
+	matrix[4]=rot[1];
+	matrix[5]=rot[5];
+	matrix[6]=rot[9];
+	matrix[7]=0;
+	matrix[8]=rot[2];
+	matrix[9]=rot[6];
+	matrix[10]=rot[10];
+	matrix[11]=0;
+	matrix[12]=pos[0];
+	matrix[13]=pos[1];
+	matrix[14]=pos[2];
+	matrix[15]=1;
+
+	glMultMatrixf (matrix);
+}
 
 dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
@@ -106,6 +193,12 @@ void graphics_step (Uint32 step)
 
 	glPushMatrix();
 
+	//
+	//TODO: here's a good place to put another push/pop block for OSD/HUD (2D graphics, like boxes and text)
+	//
+	
+	//
+	
 	const dReal *gpos;
 
 	if (!focused_car)
@@ -120,48 +213,36 @@ void graphics_step (Uint32 step)
 
 	//render world
 	glPushMatrix();
-		glCallList (track.file_3d->list);
+		render_trimesh (track.track_trimesh);
 	glPopMatrix();
 
 	//loop through all geoms, see if they need rendering
 	geom_data *geom;
-	const dReal *pos, *rot; //store rendering position
 	for (geom = geom_data_head; geom; geom = geom->next)
-	{
-		if (!geom->file_3d) //invisible
-			continue;
+		if (geom->geom_trimesh)
+		{
+			glPushMatrix();
+				mult_matrix (dGeomGetPosition (geom->geom_id), dGeomGetRotation (geom->geom_id));
 
-		glPushMatrix();
-			pos = dGeomGetPosition (geom->geom_id);
-			rot = dGeomGetRotation (geom->geom_id);
+				//render
+				if (geom->geom_trimesh) //new method
+					render_trimesh(geom->geom_trimesh);
 
+			glPopMatrix();
+		}
 
-			//create transformation matrix to render correct position
-			//and rotation (float)
-			GLfloat matrix[16];
-			matrix[0]=rot[0];
-			matrix[1]=rot[4];
-			matrix[2]=rot[8];
-			matrix[3]=0;
-			matrix[4]=rot[1];
-			matrix[5]=rot[5];
-			matrix[6]=rot[9];
-			matrix[7]=0;
-			matrix[8]=rot[2];
-			matrix[9]=rot[6];
-			matrix[10]=rot[10];
-			matrix[11]=0;
-			matrix[12]=pos[0];
-			matrix[13]=pos[1];
-			matrix[14]=pos[2];
-			matrix[15]=1;
+	//loop through bodies, see if any got trimesh ("file_3d" is now obsolete)
+	body_data *body;
+	for (body = body_data_head; body; body=body->next)
+		if (body->body_trimesh)
+		{
+			glPushMatrix();
+				mult_matrix (dBodyGetPosition (body->body_id), dBodyGetRotation (body->body_id));
 
-			glMultMatrixf (matrix);
+				render_trimesh(body->body_trimesh);
+			glPopMatrix();
+		}
 
-			//render
-			glCallList (geom->file_3d->list);
-		glPopMatrix();
-	}
 
 	glPopMatrix();
 

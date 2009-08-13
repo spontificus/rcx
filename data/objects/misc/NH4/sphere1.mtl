@@ -1,0 +1,12 @@
+# Blender3D MTL File: 
+# Material Count: 1
+newmtl Material.001
+Ns 96.078431
+Ka 0.400000 0.400000 0.600000
+Kd 0.253253 0.415952 0.533645
+Ks 0.342884 0.451657 0.185768
+Ni 1.000000
+d 1.000000
+illum 2
+
+

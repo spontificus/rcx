@@ -84,6 +84,7 @@ int main (int argc, char *argv[])
 	printf("= Credits (nicknames refers to usernames on the gorcx.net forum):\n");
 	printf("    \"MaAkaJon\"\t\tproject creator\n");
 	printf("    \"Soul Slinger\"\tcoder (created this and the earlier versions)\n");
+	printf("    \"codiemorgan\"\tcreator of the SCUD car and wheel models\n");
 	printf("    All of you on the planetrollcage.com and gorcx.net forums!\n\n");
 
 	printf("* Projects that made RCX possible:\n");
@@ -100,7 +101,8 @@ int main (int argc, char *argv[])
 	printf("	>	A and D		move camera along X axis\n");
 	printf("	>	W and S		move camera along Y axis\n");
 	printf("	>	F5:		spawn box\n");
-	printf("	>	F6:		spawn box (10s above ground)\n\n");
+	printf("	>	F6:		spawn box (10s above ground)\n");
+	printf("	>	F7:		spawn sphere\n\n");
 	//end of issue
 
 	if (argc != 1)
@@ -134,7 +136,7 @@ int main (int argc, char *argv[])
 	if (!prof)
 		return -1;
 
-	venom = load_car((char *)"data/teams/Nemesis/cars/Venom");
+	venom = load_car((char *)"data/teams/Vostok/cars/SCUD");
 	if (!venom)
 		emergency_quit();
 	prof->car = venom;
@@ -146,7 +148,8 @@ int main (int argc, char *argv[])
 		return -1;
 	}
 
-	if (load_track((char *)"data/worlds/Sandbox/tracks/Box"))
+	//if (load_track((char *)"data/worlds/Sandbox/tracks/Desert"))
+	if (load_track((char *)"data/worlds/Sandbox/tracks/Sanbox1"))
 		emergency_quit();
 
 	//load box for online spawning
