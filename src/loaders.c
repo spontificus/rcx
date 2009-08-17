@@ -1248,6 +1248,22 @@ car_struct *load_car (char *path)
 
 	free (conf);
 
+	//set up values for front/rear driving ratios
+	if (target->steer_ratio>100 || target->steer_ratio<0 )
+		printlog(0, "ERROR: front/rear steering ratio should be set between 0 and 100!\n");
+	target->fsteer = (dReal) (target->steer_ratio/100.0);
+	target->rsteer = (dReal) (target->fsteer-1.0);
+	
+	if (target->motor_ratio>100 || target->motor_ratio<0 )
+		printlog(0, "ERROR: front/rear motor ratio should be set between 0 and 100!\n");
+	target->fmotor = (dReal) (target->motor_ratio/100.0);
+	target->rmotor = (dReal) (1.0-target->fmotor);
+
+	if (target->break_ratio>100 || target->break_ratio<0 )
+		printlog(0, "ERROR: front/rear breaking ratio should be set between 0 and 100!\n");
+	target->fbreak = (dReal) (target->break_ratio/100.0);
+	target->rbreak = (dReal) (1.0-target->fbreak);
+
 	//graphics models
 	float w_r = target->w[0];
 	float w_w = target->w[1];
@@ -1471,11 +1487,11 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dBodySetRotation (wheel_body[3], rot);
 
 	//enable finite rotation on rear wheels
-	if (internal.finite_rotation)
+	/*if (internal.finite_rotation)
 	{
 		dBodySetFiniteRotationMode (wheel_body[1], 1);
 		dBodySetFiniteRotationMode (wheel_body[2], 1);
-	}
+	}*/
 
 	//create joints (hinge2) for wheels
 	for (i=0; i<4; ++i)

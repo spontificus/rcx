@@ -25,7 +25,7 @@ struct internal_struct {
 	dReal stepsize;
 	int iterations;
 	int contact_points;
-	bool finite_rotation;
+	//bool finite_rotation;
 	dReal scale; //TODO
 	dReal mu,erp,cfm,slip;
 
@@ -49,7 +49,7 @@ struct data_index internal_index[] = {
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
 	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},
-	{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
+	//{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
 	//TODO: SCALE
 	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
 	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
@@ -280,6 +280,11 @@ typedef struct car_struct {
 
 	dReal body[3];
 	dReal box[CAR_MAX_BOXES][6];
+
+	//values for moving steering/breaking/turning between front/rear wheels
+	int steer_ratio, motor_ratio, break_ratio;
+	dReal fsteer, rsteer, fmotor, rmotor, fbreak, rbreak;
+	
 	//debug sizes
 	dReal s[4],w[2],wp[2],jx;
 
@@ -295,6 +300,11 @@ struct data_index car_index[] = {
 	{"max_break",		'f',1, offsetof(struct car_struct, max_break)},
 	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass)},
 	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass)},
+
+	{"front/rear_steer",	'i',1, offsetof(struct car_struct, steer_ratio)},
+	{"front/rear_motor",	'i',1, offsetof(struct car_struct, motor_ratio)},
+	{"front/rear_break",	'i',1, offsetof(struct car_struct, break_ratio)},
+
 	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp)},
 	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm)},
 	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu)},
