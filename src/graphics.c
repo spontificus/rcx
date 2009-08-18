@@ -94,15 +94,16 @@ int graphics_init(void)
 
 void graphics_camera(Uint32 step)
 {
+	dReal time = step/1000.0;
 	car_struct *car = camera.car;
 	camera_settings *settings = camera.settings;
 
 	if (car && settings) //do some magic ;-)
 	{
 		//move camera
-		camera.pos[0] += camera.vel[0]*step/1000;
-		camera.pos[1] += camera.vel[1]*step/1000;
-		camera.pos[2] += camera.vel[2]*step/1000;
+		camera.pos[0] += camera.vel[0]*time;
+		camera.pos[1] += camera.vel[1]*time;
+		camera.pos[2] += camera.vel[2]*time;
 
 		//get position of target, simple
 		dVector3 target;
@@ -159,9 +160,9 @@ void graphics_camera(Uint32 step)
 		}
 
 		//now add acceleration
-		camera.vel[0] += accel[0];
-		camera.vel[1] += accel[1];
-		camera.vel[2] += accel[2];
+		camera.vel[0] += accel[0]*time;
+		camera.vel[1] += accel[1]*time;
+		camera.vel[2] += accel[2]*time;
 
 
 		//set camera
