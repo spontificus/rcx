@@ -92,22 +92,80 @@ int graphics_init(void)
 	return 0;
 }
 
-void graphics_camera(void)
+void graphics_camera(Uint32 step)
 {
 	car_struct *car = camera.car;
 	camera_settings *settings = camera.settings;
 
 	if (car && settings) //do some magic ;-)
 	{
+		//move camera
+		camera.pos[0] += camera.vel[0]*step/1000;
+		camera.pos[1] += camera.vel[1]*step/1000;
+		camera.pos[2] += camera.vel[2]*step/1000;
+
+		//get position of target, simple
 		dVector3 target;
-		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, target); //simple thing
+		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, target);
 
 
-		//camera movements (TODO: move to soft/intelligent movement)
+
+		//smart/soft camera movement, fun
 		dVector3 tmp;
-		dBodyGetRelPointPos (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, tmp); //simple thing
+		dReal accel[3];
 
-		gluLookAt(tmp[0], tmp[1], tmp[2], target[0], target[1], target[2], 0,0,1);
+		//relative position and velocity
+		dBodyGetRelPointPos (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, tmp);
+		dReal pos[3] = {tmp[0]-camera.pos[0], tmp[1]-camera.pos[1], tmp[2]-camera.pos[2]};
+		dBodyGetRelPointVel (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, tmp);
+		dReal vel[3] = {tmp[0]-camera.vel[0], tmp[1]-camera.vel[1], tmp[2]-camera.vel[2]};
+
+		dReal pos_l = sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]); //length
+		dReal pos_n[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l}; //normalized
+
+		//find point on length that gives projection by velocity on length
+		dReal p = (pos_n[0]*vel[0]+pos_n[1]*vel[1]+pos_n[2]*vel[2]);
+		dReal v[3] = {p*pos_n[0], p*pos_n[1], p*pos_n[2]}; //vector
+
+		//remove the movement in the desired axis from total, and add breaking
+		accel[0] = (vel[0]-v[0])*settings->accel_tweak;
+		accel[1] = (vel[1]-v[1])*settings->accel_tweak;
+		accel[2] = (vel[2]-v[2])*settings->accel_tweak;
+
+		//deceleration over distance > current velocity (=keep on accelerating)
+		if (sqrt(2*pos_l*settings->accel_max) > -p)
+		{
+			accel[0] += pos_n[0]*settings->accel_max;
+			accel[1] += pos_n[1]*settings->accel_max;
+			accel[2] += pos_n[2]*settings->accel_max;
+		}
+		else //we need to break
+		{
+			//dReal acceleration= (p*p)/(2*pos_l);
+			accel[0] -= pos_n[0]*settings->accel_max;
+			accel[1] -= pos_n[1]*settings->accel_max;
+			accel[2] -= pos_n[2]*settings->accel_max;
+		}
+
+		//see if wanted acceleration is above accepted max
+		dReal accel_l = sqrt(accel[0]*accel[0]+accel[1]*accel[1]+accel[2]*accel[2]);
+
+		dReal change = (settings->accel_max/accel_l);
+		if (change < 1)
+		{
+			accel[0] *= change;
+			accel[1] *= change;
+			accel[2] *= change;
+		}
+
+		//now add acceleration
+		camera.vel[0] += accel[0];
+		camera.vel[1] += accel[1];
+		camera.vel[2] += accel[2];
+
+
+		//set camera
+		gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], target[0], target[1], target[2], 0,0,1);
 	}
 	else
 		gluLookAt (10, -10, 10, 0,0,0, 0,0,1);
@@ -124,7 +182,7 @@ void graphics_step (Uint32 step)
 	glPushMatrix();
 
 	//move camera
-	graphics_camera();
+	graphics_camera(step);
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);
