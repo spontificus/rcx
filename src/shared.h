@@ -346,6 +346,16 @@ struct data_index car_index[] = {
 
 
 #define UNUSED_KEY SDLK_QUESTION //key that's not used during race ("safe" default)
+typedef struct {
+	dReal target[3], position[3];
+} camera_settings;
+
+struct {
+	camera_settings *settings;
+	car_struct *car;
+	GLdouble pos[3];
+	GLdouble vel[3];
+} camera = {NULL, NULL, {0,0,0}, {0,0,0}};
 
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
@@ -373,6 +383,13 @@ typedef struct profile_struct {
 	SDLKey cam_y_neg;
 	SDLKey cam_z_pos;
 	SDLKey cam_z_neg;
+
+	camera_settings cam[4];
+	int camera;
+	SDLKey cam1;
+	SDLKey cam2;
+	SDLKey cam3;
+	SDLKey cam4;
 } profile;
 
 profile *profile_head;
@@ -381,6 +398,19 @@ struct data_index profile_index[] = {
 	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed)},
 	{"steer_max",      'f' ,1 ,offsetof(struct profile_struct, steer_max)},
 	{"throttle_speed", 'f' ,1 ,offsetof(struct profile_struct, throttle_speed)},
+
+	{"camera_default",   	   	'i' ,1 ,offsetof(struct profile_struct, camera)},
+	{"camera1:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].target)},
+	{"camera1:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].position)},
+
+	{"camera2:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].target)},
+	{"camera2:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].position)},
+
+	{"camera3:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].target)},
+	{"camera3:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].position)},
+
+	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
+	{"camera4:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].position)},
 	{"",0,0}}; //end
 
 //list of all buttons
@@ -401,6 +431,11 @@ const struct {
 	{"camera_y-",		offsetof(struct profile_struct, cam_y_neg)},
 	{"camera_z+",		offsetof(struct profile_struct, cam_z_pos)},
 	{"camera_z-",		offsetof(struct profile_struct, cam_z_neg)},
+
+	{"camera1",		offsetof(struct profile_struct, cam1)},
+	{"camera2",		offsetof(struct profile_struct, cam2)},
+	{"camera3",		offsetof(struct profile_struct, cam3)},
+	{"camera4",		offsetof(struct profile_struct, cam4)},
 	{"",0}}; //end
 	
 
@@ -427,6 +462,7 @@ struct track_struct {
 	dReal density; //for air drag (friction)
 
 	dReal start[3];
+	GLdouble cam_start[3];
 
 	file_3d_struct *file_3d;
 	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
@@ -447,6 +483,7 @@ struct data_index track_index[] = {
 	{"cfm",		'f',1,	offsetof(struct track_struct, cfm)},
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
+	{"cam_start",	'd',3,	offsetof(struct track_struct, cam_start)},
 	{"",0,0}};//end
 
 

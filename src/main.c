@@ -96,9 +96,10 @@ int main (int argc, char *argv[])
 	printf("	>	Arrow keys:	Steering and throttling\n");
 	printf("	>	Spacebar:	Drifting break\n");
 	printf("	>	Left Alt:	Soft breaks\n");
-	printf("	>	Q and E		move camera along Z axis\n");
-	printf("	>	A and D		move camera along X axis\n");
-	printf("	>	W and S		move camera along Y axis\n");
+	printf("	>	Q and E:	move camera along Z axis\n");
+	printf("	>	A and D:	move camera along X axis\n");
+	printf("	>	W and S:	move camera along Y axis\n");
+	printf("	>	F1 to F4:	change camera settings\n");
 	printf("	>	F5:		spawn box\n");
 	printf("	>	F6:		spawn box (10s above ground)\n\n");
 	//end of issue
@@ -138,6 +139,7 @@ int main (int argc, char *argv[])
 	if (!venom)
 		emergency_quit();
 	prof->car = venom;
+	camera.car = venom;
 
 	//menu done, race selected, starting race...
 	if (physics_init())

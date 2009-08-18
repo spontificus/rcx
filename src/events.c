@@ -104,19 +104,34 @@ void event_step(Uint32 step)
 		//get keys pressed
 		keys = SDL_GetKeyState(NULL);
 
+
+		//set camera settings
+		if (keys[prof->cam1])
+			camera.settings = &(prof->cam[0]);
+		else if (keys[prof->cam2])
+			camera.settings = &(prof->cam[1]);
+		else if (keys[prof->cam3])
+			camera.settings = &(prof->cam[2]);
+		else if (keys[prof->cam4])
+			camera.settings = &(prof->cam[3]);
+
 		//move camera
-		if (keys[prof->cam_x_pos])
-			cpos[0]+=step*0.03;
-		else if (keys[prof->cam_x_neg])
-			cpos[0]-=step*0.03;
-		if (keys[prof->cam_y_pos])
-			cpos[1]+=step*0.03;
-		else if (keys[prof->cam_y_neg])
-			cpos[1]-=step*0.03;
-		if (keys[prof->cam_z_pos])
-			cpos[2]+=step*0.03;
-		else if (keys[prof->cam_z_neg])
-			cpos[2]-=step*0.03;
+		camera_settings *settings = camera.settings;
+		if (settings)
+		{
+			if (keys[prof->cam_x_pos])
+				settings->position[0]+=step*0.03;
+			else if (keys[prof->cam_x_neg])
+				settings->position[0]-=step*0.03;
+			if (keys[prof->cam_y_pos])
+				settings->position[1]+=step*0.03;
+			else if (keys[prof->cam_y_neg])
+				settings->position[1]-=step*0.03;
+			if (keys[prof->cam_z_pos])
+				settings->position[2]+=step*0.03;
+			else if (keys[prof->cam_z_neg])
+				settings->position[2]-=step*0.03;
+		}
 
 		//if selected car, read input
 		if (prof->car)

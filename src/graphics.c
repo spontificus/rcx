@@ -8,9 +8,7 @@
 #endif
 
 SDL_Surface *screen;
-GLdouble cpos[3] = {20,-25,20};
 Uint32 flags = SDL_OPENGL;
-
 
 void graphics_resize (int w, int h)
 {
@@ -94,9 +92,28 @@ int graphics_init(void)
 	return 0;
 }
 
+void graphics_camera(void)
+{
+	car_struct *car = camera.car;
+	camera_settings *settings = camera.settings;
+
+	if (car && settings) //do some magic ;-)
+	{
+		dVector3 target;
+		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, target); //simple thing
 
 
-dReal geom_pos_default[] = {0,-20,5};
+		//camera movements (TODO: move to soft/intelligent movement)
+		dVector3 tmp;
+		dBodyGetRelPointPos (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, tmp); //simple thing
+
+		gluLookAt(tmp[0], tmp[1], tmp[2], target[0], target[1], target[2], 0,0,1);
+	}
+	else
+		gluLookAt (10, -10, 10, 0,0,0, 0,0,1);
+}
+
+
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
 {
@@ -106,14 +123,8 @@ void graphics_step (Uint32 step)
 
 	glPushMatrix();
 
-	const dReal *gpos;
-
-	if (!focused_car)
-		gpos = geom_pos_default; //not focused, use default
-	else
-		gpos = dBodyGetPosition(focused_car->bodyid);
-
-	gluLookAt (cpos[0],cpos[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
+	//move camera
+	graphics_camera();
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);
