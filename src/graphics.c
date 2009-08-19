@@ -100,11 +100,6 @@ void graphics_camera(Uint32 step)
 
 	if (car && settings) //do some magic ;-)
 	{
-		//move camera
-		camera.pos[0] += camera.vel[0]*time;
-		camera.pos[1] += camera.vel[1]*time;
-		camera.pos[2] += camera.vel[2]*time;
-
 		//get position of target, simple
 		dVector3 target;
 		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, target);
@@ -124,6 +119,9 @@ void graphics_camera(Uint32 step)
 		dReal pos_l = sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]); //length
 		dReal pos_n[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l}; //normalized
 
+		if (pos_l == 0)
+			printf("TODO: add logic for handling keeping right position\n");
+
 		//find point on length that gives projection by velocity on length
 		dReal p = (pos_n[0]*vel[0]+pos_n[1]*vel[1]+pos_n[2]*vel[2]);
 		dReal v[3] = {p*pos_n[0], p*pos_n[1], p*pos_n[2]}; //vector
@@ -134,18 +132,21 @@ void graphics_camera(Uint32 step)
 		accel[2] = (vel[2]-v[2])*settings->accel_tweak;
 
 		//deceleration over distance > current velocity (=keep on accelerating)
-		if (sqrt(2*pos_l*settings->accel_max) > -p)
+		dReal possible_change = settings->accel_max*time;
+		if (sqrt(2*(pos_l-possible_change*time)*settings->accel_max) > -p+possible_change)
 		{
+			//printf("accel\n");
 			accel[0] += pos_n[0]*settings->accel_max;
 			accel[1] += pos_n[1]*settings->accel_max;
 			accel[2] += pos_n[2]*settings->accel_max;
 		}
 		else //we need to break
 		{
-			//dReal acceleration= (p*p)/(2*pos_l);
-			accel[0] -= pos_n[0]*settings->accel_max;
-			accel[1] -= pos_n[1]*settings->accel_max;
-			accel[2] -= pos_n[2]*settings->accel_max;
+			//printf("break\n");
+			dReal acceleration= (p*p)/(2*pos_l);
+			accel[0] -= pos_n[0]*acceleration;
+			accel[1] -= pos_n[1]*acceleration;
+			accel[2] -= pos_n[2]*acceleration;
 		}
 
 		//see if wanted acceleration is above accepted max
@@ -163,6 +164,11 @@ void graphics_camera(Uint32 step)
 		camera.vel[0] += accel[0]*time;
 		camera.vel[1] += accel[1]*time;
 		camera.vel[2] += accel[2]*time;
+
+		//move camera
+		camera.pos[0] += camera.vel[0]*time;
+		camera.pos[1] += camera.vel[1]*time;
+		camera.pos[2] += camera.vel[2]*time;
 
 
 		//set camera
