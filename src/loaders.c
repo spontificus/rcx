@@ -212,19 +212,23 @@ int load_conf (char *name, char *memory, struct data_index index[])
 
     for (j=0;j<index[i].length;++j)
     {
-     if (argscan[1]=='b')
+     if (index[i].type=='b')
       if(strcmp(word[j+1],"true") == 0)
        *(bool*)(memory+index[i].offset+j*argsize) = true;
       else
        *(bool*)(memory+index[i].offset+j*argsize) = false;
 
 #ifdef windows //windows (MinGW?) sscanf can't process "inf" for infinite float
-     else if (argscan[1]=='f'&&strcmp(word[j+1],"inf") == 0)
+     else if (index[i].type=='f'&&strcmp(word[j+1],"inf") == 0)
       *(float*)(memory+index[i].offset+j*argsize) = 1.0f/0.0f;
 #endif
      else
       if(sscanf(word[j+1],argscan,(memory+index[i].offset+j*argsize)) != 1)
             printlog(0, "ERROR: Parameter: %s - Error reading argument %i!\n", word[0],j);
+
+     if (index[i].type == 'f' && index[i].float_rescale)
+     	*(float*)(memory+index[i].offset+j*argsize) *= powf(internal.scale, index[i].float_rescale);
+
     }
 
      break;

@@ -14,7 +14,7 @@ struct data_index {
 	const char type; //f for float, b for bool, i for int, 0 for end of list
 	const int length; //normaly 1 (or else more)
 	const size_t offset;
-	const int float_rescale; //if float, rescale with internal.scale raised to power of float_rescale
+	const int float_rescale; //if float(s), rescale with internal.scale raised to power of float_rescale
 } data_index;
 
 //important system configuration variables
