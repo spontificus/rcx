@@ -107,13 +107,13 @@ void event_step(Uint32 step)
 
 		//set camera settings
 		if (keys[prof->cam1])
-			camera.settings = &(prof->cam[0]);
+			set_camera_settings (&prof->cam[0]);
 		else if (keys[prof->cam2])
-			camera.settings = &(prof->cam[1]);
+			set_camera_settings (&prof->cam[1]);
 		else if (keys[prof->cam3])
-			camera.settings = &(prof->cam[2]);
+			set_camera_settings (&prof->cam[2]);
 		else if (keys[prof->cam4])
-			camera.settings = &(prof->cam[3]);
+			set_camera_settings (&prof->cam[3]);
 
 		//move camera
 		camera_settings *settings = camera.settings;

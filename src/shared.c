@@ -557,6 +557,12 @@ void free_all (void)
 	printlog(2, ">>> TODO: optimize???\n");
 	//first thing to destroy: cars
 	printlog(2, ">>> TODO: change from free_car to destroy_car?\n\n");
+
+	//since camera geom is not in space, might have to remove it?
+	if (camera.geom)
+		dGeomDestroy (camera.geom);
+
+
 	while (car_head)
 		free_car(car_head);
 

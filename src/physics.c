@@ -7,6 +7,8 @@ dWorldID world;
 dSpaceID space;
 dJointGroupID contactgroup;//TODO: move to shared.h data? good for event thread?
 
+#include "physics/camera.c"
+
 int physics_init(void)
 {
 	printlog(0, "=> Initiating physics\n");
@@ -319,6 +321,7 @@ void body_physics_step (void)
 
 void physics_step(void)
 {
+	camera_physics_step(internal.stepsize);
 	car_physics_step(); //control, antigrav...
 	joint_physics_step(); //joint forces
 	body_physics_step(); //drag (air/liquid "friction")

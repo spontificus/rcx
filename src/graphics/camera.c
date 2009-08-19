@@ -1,4 +1,17 @@
-void graphics_camera(Uint32 step)
+void set_camera_settings (camera_settings *settings)
+{
+	if (settings)
+	{
+		camera.settings = settings;
+
+		if (!camera.geom)
+			camera.geom = dCreateSphere(0, settings->radius);
+		else
+			dGeomSphereSetRadius (camera.geom, settings->radius);
+	}
+}
+
+void camera_graphics_step(Uint32 step)
 {
 	dReal time = step/1000.0;
 	car_struct *car = camera.car;

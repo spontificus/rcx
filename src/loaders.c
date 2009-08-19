@@ -291,7 +291,7 @@ profile *load_profile (char *path)
 
 	//set camera
 	if (prof->camera >0 && prof->camera <5)
-		camera.settings = &(prof->cam[prof->camera -1]);
+		set_camera_settings (&(prof->cam[prof->camera -1]));
 	else
 		printlog(0, "ERROR: default camera should be a value between 1 and 4!\n");
 

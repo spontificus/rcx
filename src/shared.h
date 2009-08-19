@@ -349,14 +349,16 @@ struct data_index car_index[] = {
 typedef struct {
 	dReal target[3], position[3];
 	dReal accel_max, accel_tweak;
+	dReal radius, accel_coll;
 } camera_settings;
 
 struct {
 	camera_settings *settings;
 	car_struct *car;
+	dGeomID geom;
 	dReal pos[3];
 	dReal vel[3];
-} camera = {NULL, NULL, {0,0,0}, {0,0,0}};
+} camera = {NULL, NULL, NULL, {0,0,0}, {0,0,0}};
 
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
@@ -401,25 +403,34 @@ struct data_index profile_index[] = {
 	{"throttle_speed", 'f' ,1 ,offsetof(struct profile_struct, throttle_speed)},
 
 	{"camera_default",   	   	'i' ,1 ,offsetof(struct profile_struct, camera)},
+
 	{"camera1:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].target)},
 	{"camera1:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].position)},
 	{"camera1:max_acceleration",	'f' ,1 ,offsetof(struct profile_struct, cam[0].accel_max)},
 	{"camera1:acceleration_focus",	'f' ,1 ,offsetof(struct profile_struct, cam[0].accel_tweak)},
+	{"camera1:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[0].radius)},
+	{"camera1:collision_acceleration",'f' ,1 ,offsetof(struct profile_struct, cam[0].accel_coll)},
 
 	{"camera2:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].target)},
 	{"camera2:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].position)},
 	{"camera2:max_acceleration",	'f' ,1 ,offsetof(struct profile_struct, cam[1].accel_max)},
 	{"camera2:acceleration_focus",	'f' ,1 ,offsetof(struct profile_struct, cam[1].accel_tweak)},
+	{"camera2:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[1].radius)},
+	{"camera2:collision_acceleration",'f' ,1 ,offsetof(struct profile_struct, cam[1].accel_coll)},
 
 	{"camera3:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].target)},
 	{"camera3:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].position)},
 	{"camera3:max_acceleration",	'f' ,1 ,offsetof(struct profile_struct, cam[2].accel_max)},
 	{"camera3:acceleration_focus",	'f' ,1 ,offsetof(struct profile_struct, cam[2].accel_tweak)},
+	{"camera3:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[2].radius)},
+	{"camera3:collision_acceleration",'f' ,1 ,offsetof(struct profile_struct, cam[2].accel_coll)},
 
 	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
 	{"camera4:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].position)},
 	{"camera4:max_acceleration",	'f' ,1 ,offsetof(struct profile_struct, cam[3].accel_max)},
 	{"camera4:acceleration_focus",	'f' ,1 ,offsetof(struct profile_struct, cam[3].accel_tweak)},
+	{"camera4:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[3].radius)},
+	{"camera4:collision_acceleration",'f' ,1 ,offsetof(struct profile_struct, cam[3].accel_coll)},
 	{"",0,0}}; //end
 
 //list of all buttons
