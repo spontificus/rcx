@@ -108,7 +108,6 @@ int main (int argc, char *argv[])
 
 	//printlog needs internal.verbosity, set it to default value
 	printf("(verbosity level is assumed \"1\" until read from internal conf)\n");
-	internal.verbosity = 1;
 	//check if program was called with another pwd (got '/' in "name")
 	int count;
 	for (count = strlen(argv[0]); count != -1; --count)

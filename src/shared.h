@@ -11,9 +11,10 @@ static enum {running, done, paused, locked, error} runlevel;
 //to make the conf loader able to find variable names in structs, use indexes
 struct data_index {
 	const char *name;
-	char type; //f for float, b for bool, i for int, 0 for end of list
-	int length; //normaly 1 (or else more)
-	size_t offset;
+	const char type; //f for float, b for bool, i for int, 0 for end of list
+	const int length; //normaly 1 (or else more)
+	const size_t offset;
+	const int float_rescale; //if float, rescale with internal.scale raised to power of float_rescale
 } data_index;
 
 //important system configuration variables
@@ -26,7 +27,7 @@ struct internal_struct {
 	int iterations;
 	int contact_points;
 	bool finite_rotation;
-	dReal scale; //TODO
+	float scale; //TODO
 	dReal mu,erp,cfm,slip;
 
 	dReal dis_linear, dis_angular, dis_time;
@@ -41,32 +42,34 @@ struct internal_struct {
 	float angle;
 	bool fullscreen;
 	bool resize;
-} internal;
+//default values, should be changed by internal.conf
+} internal = {1, false, 0.02, 40, 20, true, 0.1, 1, 0.8, 0.0001, 0.01, 0.05, 0.1, 0.5, 1, 10, {1000, 800}, false, true, 2000, false, 60};
 
 struct data_index internal_index[] = {
-	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
+	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity), 0},
 	//TODO: MULTITHREAD
-	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
-	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},
-	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},
-	{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
+	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize), 0},
+	{"iterations",		'i',1, offsetof(struct internal_struct, iterations), 0},
+	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points), 0},
+	{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation), 0},
+	{"scale",		'f',1, offsetof(struct internal_struct, scale), 0},
 	//TODO: SCALE
-	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
-	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
-	{"default_cfm",		'f',1, offsetof(struct internal_struct, cfm)},
-	{"default_slip",		'f',1, offsetof(struct internal_struct, slip)},
-	{"auto_disable_linear",	'f',1, offsetof(struct internal_struct, dis_linear)},
-	{"auto_disable_angular",	'f',1, offsetof(struct internal_struct, dis_angular)},
-	{"auto_disable_time",	'f',1, offsetof(struct internal_struct, dis_time)},
-	{"auto_disable_steps",	'i',1, offsetof(struct internal_struct, dis_steps)},
+	{"default_mu",		'f',1, offsetof(struct internal_struct, mu), 0},
+	{"default_erp",		'f',1, offsetof(struct internal_struct, erp), 0},
+	{"default_cfm",		'f',1, offsetof(struct internal_struct, cfm), 0},
+	{"default_slip",		'f',1, offsetof(struct internal_struct, slip), 0},
+	{"auto_disable_linear",	'f',1, offsetof(struct internal_struct, dis_linear), 0},
+	{"auto_disable_angular",	'f',1, offsetof(struct internal_struct, dis_angular), 0},
+	{"auto_disable_time",	'f',1, offsetof(struct internal_struct, dis_time), 0},
+	{"auto_disable_steps",	'i',1, offsetof(struct internal_struct, dis_steps), 0},
 	//graphics
-	{"graphics_threshold",	'i',1, offsetof(struct internal_struct, threshold)},
-	{"resolution",		'i',2, offsetof(struct internal_struct, res)},
-	{"eye_distance",		'i',1, offsetof(struct internal_struct, dist)},
-	{"force_angle",		'b',1, offsetof(struct internal_struct, force)},
-	{"view_angle",		'f',1, offsetof(struct internal_struct, angle)},
-	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen)},
-	{"resize",		'b',1, offsetof(struct internal_struct, resize)},
+	{"graphics_threshold",	'i',1, offsetof(struct internal_struct, threshold), 0},
+	{"resolution",		'i',2, offsetof(struct internal_struct, res), 0},
+	{"eye_distance",		'i',1, offsetof(struct internal_struct, dist), 0},
+	{"force_angle",		'b',1, offsetof(struct internal_struct, force), 0},
+	{"view_angle",		'f',1, offsetof(struct internal_struct, angle), 0},
+	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen), 0},
+	{"resize",		'b',1, offsetof(struct internal_struct, resize), 0},
 	{"",0,0}};
 
 
@@ -290,57 +293,57 @@ typedef struct car_struct {
 car_struct *car_head = NULL;
 
 struct data_index car_index[] = {
-	{"max_torque",		'f',1, offsetof(struct car_struct, max_torque)},
-	{"motor_tweak",		'f',1, offsetof(struct car_struct, motor_tweak)},
-	{"max_break",		'f',1, offsetof(struct car_struct, max_break)},
-	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass)},
-	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass)},
-	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp)},
-	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm)},
-	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu)},
-	{"wheel_slip",		'f',1, offsetof(struct car_struct, wheel_slip)},
-	{"wheel_erp",		'f',1, offsetof(struct car_struct, wheel_erp)},
-	{"wheel_cfm",		'f',1, offsetof(struct car_struct, wheel_cfm)},
-	{"wheel_bounce",		'f',1, offsetof(struct car_struct, wheel_bounce)},
-	{"body_mu",		'f',1, offsetof(struct car_struct, body_mu)},
-	{"body_slip",		'f',1, offsetof(struct car_struct, body_slip)},
-	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp)},
-	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm)},
+	{"max_torque",		'f',1, offsetof(struct car_struct, max_torque), 0},
+	{"motor_tweak",		'f',1, offsetof(struct car_struct, motor_tweak), 0},
+	{"max_break",		'f',1, offsetof(struct car_struct, max_break), 0},
+	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass), 0},
+	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass), 0},
+	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp), 0},
+	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm), 0},
+	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu), 0},
+	{"wheel_slip",		'f',1, offsetof(struct car_struct, wheel_slip), 0},
+	{"wheel_erp",		'f',1, offsetof(struct car_struct, wheel_erp), 0},
+	{"wheel_cfm",		'f',1, offsetof(struct car_struct, wheel_cfm), 0},
+	{"wheel_bounce",		'f',1, offsetof(struct car_struct, wheel_bounce), 0},
+	{"body_mu",		'f',1, offsetof(struct car_struct, body_mu), 0},
+	{"body_slip",		'f',1, offsetof(struct car_struct, body_slip), 0},
+	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp), 0},
+	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm), 0},
 
-	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag)},
-	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag)},
-	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag)},
-	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag)},
+	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag), 0},
+	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag), 0},
+	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag), 0},
+	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag), 0},
 
 	//body and geom (box) sizes:
-	{"body",	'f',	3,	offsetof(struct car_struct, body[0])}, //not a geom
+	{"body",	'f',	3,	offsetof(struct car_struct, body[0]), 0}, //not a geom
 	//MUST BE THE SAME AMMOUNT AS CAR_MAX_BOXES
-	{"box1",	'f',	6,	offsetof(struct car_struct, box[0][0])},
-	{"box2",	'f',	6,	offsetof(struct car_struct, box[1][0])},
-	{"box3",	'f',	6,	offsetof(struct car_struct, box[2][0])},
-	{"box4",	'f',	6,	offsetof(struct car_struct, box[3][0])},
-	{"box5",	'f',	6,	offsetof(struct car_struct, box[4][0])},
-	{"box6",	'f',	6,	offsetof(struct car_struct, box[5][0])},
-	{"box7",	'f',	6,	offsetof(struct car_struct, box[6][0])},
-	{"box8",	'f',	6,	offsetof(struct car_struct, box[7][0])},
-	{"box9",	'f',	6,	offsetof(struct car_struct, box[8][0])},
-	{"box10",'f',	6,	offsetof(struct car_struct, box[9][0])},
-	{"box11",'f',	6,	offsetof(struct car_struct, box[10][0])},
-	{"box12",'f',	6,	offsetof(struct car_struct, box[11][0])},
-	{"box13",'f',	6,	offsetof(struct car_struct, box[12][0])},
-	{"box14",'f',	6,	offsetof(struct car_struct, box[13][0])},
-	{"box15",'f',	6,	offsetof(struct car_struct, box[14][0])},
-	{"box16",'f',	6,	offsetof(struct car_struct, box[15][0])},
-	{"box17",'f',	6,	offsetof(struct car_struct, box[16][0])},
-	{"box18",'f',	6,	offsetof(struct car_struct, box[17][0])},
-	{"box19",'f',	6,	offsetof(struct car_struct, box[18][0])},
-	{"box20",'f',	6,	offsetof(struct car_struct, box[19][0])},
+	{"box1",	'f',	6,	offsetof(struct car_struct, box[0][0]), 0},
+	{"box2",	'f',	6,	offsetof(struct car_struct, box[1][0]), 0},
+	{"box3",	'f',	6,	offsetof(struct car_struct, box[2][0]), 0},
+	{"box4",	'f',	6,	offsetof(struct car_struct, box[3][0]), 0},
+	{"box5",	'f',	6,	offsetof(struct car_struct, box[4][0]), 0},
+	{"box6",	'f',	6,	offsetof(struct car_struct, box[5][0]), 0},
+	{"box7",	'f',	6,	offsetof(struct car_struct, box[6][0]), 0},
+	{"box8",	'f',	6,	offsetof(struct car_struct, box[7][0]), 0},
+	{"box9",	'f',	6,	offsetof(struct car_struct, box[8][0]), 0},
+	{"box10",'f',	6,	offsetof(struct car_struct, box[9][0]), 0},
+	{"box11",'f',	6,	offsetof(struct car_struct, box[10][0]), 0},
+	{"box12",'f',	6,	offsetof(struct car_struct, box[11][0]), 0},
+	{"box13",'f',	6,	offsetof(struct car_struct, box[12][0]), 0},
+	{"box14",'f',	6,	offsetof(struct car_struct, box[13][0]), 0},
+	{"box15",'f',	6,	offsetof(struct car_struct, box[14][0]), 0},
+	{"box16",'f',	6,	offsetof(struct car_struct, box[15][0]), 0},
+	{"box17",'f',	6,	offsetof(struct car_struct, box[16][0]), 0},
+	{"box18",'f',	6,	offsetof(struct car_struct, box[17][0]), 0},
+	{"box19",'f',	6,	offsetof(struct car_struct, box[18][0]), 0},
+	{"box20",'f',	6,	offsetof(struct car_struct, box[19][0]), 0},
 	
 	//the following is for sizes not yet determined
-	{"s",	'f',	4,	offsetof(struct car_struct, s[0])}, //flipover
-	{"w",	'f',	2,	offsetof(struct car_struct, w[0])}, //wheel
-	{"wp",	'f',	2,	offsetof(struct car_struct, wp[0])}, //wheel pos
-	{"jx",	'f',	1,	offsetof(struct car_struct, jx)}, //joint x position
+	{"s",	'f',	4,	offsetof(struct car_struct, s[0]), 0}, //flipover
+	{"w",	'f',	2,	offsetof(struct car_struct, w[0]), 0}, //wheel
+	{"wp",	'f',	2,	offsetof(struct car_struct, wp[0]), 0}, //wheel pos
+	{"jx",	'f',	1,	offsetof(struct car_struct, jx), 0}, //joint x position
 	{"",0,0}};//end
 
 
@@ -378,9 +381,9 @@ typedef struct profile_struct {
 profile *profile_head;
 
 struct data_index profile_index[] = {
-	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed)},
-	{"steer_max",      'f' ,1 ,offsetof(struct profile_struct, steer_max)},
-	{"throttle_speed", 'f' ,1 ,offsetof(struct profile_struct, throttle_speed)},
+	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed), 0},
+	{"steer_max",      'f' ,1 ,offsetof(struct profile_struct, steer_max), 0},
+	{"throttle_speed", 'f' ,1 ,offsetof(struct profile_struct, throttle_speed), 0},
 	{"",0,0}}; //end
 
 //list of all buttons
@@ -435,18 +438,18 @@ struct track_struct {
 //index:
 
 struct data_index track_index[] = {
-	{"sky",		'f',3,	offsetof(struct track_struct, sky[0])},
-	{"ambient",	'f',3,	offsetof(struct track_struct, ambient[0])},
-	{"diffuse",	'f',3,	offsetof(struct track_struct, diffuse[0])},
-	{"specular",	'f',3,	offsetof(struct track_struct, specular[0])},
-	{"position",	'f',3,	offsetof(struct track_struct, position[0])},
-	{"gravity",	'f',1,	offsetof(struct track_struct, gravity)},
-	{"mu",		'f',1,	offsetof(struct track_struct, mu)},
-	{"slip",		'f',1,	offsetof(struct track_struct, slip)},
-	{"erp",		'f',1,	offsetof(struct track_struct, erp)},
-	{"cfm",		'f',1,	offsetof(struct track_struct, cfm)},
-	{"density",	'f',1,	offsetof(struct track_struct, density)},
-	{"start",	'f',3,	offsetof(struct track_struct, start)},
+	{"sky",		'f',3,	offsetof(struct track_struct, sky[0]), 0},
+	{"ambient",	'f',3,	offsetof(struct track_struct, ambient[0]), 0},
+	{"diffuse",	'f',3,	offsetof(struct track_struct, diffuse[0]), 0},
+	{"specular",	'f',3,	offsetof(struct track_struct, specular[0]), 0},
+	{"position",	'f',3,	offsetof(struct track_struct, position[0]), 0},
+	{"gravity",	'f',1,	offsetof(struct track_struct, gravity), 0},
+	{"mu",		'f',1,	offsetof(struct track_struct, mu), 0},
+	{"slip",		'f',1,	offsetof(struct track_struct, slip), 0},
+	{"erp",		'f',1,	offsetof(struct track_struct, erp), 0},
+	{"cfm",		'f',1,	offsetof(struct track_struct, cfm), 0},
+	{"density",	'f',1,	offsetof(struct track_struct, density), 0},
+	{"start",	'f',3,	offsetof(struct track_struct, start), 0},
 	{"",0,0}};//end
 
 
