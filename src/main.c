@@ -84,7 +84,7 @@ int main (int argc, char *argv[])
 	printf("= Credits (nicknames refers to usernames on the gorcx.net forum):\n");
 	printf("    \"MaAkaJon\"\t\tproject creator\n");
 	printf("    \"Soul Slinger\"\tcoder (created this and the earlier versions)\n");
-	printf("    \"codiemorgan\"\tcreator of the SCUD car and wheel models\n");
+	printf("    \"XEWEASEL\"\tcreator of the SCUD car and wheel models\n");
 	printf("    All of you on the planetrollcage.com and gorcx.net forums!\n\n");
 
 	printf("* Projects that made RCX possible:\n");
