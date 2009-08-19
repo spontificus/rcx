@@ -293,57 +293,57 @@ typedef struct car_struct {
 car_struct *car_head = NULL;
 
 struct data_index car_index[] = {
-	{"max_torque",		'f',1, offsetof(struct car_struct, max_torque), 0},
+	{"max_torque",		'f',1, offsetof(struct car_struct, max_torque), 5},
 	{"motor_tweak",		'f',1, offsetof(struct car_struct, motor_tweak), 0},
-	{"max_break",		'f',1, offsetof(struct car_struct, max_break), 0},
-	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass), 0},
-	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass), 0},
+	{"max_break",		'f',1, offsetof(struct car_struct, max_break), 1},
+	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass), 3},
+	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass), 3},
 	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp), 0},
 	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm), 0},
 	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu), 0},
 	{"wheel_slip",		'f',1, offsetof(struct car_struct, wheel_slip), 0},
 	{"wheel_erp",		'f',1, offsetof(struct car_struct, wheel_erp), 0},
 	{"wheel_cfm",		'f',1, offsetof(struct car_struct, wheel_cfm), 0},
-	{"wheel_bounce",		'f',1, offsetof(struct car_struct, wheel_bounce), 0},
+	{"wheel_bounce",	'f',1, offsetof(struct car_struct, wheel_bounce), 0},
 	{"body_mu",		'f',1, offsetof(struct car_struct, body_mu), 0},
 	{"body_slip",		'f',1, offsetof(struct car_struct, body_slip), 0},
 	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp), 0},
 	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm), 0},
 
-	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag), 0},
-	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag), 0},
-	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag), 0},
-	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag), 0},
+	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag), 5},
+	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag), 5},
+	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag), 5},
+	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag), 5},
 
 	//body and geom (box) sizes:
-	{"body",	'f',	3,	offsetof(struct car_struct, body[0]), 0}, //not a geom
+	{"body",	'f',	3,	offsetof(struct car_struct, body[0]), 1}, //not a geom
 	//MUST BE THE SAME AMMOUNT AS CAR_MAX_BOXES
-	{"box1",	'f',	6,	offsetof(struct car_struct, box[0][0]), 0},
-	{"box2",	'f',	6,	offsetof(struct car_struct, box[1][0]), 0},
-	{"box3",	'f',	6,	offsetof(struct car_struct, box[2][0]), 0},
-	{"box4",	'f',	6,	offsetof(struct car_struct, box[3][0]), 0},
-	{"box5",	'f',	6,	offsetof(struct car_struct, box[4][0]), 0},
-	{"box6",	'f',	6,	offsetof(struct car_struct, box[5][0]), 0},
-	{"box7",	'f',	6,	offsetof(struct car_struct, box[6][0]), 0},
-	{"box8",	'f',	6,	offsetof(struct car_struct, box[7][0]), 0},
-	{"box9",	'f',	6,	offsetof(struct car_struct, box[8][0]), 0},
-	{"box10",'f',	6,	offsetof(struct car_struct, box[9][0]), 0},
-	{"box11",'f',	6,	offsetof(struct car_struct, box[10][0]), 0},
-	{"box12",'f',	6,	offsetof(struct car_struct, box[11][0]), 0},
-	{"box13",'f',	6,	offsetof(struct car_struct, box[12][0]), 0},
-	{"box14",'f',	6,	offsetof(struct car_struct, box[13][0]), 0},
-	{"box15",'f',	6,	offsetof(struct car_struct, box[14][0]), 0},
-	{"box16",'f',	6,	offsetof(struct car_struct, box[15][0]), 0},
-	{"box17",'f',	6,	offsetof(struct car_struct, box[16][0]), 0},
-	{"box18",'f',	6,	offsetof(struct car_struct, box[17][0]), 0},
-	{"box19",'f',	6,	offsetof(struct car_struct, box[18][0]), 0},
-	{"box20",'f',	6,	offsetof(struct car_struct, box[19][0]), 0},
+	{"box1",	'f',	6,	offsetof(struct car_struct, box[0][0]), 1},
+	{"box2",	'f',	6,	offsetof(struct car_struct, box[1][0]), 1},
+	{"box3",	'f',	6,	offsetof(struct car_struct, box[2][0]), 1},
+	{"box4",	'f',	6,	offsetof(struct car_struct, box[3][0]), 1},
+	{"box5",	'f',	6,	offsetof(struct car_struct, box[4][0]), 1},
+	{"box6",	'f',	6,	offsetof(struct car_struct, box[5][0]), 1},
+	{"box7",	'f',	6,	offsetof(struct car_struct, box[6][0]), 1},
+	{"box8",	'f',	6,	offsetof(struct car_struct, box[7][0]), 1},
+	{"box9",	'f',	6,	offsetof(struct car_struct, box[8][0]), 1},
+	{"box10",	'f',	6,	offsetof(struct car_struct, box[9][0]), 1},
+	{"box11",	'f',	6,	offsetof(struct car_struct, box[10][0]), 1},
+	{"box12",	'f',	6,	offsetof(struct car_struct, box[11][0]), 1},
+	{"box13",	'f',	6,	offsetof(struct car_struct, box[12][0]), 1},
+	{"box14",	'f',	6,	offsetof(struct car_struct, box[13][0]), 1},
+	{"box15",	'f',	6,	offsetof(struct car_struct, box[14][0]), 1},
+	{"box16",	'f',	6,	offsetof(struct car_struct, box[15][0]), 1},
+	{"box17",	'f',	6,	offsetof(struct car_struct, box[16][0]), 1},
+	{"box18",	'f',	6,	offsetof(struct car_struct, box[17][0]), 1},
+	{"box19",	'f',	6,	offsetof(struct car_struct, box[18][0]), 1},
+	{"box20",	'f',	6,	offsetof(struct car_struct, box[19][0]), 1},
 	
 	//the following is for sizes not yet determined
-	{"s",	'f',	4,	offsetof(struct car_struct, s[0]), 0}, //flipover
-	{"w",	'f',	2,	offsetof(struct car_struct, w[0]), 0}, //wheel
-	{"wp",	'f',	2,	offsetof(struct car_struct, wp[0]), 0}, //wheel pos
-	{"jx",	'f',	1,	offsetof(struct car_struct, jx), 0}, //joint x position
+	{"s",	'f',	4,	offsetof(struct car_struct, s[0]), 1}, //flipover
+	{"w",	'f',	2,	offsetof(struct car_struct, w[0]), 1}, //wheel
+	{"wp",	'f',	2,	offsetof(struct car_struct, wp[0]), 1}, //wheel pos
+	{"jx",	'f',	1,	offsetof(struct car_struct, jx), 1}, //joint x position
 	{"",0,0}};//end
 
 
