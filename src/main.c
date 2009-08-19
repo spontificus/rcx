@@ -93,9 +93,9 @@ int main (int argc, char *argv[])
 	printf("= End of credits\n\n");
 
 	printf(" Default controls (can be changed in profile):\n");
-	printf("	>	Arrow keys:	Steering and throttling\n");
-	printf("	>	Spacebar:	Drifting break\n");
-	printf("	>	Left Alt:	Soft breaks\n");
+	printf("	>	Arrow keys:	Steering and Throttling\n");
+	printf("	>	Left Alt:	Drifting Breaks\n");
+	printf("	>	Spacebar:	Soft Breaks\n");
 	printf("	>	Q and E		move camera along Z axis\n");
 	printf("	>	A and D		move camera along X axis\n");
 	printf("	>	W and S		move camera along Y axis\n");
