@@ -113,7 +113,7 @@ void graphics_step (Uint32 step)
 	else
 		gpos = dBodyGetPosition(focused_car->bodyid);
 
-	gluLookAt (cpos[0],cpos[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
+	gluLookAt (cpos[0],cpos[1],cpos[2], gpos[0]/internal.scale,gpos[1]/internal.scale,gpos[2]/internal.scale, 0,0,1);
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);
@@ -151,9 +151,9 @@ void graphics_step (Uint32 step)
 			matrix[9]=rot[6];
 			matrix[10]=rot[10];
 			matrix[11]=0;
-			matrix[12]=pos[0];
-			matrix[13]=pos[1];
-			matrix[14]=pos[2];
+			matrix[12]=pos[0]/internal.scale;
+			matrix[13]=pos[1]/internal.scale;
+			matrix[14]=pos[2]/internal.scale;
 			matrix[15]=1;
 
 			glMultMatrixf (matrix);
