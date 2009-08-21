@@ -606,10 +606,12 @@ void debug_joint_fixed(dBodyID body1, dBodyID body2, object_struct *obj)
 
 	//use feedback
 	joint_data *data = (joint_data *)allocate_joint_data (joint, obj, true);
-	data->threshold = 25000;
-	data->buffer = 1000;
+	data->threshold = 25000*internal.scale*internal.scale*internal.scale*internal.scale;
+	data->buffer = 1000*internal.scale*internal.scale*internal.scale*internal.scale;
 }
 
+#define BodySetPos(b, x,y,z) dBodySetPosition(b, (x)*internal.scale,(y)*internal.scale,(z)*internal.scale)
+#define GeomSetPos(b, x,y,z) dGeomSetPosition(b, (x)*internal.scale,(y)*internal.scale,(z)*internal.scale)
 //spawn a "loaded" (actually hard-coded) object
 //TODO: rotation
 void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
@@ -626,18 +628,18 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 
 
-	dGeomID geom  = dCreateBox (0, 1,1,1); //geom
+	dGeomID geom  = dCreateBox (0, 1*internal.scale,1*internal.scale,1*internal.scale); //geom
 	geom_data *data = allocate_geom_data(geom, NULL);
 	dBodyID body = dBodyCreate (world);
 
 	dMass m;
-	dMassSetBox (&m,1,1,1,1); //sides
-	dMassAdjust (&m,400); //mass
+	dMassSetBox (&m,1,1*internal.scale,1*internal.scale,1*internal.scale); //sides
+	dMassAdjust (&m,400*internal.scale*internal.scale); //mass
 	dBodySetMass (body, &m);
 
 	dGeomSetBody (geom, body);
 
-	dBodySetPosition (body, x, y, z);
+	BodySetPos (body, x, y, z);
 
 	//now add friction
 	data->mu = 1;
@@ -667,9 +669,9 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//flipper surface
 	object_struct *obj = allocate_object(true, true);
 	
-	dGeomID geom  = dCreateBox (0, 8,8,0.5); //geom
+	dGeomID geom  = dCreateBox (0, 8*internal.scale,8*internal.scale,0.5*internal.scale); //geom
 	geom_data *data = allocate_geom_data(geom, obj);
-	dGeomSetPosition (geom, x, y, z);
+	GeomSetPos (geom, x, y, z);
 
 	//use default
 //	data->mu = 1;
@@ -684,10 +686,10 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 
 	//flipper sensor
-	dGeomID geom2 = dCreateBox (0, 3,3,2);
+	dGeomID geom2 = dCreateBox (0, 3*internal.scale,3*internal.scale,2*internal.scale);
 	data = allocate_geom_data(geom2, obj);
 	data->collide = false;
-	dGeomSetPosition (geom2, x, y, z+0.76);
+	GeomSetPos (geom2, x, y, z+0.76);
 
 	data->flipper_geom = geom; //tmp debug solution
 
@@ -706,18 +708,18 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	object_struct *obj = allocate_object(true, true);
 
 	//center sphere
-	dGeomID geom  = dCreateSphere (0, 1); //geom
+	dGeomID geom  = dCreateSphere (0, 1*internal.scale); //geom
 	geom_data *data = allocate_geom_data(geom, obj);
 	dBodyID body1 = dBodyCreate (world);
 
 	dMass m;
-	dMassSetSphere (&m,1,1); //radius
-	dMassAdjust (&m,60); //mass
+	dMassSetSphere (&m,1,1*internal.scale); //radius
+	dMassAdjust (&m,60*internal.scale*internal.scale); //mass
 	dBodySetMass (body1, &m);
 
 	dGeomSetBody (geom, body1);
 
-	dBodySetPosition (body1, x, y, z);
+	BodySetPos (body1, x, y, z);
 
 	data->mu = 0;
 	data->bounce = 1.5;
@@ -738,17 +740,18 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	int i;
 	for (i=0; i<4; ++i) {
 	//connected spheres
-	geom  = dCreateSphere (0, 0.8); //geom
+	geom  = dCreateSphere (0, 0.8*internal.scale); //geom
 	data = allocate_geom_data(geom, obj);
 	body = dBodyCreate (world);
 
-	dMassSetSphere (&m,1,0.5); //radius
-	dMassAdjust (&m,30); //mass
+	dMassSetSphere (&m,1,0.5*internal.scale); //radius
+	dMassAdjust (&m,30*internal.scale*internal.scale); //mass
 	dBodySetMass (body, &m);
 
 	dGeomSetBody (geom, body);
 
-	dBodySetPosition (body, x+pos[i][0], y+pos[i][1], z+pos[i][2]);
+	BodySetPos (body, x+pos[i][0], y+pos[i][1], z+pos[i][2]);
+	//BodySetPos (body, x+pos[i][0], y, z);
 
 	data->mu = 1;
 	data->bounce = 2.0;
@@ -760,7 +763,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	
 	joint = dJointCreateBall (world, obj->jointgroup);
 	dJointAttach (joint, body1, body);
-	dJointSetBallAnchor (joint, x+pos[i][0], y+pos[i][1], z+pos[i][2]);
+	dJointSetBallAnchor (joint, (x+pos[i][0])*internal.scale, (y+pos[i][1])*internal.scale, (z+pos[i][2])*internal.scale);
 	}
 	//done
 	//
@@ -776,18 +779,18 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	object_struct *obj = allocate_object(true, true);
 
 	//center sphere
-	dGeomID geom  = dCreateSphere (0, 1); //geom
+	dGeomID geom  = dCreateSphere (0, 1*internal.scale); //geom
 	geom_data *data = allocate_geom_data(geom, obj);
 	dBodyID body1 = dBodyCreate (world);
 
 	dMass m;
-	dMassSetSphere (&m,1,1); //radius
-	dMassAdjust (&m,60); //mass
+	dMassSetSphere (&m,1,1*internal.scale); //radius
+	dMassAdjust (&m,60*internal.scale*internal.scale); //mass
 	dBodySetMass (body1, &m);
 
 	dGeomSetBody (geom, body1);
 
-	dBodySetPosition (body1, x, y, z);
+	BodySetPos (body1, x, y, z);
 
 	data->mu = 1;
 	data->bounce = 1.5;
@@ -815,7 +818,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		dBodyID body1[12], body2[9];
 		for (i=0; i<12; ++i)
 		{
-			dGeomID geom  = dCreateBox (0, 4,0.4,2.7); //geom
+			dGeomID geom  = dCreateBox (0, 4*internal.scale,0.4*internal.scale,2.7*internal.scale); //geom
 			geom_data *data = allocate_geom_data(geom, obj);
 			data->mu = 1;
 
@@ -823,8 +826,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dGeomSetBody (geom, body1[i]);
 
 			dMass m;
-			dMassSetBox (&m,1,4,0.4,2.7); //sides
-			dMassAdjust (&m,400); //mass
+			dMassSetBox (&m,1,4*internal.scale,0.4*internal.scale,2.7*internal.scale); //sides
+			dMassAdjust (&m,400*internal.scale*internal.scale*internal.scale); //mass
 			dBodySetMass (body1[i], &m);
 
 			data->file_3d = script->graphics_debug1;
@@ -832,13 +835,13 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		
 		const dReal k = 1.5*4+0.4/2;
 
-		dBodySetPosition (body1[0], x-4, y-k, z+(2.7/2));
-		dBodySetPosition (body1[1], x,   y-k, z+(2.7/2));
-		dBodySetPosition (body1[2], x+4, y-k, z+(2.7/2));
+		BodySetPos (body1[0], x-4, y-k, z+(2.7/2));
+		BodySetPos (body1[1], x,   y-k, z+(2.7/2));
+		BodySetPos (body1[2], x+4, y-k, z+(2.7/2));
 
-		dBodySetPosition (body1[6], x+4, y+k, z+(2.7/2));
-		dBodySetPosition (body1[7], x,   y+k, z+(2.7/2));
-		dBodySetPosition (body1[8], x-4, y+k, z+(2.7/2));
+		BodySetPos (body1[6], x+4, y+k, z+(2.7/2));
+		BodySetPos (body1[7], x,   y+k, z+(2.7/2));
+		BodySetPos (body1[8], x-4, y+k, z+(2.7/2));
 
 		dMatrix3 rot;
 		dRFromAxisAndAngle (rot, 0,0,1, M_PI/2);
@@ -847,13 +850,13 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		for (i=9; i<12; ++i)
 			dBodySetRotation (body1[i], rot);
 
-		dBodySetPosition (body1[3], x+k,  y-4, z+(2.7/2));
-		dBodySetPosition (body1[4], x+k, y, z+(2.7/2));
-		dBodySetPosition (body1[5], x+k, y+4, z+(2.7/2));
+		BodySetPos (body1[3], x+k,  y-4, z+(2.7/2));
+		BodySetPos (body1[4], x+k, y, z+(2.7/2));
+		BodySetPos (body1[5], x+k, y+4, z+(2.7/2));
 
-		dBodySetPosition (body1[9], x-k, y+4, z+(2.7/2));
-		dBodySetPosition (body1[10], x-k, y, z+(2.7/2));
-		dBodySetPosition (body1[11], x-k, y-4, z+(2.7/2));
+		BodySetPos (body1[9], x-k, y+4, z+(2.7/2));
+		BodySetPos (body1[10], x-k, y, z+(2.7/2));
+		BodySetPos (body1[11], x-k, y-4, z+(2.7/2));
 
 		//connect wall blocks in height
 		for (i=0; i<12; ++i)
@@ -871,7 +874,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		//walls done, floor/ceiling
 		for (i=0; i<9; ++i)
 		{
-			dGeomID geom  = dCreateBox (0, 4,4,0.2); //geom
+			dGeomID geom  = dCreateBox (0, 4*internal.scale,4*internal.scale,0.2*internal.scale); //geom
 			geom_data *data = allocate_geom_data(geom, obj);
 			data->mu = 1;
 
@@ -879,8 +882,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dGeomSetBody (geom, body2[i]);
 
 			dMass m;
-			dMassSetBox (&m,1,4,4,0.2); //sides
-			dMassAdjust (&m,400); //mass
+			dMassSetBox (&m,1,4*internal.scale,4*internal.scale,0.2*internal.scale); //sides
+			dMassAdjust (&m,400*internal.scale*internal.scale*internal.scale); //mass
 			dBodySetMass (body2[i], &m);
 
 			data->file_3d = script->graphics_debug2;
@@ -888,27 +891,27 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 		const dReal k2=2.7-0.2/2;
 
-		dBodySetPosition (body2[0], x-4, y-4, z+k2);
+		BodySetPos (body2[0], x-4, y-4, z+k2);
 		debug_joint_fixed(body2[0], body1[0], obj);
 		debug_joint_fixed(body2[0], body1[11], obj);
-		dBodySetPosition (body2[1], x,   y-4, z+k2);
+		BodySetPos (body2[1], x,   y-4, z+k2);
 		debug_joint_fixed(body2[1], body1[1], obj);
-		dBodySetPosition (body2[2], x+4, y-4, z+k2);
+		BodySetPos (body2[2], x+4, y-4, z+k2);
 		debug_joint_fixed(body2[2], body1[2], obj);
 		debug_joint_fixed(body2[2], body1[3], obj);
 
-		dBodySetPosition (body2[3], x-4, y, z+k2);
+		BodySetPos (body2[3], x-4, y, z+k2);
 		debug_joint_fixed(body2[3], body1[10], obj);
-		dBodySetPosition (body2[4], x,   y, z+k2);
-		dBodySetPosition (body2[5], x+4, y, z+k2);
+		BodySetPos (body2[4], x,   y, z+k2);
+		BodySetPos (body2[5], x+4, y, z+k2);
 		debug_joint_fixed(body2[5], body1[4], obj);
 
-		dBodySetPosition (body2[6], x-4, y+4, z+k2);
+		BodySetPos (body2[6], x-4, y+4, z+k2);
 		debug_joint_fixed(body2[6], body1[9], obj);
 		debug_joint_fixed(body2[6], body1[8], obj);
-		dBodySetPosition (body2[7], x,   y+4, z+k2);
+		BodySetPos (body2[7], x,   y+4, z+k2);
 		debug_joint_fixed(body2[7], body1[7], obj);
-		dBodySetPosition (body2[8], x+4, y+4, z+k2);
+		BodySetPos (body2[8], x+4, y+4, z+k2);
 		debug_joint_fixed(body2[8], body1[6], obj);
 		debug_joint_fixed(body2[8], body1[5], obj);
 
@@ -933,13 +936,13 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		geom_data *data;
 		for (i=0; i<4; ++i)
 		{
-			geom  = dCreateCapsule (0, 0.5,1.5); //geom
+			geom  = dCreateCapsule (0, 0.5*internal.scale,1.5*internal.scale); //geom
 			data = allocate_geom_data(geom, obj);
 			body[i] = dBodyCreate (world);
 	
 			dMass m;
-			dMassSetCapsule (&m,1,3,1,0.5); //sides (3=z-axis)
-			dMassAdjust (&m,400); //mass
+			dMassSetCapsule (&m,1,3,1*internal.scale,0.5*internal.scale); //sides (3=z-axis)
+			dMassAdjust (&m,400*internal.scale*internal.scale*internal.scale); //mass
 			dBodySetMass (body[i], &m);
 	
 			dGeomSetBody (geom, body[i]);
@@ -950,25 +953,25 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			data->file_3d = script->graphics_debug3;
 		}
 
-		dBodySetPosition (body[0], x+2, y+2, z+2.5/2);
+		BodySetPos (body[0], x+2, y+2, z+2.5/2);
 		debug_joint_fixed(body[0], body2[8], obj);
 		debug_joint_fixed(body[0], body2[7], obj);
 		debug_joint_fixed(body[0], body2[5], obj);
 		debug_joint_fixed(body[0], body2[4], obj);
 
-		dBodySetPosition (body[1], x+2, y-2, z+2.5/2);
+		BodySetPos (body[1], x+2, y-2, z+2.5/2);
 		debug_joint_fixed(body[0], body2[1], obj);
 		debug_joint_fixed(body[0], body2[2], obj);
 		debug_joint_fixed(body[0], body2[4], obj);
 		debug_joint_fixed(body[0], body2[5], obj);
 
-		dBodySetPosition (body[2], x-2, y+2, z+2.5/2);
+		BodySetPos (body[2], x-2, y+2, z+2.5/2);
 		debug_joint_fixed(body[0], body2[7], obj);
 		debug_joint_fixed(body[0], body2[6], obj);
 		debug_joint_fixed(body[0], body2[4], obj);
 		debug_joint_fixed(body[0], body2[3], obj);
 
-		dBodySetPosition (body[3], x-2, y-2, z+2.5/2);
+		BodySetPos (body[3], x-2, y-2, z+2.5/2);
 		debug_joint_fixed(body[0], body2[0], obj);
 		debug_joint_fixed(body[0], body2[1], obj);
 		debug_joint_fixed(body[0], body2[3], obj);
@@ -1035,30 +1038,31 @@ int load_track (char *path)
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
+	
 
 	//4 more planes as walls
-	geom = dCreatePlane (0, 1,0,0,-100);
+	geom = dCreatePlane (0, 1,0,0,-100*internal.scale);
 	data = allocate_geom_data(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
 
-	geom = dCreatePlane (0, -1,0,0,-100);
+	geom = dCreatePlane (0, -1,0,0,-100*internal.scale);
 	data = allocate_geom_data(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
 
-	geom = dCreatePlane (0, 0,1,0,-100);
+	geom = dCreatePlane (0, 0,1,0,-100*internal.scale);
 	data = allocate_geom_data(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
 
-	geom = dCreatePlane (0, 0,-1,0,-100);
+	geom = dCreatePlane (0, 0,-1,0,-100*internal.scale);
 	data = allocate_geom_data(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
@@ -1111,12 +1115,12 @@ int load_track (char *path)
 	glEndList();
 
 	//temp solution, ramp
-	geom = dCreateBox (0,8,12,1);
+	geom = dCreateBox (0,8*internal.scale,12*internal.scale,1*internal.scale);
 	data = allocate_geom_data(geom, track.object);
 
 	dMatrix3 rot;
 	dRFromAxisAndAngle (rot, 1, 0, 0, 0.3);
-	dGeomSetPosition (geom, 0, 3, 1.5);
+	dGeomSetPosition (geom, 0*internal.scale, 3*internal.scale, 1.5*internal.scale);
 	dGeomSetRotation (geom, rot);
 	
 	data->mu = track.mu;
@@ -1253,8 +1257,8 @@ car_struct *load_car (char *path)
 	free (conf);
 
 	//graphics models
-	float w_r = target->w[0];
-	float w_w = target->w[1];
+	float w_r = target->w[0]/internal.scale;
+	float w_w = target->w[1]/internal.scale;
 	//wheels:
 	//(note: wheel axis is along z)
 	target->wheel_graphics = allocate_file_3d();
@@ -1302,11 +1306,9 @@ car_struct *load_car (char *path)
 
 			GLfloat *b = target->box[i];
 			if (i==0)//first box
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], yellow, gray, 70);
+				debug_draw_box(target->box_graphics[i]->list, b[0]/internal.scale,b[1]/internal.scale,b[2]/internal.scale, yellow, gray, 70);
 			else
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], lgreen, gray, 70);
+				debug_draw_box(target->box_graphics[i]->list, b[0]/internal.scale,b[1]/internal.scale,b[2]/internal.scale, lgreen, gray, 70);
 		}
 
 	printlog(1, "\n");
@@ -1317,6 +1319,10 @@ car_struct *load_car (char *path)
 void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 {
 	printlog(1, "-> spawning car at: %f %f %f\n", x,y,z);
+
+	x*=internal.scale;
+	y*=internal.scale;
+	z*=internal.scale;
 
 	printlog(1, "Warning: wheels will not collide to other wheels... (wheels use cylinders)\n");
 	printlog(1, "(note to self: only solution would be moving to capped cylinders... :-/ )\n");

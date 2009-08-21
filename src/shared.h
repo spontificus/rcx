@@ -310,10 +310,10 @@ struct data_index car_index[] = {
 	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp), 0},
 	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm), 0},
 
-	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag), 5},
-	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag), 5},
-	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag), 5},
-	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag), 5},
+	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag), 2},
+	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag), 2},
+	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag), 2},
+	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag), 2},
 
 	//body and geom (box) sizes:
 	{"body",	'f',	3,	offsetof(struct car_struct, body[0]), 1}, //not a geom
@@ -443,12 +443,12 @@ struct data_index track_index[] = {
 	{"diffuse",	'f',3,	offsetof(struct track_struct, diffuse[0]), 0},
 	{"specular",	'f',3,	offsetof(struct track_struct, specular[0]), 0},
 	{"position",	'f',3,	offsetof(struct track_struct, position[0]), 0},
-	{"gravity",	'f',1,	offsetof(struct track_struct, gravity), 0},
+	{"gravity",	'f',1,	offsetof(struct track_struct, gravity), 1},
 	{"mu",		'f',1,	offsetof(struct track_struct, mu), 0},
-	{"slip",		'f',1,	offsetof(struct track_struct, slip), 0},
+	{"slip",	'f',1,	offsetof(struct track_struct, slip), 0},
 	{"erp",		'f',1,	offsetof(struct track_struct, erp), 0},
 	{"cfm",		'f',1,	offsetof(struct track_struct, cfm), 0},
-	{"density",	'f',1,	offsetof(struct track_struct, density), 0},
+	{"density",	'f',1,	offsetof(struct track_struct, density), 2},
 	{"start",	'f',3,	offsetof(struct track_struct, start), 0},
 	{"",0,0}};//end
 

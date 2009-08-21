@@ -20,7 +20,7 @@ void event_step(Uint32 step)
 				const dReal *pos;
 				pos = dGeomGetPosition(geom->flipper_geom);
 				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
-						pos[2]+step*0.02);
+						pos[2]+step*0.02*internal.scale);
 				if (++geom->flipper_counter > 10)
 					geom->event=false;
 			}
@@ -29,7 +29,7 @@ void event_step(Uint32 step)
 				const dReal *pos;
 				pos = dGeomGetPosition(geom->flipper_geom);
 				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
-						pos[2]-step*0.02);
+						pos[2]-step*0.02*internal.scale);
 				--geom->flipper_counter;
 			}
 		}
