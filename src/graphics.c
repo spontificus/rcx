@@ -168,17 +168,20 @@ void graphics_step (Uint32 step)
 	SDL_GL_SwapBuffers();
 }
 
-void graphics_loop (void)
+int graphics_loop (void *d)
 {
-	printlog(1, "Starting drawing loop\n");
+	printlog(1, "Starting graphics loop\n");
 	Uint32 time, time_old;
 	time_old = SDL_GetTicks();
+
 	while (runlevel == running)
 	{
-		time = SDL_GetTicks();
-		graphics_step(time-time_old);
+		//time = SDL_GetTicks();
+		//graphics_step(time-time_old);
 		//TODO: sleep?
 	}
+
+	return 0;
 }
 
 void graphics_quit(void)

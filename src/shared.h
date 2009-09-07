@@ -19,7 +19,7 @@ struct data_index {
 //important system configuration variables
 struct internal_struct {
 	int verbosity;
-	bool multithread; //TODO
+	bool multithread;
 
 	//physics
 	dReal stepsize;
@@ -45,7 +45,7 @@ struct internal_struct {
 
 struct data_index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
-	//TODO: MULTITHREAD
+	{"multithread",		'b',1, offsetof(struct internal_struct, multithread)},
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
 	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},

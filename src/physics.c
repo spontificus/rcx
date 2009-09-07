@@ -340,6 +340,16 @@ void physics_step(void)
 	dJointGroupEmpty (contactgroup);
 }
 
+int physics_loop (void *d)
+{
+	printlog(1, "Starting physics loop\n");
+	//while (runlevel == running)
+	//{
+		//physics_step();
+	//}
+	return 0;
+}
+
 //TODO: add physics loop
 
 void physics_quit (void)

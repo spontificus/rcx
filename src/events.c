@@ -197,7 +197,7 @@ void event_step(Uint32 step)
 
 void event_loop (void)
 {
-	printlog(1, "Starting even loop\n");
+	printlog(1, "Starting event loop\n");
 	Uint32 time, time_old;
 	time_old = SDL_GetTicks();
 	while (runlevel == running)

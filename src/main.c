@@ -70,7 +70,84 @@ void emergency_quit (void)
 	physics_quit();
 
 	exit (-1);
-	printlog(0, "WTF?!\n");
+}
+
+void start_race(void)
+{
+	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
+	Uint32 realtime; //real time (with possible delay since last update)
+	Uint32 stepsize_ms = internal.stepsize*1000;
+
+	//singlethread or multi?
+	if (internal.multithread)
+	{
+		printlog (0, "\n-> Starting Race (multithreaded)\n");
+		runlevel = running;
+
+		//launch threads
+		SDL_Thread *physics = SDL_CreateThread (physics_loop, NULL);
+		SDL_Thread *graphics = SDL_CreateThread (graphics_loop, NULL);
+		event_loop(); //alternative: launch as thread?
+
+		//wait for threads
+		SDL_WaitThread (graphics, NULL);
+		SDL_WaitThread (physics, NULL);
+
+		//done!
+
+		simtime = SDL_GetTicks(); //set time (for info output)
+	}
+	else
+	{
+		printlog (0, "\n-> Starting Race (single thread)\n");
+		runlevel = running;
+		while (runlevel == running)
+		{
+			event_step(stepsize_ms); //always check for events
+
+			physics_step();
+
+			simtime += stepsize_ms;
+
+			//if realtime is larger than simtime (and graphics threshold)
+			if (SDL_GetTicks()+internal.threshold > simtime)
+			{
+				printlog(2, "\nWarning: simtime less than realtime (to low stepsize), dropping frame..\n\n");
+				++stepsize_warnings;
+			}
+			else //we got time left to draw frame on
+			{
+				graphics_step(stepsize_ms);
+
+				realtime = SDL_GetTicks();
+				if (simtime > realtime)
+				{
+					SDL_Delay (simtime - realtime);
+				}
+				else
+				{
+					printlog(2, "\nWarning: (not sleeping, realtime became to high (to low treshold?))\n");
+					++threshold_warnings;
+				}
+			}
+		}
+	}
+	printlog(0, "-> Race done!\n");
+	printlog(0, "\n<-- Some basic info: -->\n");
+	printlog(0, "(does not interest most people)\n");
+	printlog(0, "Race time (ms):				%i\n", simtime);
+	printlog(0, "Threading mode:				");
+	if (internal.multithread)
+	{
+		printlog(0, "Multithreaded (3 threads)\n");
+		printlog(0, "Stepsize-to-low (slowdown) warnings:	%i\n", stepsize_warnings);
+	}
+	else
+	{
+		printlog(0, "Singlethreaded (1 thread)\n");
+		printlog(0, "Graphics-threshold-to-low warnings:	%i\n", threshold_warnings);
+		printlog(0, "Stepsize-to-low (framedrop) warnings:	%i\n", stepsize_warnings);
+	}
 }
 
 //simple demo:
@@ -158,63 +235,18 @@ int main (int argc, char *argv[])
 	spawn_car (venom, track.start[0], track.start[1], track.start[2]);
 	focused_car = venom;
 
-	//single-thread function
-	//WARNING: Don't run the game constantly for more than around 49 days!
-	//(or the realtime will wrap, and the timing solution will go crazy)
+	//start race
+	start_race();
 
-	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
-	Uint32 realtime; //real time (with possible delay since last update)
-	Uint32 stepsize_ms = internal.stepsize*1000;
-
-	printlog (0, "\n-> Starting Race\n");
-	runlevel = running;
-	while (runlevel == running)
-	{
-		event_step(stepsize_ms); //always check for events
-
-		physics_step();
-
-		simtime += stepsize_ms;
-
-		//if realtime is larger than simtime (and graphics threshold)
-		if (SDL_GetTicks()+internal.threshold > simtime)
-		{
-			printlog(2, "\nWarning: simtime less than realtime (to low stepsize), dropping frame..\n\n");
-			++stepsize_warnings;
-		}
-		else //we got time left to draw frame on
-		{
-			graphics_step(stepsize_ms);
-
-			realtime = SDL_GetTicks();
-			if (simtime > realtime)
-			{
-				SDL_Delay (simtime - realtime);
-			}
-			else
-			{
-				printlog(2, "\nWarning: (not sleeping, realtime became to high (to low treshold?))\n");
-				++threshold_warnings;
-			}
-		}
-	}
-	printlog(0, "-> Race done!\n");
-
+	//race done
 	free_all();
 	physics_quit();
-	//race done
 	
 	//<insert menu here>
 	
 	//menu done, quit selected, ending graphics and terminating program
 	graphics_quit();
-
-	printlog(0, "\n<-- Some basic info: -->\n");
-	printlog(0, "(does not interest most people)\n");
-	printlog(0, "Race time (ms):				%i\n", simtime);
-	printlog(0, "Stepsize-to-low (framedrop) warnings:	%i\n", stepsize_warnings);
-	printlog(0, "Graphics-threshold-to-low warnings:	%i\n", threshold_warnings);
-
+	
 	printlog(0, "\nBye!\n\n");
 	return 0;
 }
