@@ -176,9 +176,11 @@ int graphics_loop (void *d)
 
 	while (runlevel == running)
 	{
-		//time = SDL_GetTicks();
+		sleep (1);
+		time = SDL_GetTicks();
 		//graphics_step(time-time_old);
-		//TODO: sleep?
+		time_old = time;
+		//TODO: sleep!
 	}
 
 	return 0;

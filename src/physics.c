@@ -343,10 +343,11 @@ void physics_step(void)
 int physics_loop (void *d)
 {
 	printlog(1, "Starting physics loop\n");
-	//while (runlevel == running)
-	//{
-		//physics_step();
-	//}
+	while (runlevel == running)
+	{
+		sleep (1);
+		physics_step();
+	}
 	return 0;
 }
 
