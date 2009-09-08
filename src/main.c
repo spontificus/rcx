@@ -40,15 +40,15 @@ car_struct *focused_car = NULL;
 
 void printlog (int, const char*, ...); //prototype (for included functions
 
+//keep track of warnings
+unsigned int stepsize_warnings = 0;
+unsigned int threshold_warnings = 0;
+
 #include "graphics.c"
 #include "physics.c"
 #include "shared.c" //functions for handling custom data
 #include "loaders.c" //loading functions for confs, tracks, cars, etc...
 #include "events.c"  //responds to events both OS- and game simulation related
-
-//keep track of warnings
-unsigned int stepsize_warnings = 0;
-unsigned int threshold_warnings = 0;
 
 //print log message - if it's below or equal to the current verbosity level
 void printlog (int level, const char *text, ...)

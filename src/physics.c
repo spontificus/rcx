@@ -357,6 +357,8 @@ int physics_loop (void *d)
 		realtime = SDL_GetTicks();
 		if (simtime > realtime)
 			SDL_Delay (simtime - realtime);
+		else
+			++stepsize_warnings;
 	}
 	return 0;
 }
