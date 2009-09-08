@@ -55,8 +55,9 @@ void event_step(Uint32 step)
 		switch (event.type)
 		{
 			case SDL_VIDEORESIZE:
-				screen = SDL_SetVideoMode (event.resize.w, event.resize.h, 0, flags);
-				graphics_resize (screen->w, screen->h);
+				graphics_event_resize_w = event.resize.w;
+				graphics_event_resize_h = event.resize.h;
+				graphics_event_resize = true;
 			break;
 
 			case SDL_QUIT:
@@ -206,8 +207,8 @@ int events_loop (void *d)
 		event_step(time-time_old);
 		time_old = time;
 		
-		if (internal.events_sleep)
-			SDL_Delay (internal.events_sleep);
+		//if (internal.events_sleep)
+			//SDL_Delay (internal.events_sleep);
 	}
 	return 0;
 }

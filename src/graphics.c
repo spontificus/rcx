@@ -11,6 +11,10 @@ SDL_Surface *screen;
 GLdouble cpos[3] = {20,-25,20};
 Uint32 flags = SDL_OPENGL;
 
+//if multithreading, event thread will alert graphics thread about resizing events (to avoid stealing the context)
+bool graphics_event_resize = false;
+int graphics_event_resize_w, graphics_event_resize_h;
+//
 
 void graphics_resize (int w, int h)
 {
@@ -100,6 +104,15 @@ dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
 {
+	//see if we need to resize
+	if (graphics_event_resize)
+	{
+		screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
+		graphics_resize (screen->w, screen->h);
+		graphics_event_resize = false;
+	}
+
+	//start rendering
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 //	glLoadIdentity();
@@ -180,8 +193,8 @@ int graphics_loop ()
 		graphics_step(time-time_old);
 		time_old = time;
 
-		if (internal.graphics_sleep)
-			SDL_Delay (internal.graphics_sleep);
+		//if (internal.graphics_sleep)
+			//SDL_Delay (internal.graphics_sleep);
 	}
 
 	return 0;
