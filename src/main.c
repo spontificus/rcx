@@ -76,8 +76,6 @@ void emergency_quit (void)
 void start_race(void)
 {
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
-	Uint32 realtime; //real time (with possible delay since last update)
-	Uint32 stepsize_ms = internal.stepsize*1000;
 
 	//singlethread or multi?
 	if (internal.multithread)
@@ -100,6 +98,9 @@ void start_race(void)
 	}
 	else
 	{
+		Uint32 realtime; //real time (with possible delay since last update)
+		Uint32 stepsize_ms = internal.stepsize*1000;
+
 		printlog (0, "\n-> Starting Race (single thread)\n");
 		runlevel = running;
 		while (runlevel == running)
@@ -141,13 +142,13 @@ void start_race(void)
 	if (internal.multithread)
 	{
 		printlog(0, "Multithreaded (3 threads)\n");
-		printlog(0, "Stepsize-to-low (slowdown) warnings:	%i\n", stepsize_warnings);
+		printlog(0, "Stepsize-too-low (slowdown) warnings:	%i\n", stepsize_warnings);
 	}
 	else
 	{
 		printlog(0, "Singlethreaded (1 thread)\n");
-		printlog(0, "Graphics-threshold-to-low warnings:	%i\n", threshold_warnings);
-		printlog(0, "Stepsize-to-low (framedrop) warnings:	%i\n", stepsize_warnings);
+		printlog(0, "Graphics-threshold-too-low warnings:	%i\n", threshold_warnings);
+		printlog(0, "Stepsize-too-low (framedrop) warnings:	%i\n", stepsize_warnings);
 	}
 }
 

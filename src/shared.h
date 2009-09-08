@@ -21,6 +21,9 @@ struct internal_struct {
 	int verbosity;
 	bool multithread;
 
+	int graphics_sleep; //for multithread
+	int events_sleep; //for multithread
+
 	//physics
 	dReal stepsize;
 	int iterations;
@@ -34,7 +37,7 @@ struct internal_struct {
 
 
 	//graphics
-	int threshold;
+	int threshold; //for single thread
 	int res[2]; //resolution
 	int dist;
 	bool force;
@@ -46,6 +49,8 @@ struct internal_struct {
 struct data_index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
 	{"multithread",		'b',1, offsetof(struct internal_struct, multithread)},
+	{"graphics_sleep",	'i',1, offsetof(struct internal_struct, graphics_sleep)},
+	{"events_sleep",	'i',1, offsetof(struct internal_struct, events_sleep)},
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
 	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},
@@ -62,7 +67,7 @@ struct data_index internal_index[] = {
 	//graphics
 	{"graphics_threshold",	'i',1, offsetof(struct internal_struct, threshold)},
 	{"resolution",		'i',2, offsetof(struct internal_struct, res)},
-	{"eye_distance",		'i',1, offsetof(struct internal_struct, dist)},
+	{"eye_distance",	'i',1, offsetof(struct internal_struct, dist)},
 	{"force_angle",		'b',1, offsetof(struct internal_struct, force)},
 	{"view_angle",		'f',1, offsetof(struct internal_struct, angle)},
 	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen)},

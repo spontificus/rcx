@@ -205,6 +205,9 @@ void event_loop (void)
 		time = SDL_GetTicks();
 		event_step(time-time_old);
 		time_old = time;
+		
+		if (internal.events_sleep)
+			SDL_Delay (internal.events_sleep);
 	}
 }
 

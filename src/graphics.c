@@ -100,7 +100,12 @@ dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
 {
+	printf("graphics\n");
+	sleep (3);
+	printf("clearing\n");
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	sleep (3);
+	printf("/graphics\n");
 
 //	glLoadIdentity();
 
@@ -108,10 +113,12 @@ void graphics_step (Uint32 step)
 
 	const dReal *gpos;
 
+	printf("calling ode\n");
 	if (!focused_car)
 		gpos = geom_pos_default; //not focused, use default
 	else
 		gpos = dBodyGetPosition(focused_car->bodyid);
+	printf("after call\n");
 
 	gluLookAt (cpos[0],cpos[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
 
@@ -176,11 +183,12 @@ int graphics_loop (void *d)
 
 	while (runlevel == running)
 	{
-		sleep (1);
 		time = SDL_GetTicks();
-		//graphics_step(time-time_old);
+		graphics_step(time-time_old);
 		time_old = time;
-		//TODO: sleep!
+
+		if (internal.graphics_sleep)
+			SDL_Delay (internal.graphics_sleep);
 	}
 
 	return 0;

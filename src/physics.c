@@ -343,10 +343,20 @@ void physics_step(void)
 int physics_loop (void *d)
 {
 	printlog(1, "Starting physics loop\n");
+
+	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
+	Uint32 realtime; //real time (with possible delay since last update)
+	Uint32 stepsize_ms = internal.stepsize*1000;
+
 	while (runlevel == running)
 	{
-		sleep (1);
 		physics_step();
+		
+
+		simtime += stepsize_ms;
+		realtime = SDL_GetTicks();
+		if (simtime > realtime)
+			SDL_Delay (simtime - realtime);
 	}
 	return 0;
 }
