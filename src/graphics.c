@@ -108,8 +108,13 @@ void graphics_step (Uint32 step)
 	if (graphics_event_resize)
 	{
 		screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
-		graphics_resize (screen->w, screen->h);
-		graphics_event_resize = false;
+		if (screen)
+		{
+			graphics_resize (screen->w, screen->h);
+			graphics_event_resize = false;
+		}
+		else
+			printlog(0, "Warning: resizing failed, will retry\n");
 	}
 
 	//start rendering
