@@ -195,7 +195,7 @@ void event_step(Uint32 step)
 	}
 }
 
-void event_loop (void)
+int events_loop (void *d)
 {
 	printlog(1, "Starting event loop\n");
 	Uint32 time, time_old;
@@ -209,5 +209,6 @@ void event_loop (void)
 		if (internal.events_sleep)
 			SDL_Delay (internal.events_sleep);
 	}
+	return 0;
 }
 

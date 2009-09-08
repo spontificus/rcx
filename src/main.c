@@ -85,11 +85,11 @@ void start_race(void)
 
 		//launch threads
 		SDL_Thread *physics = SDL_CreateThread (physics_loop, NULL);
-		SDL_Thread *graphics = SDL_CreateThread (graphics_loop, NULL);
-		event_loop(); //alternative: launch as thread?
+		SDL_Thread *events = SDL_CreateThread (events_loop, NULL);
+		graphics_loop(); //we already got opengl context in main thread
 
 		//wait for threads
-		SDL_WaitThread (graphics, NULL);
+		SDL_WaitThread (events, NULL);
 		SDL_WaitThread (physics, NULL);
 
 		//done!
