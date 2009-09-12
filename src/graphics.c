@@ -198,8 +198,8 @@ int graphics_loop ()
 		graphics_step(time-time_old);
 		time_old = time;
 
-		//if (internal.graphics_sleep)
-			//SDL_Delay (internal.graphics_sleep);
+		if (internal.graphics_sleep)
+			SDL_Delay (internal.graphics_sleep);
 	}
 
 	return 0;

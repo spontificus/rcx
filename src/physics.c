@@ -12,7 +12,7 @@ int physics_init(void)
 	printlog(0, "=> Initiating physics\n");
 	dInitODE2(0);
 	//TODO: this is an ugly flag, change it
-	dAllocateODEDataForThread(dAllocateMaskAll);
+	dAllocateODEDataForThread(dAllocateFlagBasicData | dAllocateFlagCollisionData);
 
 	world = dWorldCreate();
 	space = dHashSpaceCreate(0);
