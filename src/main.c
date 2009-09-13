@@ -33,6 +33,7 @@
 //local stuff:
 #include "shared.h" //custom data definitions
 
+//
 car_struct *venom;
 script_struct *box; //keep track of our loaded debug box
 script_struct *sphere;
@@ -43,6 +44,11 @@ void printlog (int, const char*, ...); //prototype (for included functions
 //keep track of warnings
 unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
+
+//when multithreading, use semaphore for ode
+SDL_sem *ode_lock = NULL;
+//
+
 
 #include "graphics.c"
 #include "physics.c"
@@ -81,6 +87,7 @@ void start_race(void)
 	if (internal.multithread)
 	{
 		printlog (0, "\n-> Starting Race (multithreaded)\n");
+		ode_lock = SDL_CreateSemaphore(1); //create semaphore for ode locking (1 thread)
 		runlevel = running;
 
 		//launch threads
@@ -92,6 +99,7 @@ void start_race(void)
 		SDL_WaitThread (events, NULL);
 		SDL_WaitThread (physics, NULL);
 
+		SDL_DestroySemaphore(ode_lock);
 		//done!
 
 		simtime = SDL_GetTicks(); //set time (for info output)

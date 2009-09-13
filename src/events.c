@@ -204,8 +204,13 @@ int events_loop (void *d)
 	time_old = SDL_GetTicks();
 	while (runlevel == running)
 	{
+		//wait for permission for ode (in case some event causes ode manipulation)
+		SDL_SemWait(ode_lock);
+
 		time = SDL_GetTicks();
 		event_step(time-time_old);
+
+		SDL_SemPost(ode_lock);
 		time_old = time;
 		
 		if (internal.events_sleep)

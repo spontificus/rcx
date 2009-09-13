@@ -350,7 +350,10 @@ int physics_loop (void *d)
 
 	while (runlevel == running)
 	{
+		//technically, collision detection doesn't need this, but since it's already in step function, this is easier
+		SDL_SemWait(ode_lock);
 		physics_step();
+		SDL_SemPost(ode_lock);
 		
 
 		simtime += stepsize_ms;
