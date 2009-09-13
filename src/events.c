@@ -199,7 +199,7 @@ void event_step(Uint32 step)
 int events_loop (void *d)
 {
 	printlog(1, "Starting event loop\n");
-	dAllocateODEDataForThread (dAllocateFlagBasicData); //needed for manipulating ode from event thread
+	//dAllocateODEDataForThread (dAllocateFlagBasicData); //needed for manipulating ode from event thread
 	Uint32 time, time_old;
 	time_old = SDL_GetTicks();
 	while (runlevel == running)
