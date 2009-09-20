@@ -82,6 +82,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		else if (!geom1->wheel&&geom2->wheel)
 			wheel = geom2;
 
+		int i;
 		if (wheel)
 		{
 			mode |= dContactSlip1 | dContactFDir1; //add slip calculations and specified direction
@@ -99,25 +100,42 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 			fdir[0] = rot[2];
 			fdir[1] = rot[6];
 			fdir[2] = rot[10];
+
+			for (i=0; i<count; ++i)
+			{
+				contact[i].surface.mode = mode;
+
+				contact[i].fdir1[0] = fdir[0];
+				contact[i].fdir1[1] = fdir[1];
+				contact[i].fdir1[2] = fdir[2];
+
+				contact[i].surface.slip1 = slip;
+				contact[i].surface.mu = mu;
+				contact[i].surface.soft_erp = erp;
+				contact[i].surface.soft_cfm = cfm;
+				contact[i].surface.bounce = bounce; //in case specified
+				dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+				dJointAttach (c,
+						dGeomGetBody(contact[i].geom.g1),
+						dGeomGetBody(contact[i].geom.g2));
+			}
 		}
 
-		int i;
-		for (i=0; i<count; ++i)
+		else
 		{
-			contact[i].fdir1[0] = fdir[0];
-			contact[i].fdir1[1] = fdir[1];
-			contact[i].fdir1[2] = fdir[2];
+			for (i=0; i<count; ++i)
+			{
+				contact[i].surface.mode = mode;
 
-			contact[i].surface.mode = mode;
-			contact[i].surface.slip1 = slip;
-			contact[i].surface.mu = mu;
-			contact[i].surface.soft_erp = erp;
-			contact[i].surface.soft_cfm = cfm;
-			contact[i].surface.bounce = bounce;
-			dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-			dJointAttach (c,
-					dGeomGetBody(contact[i].geom.g1),
-					dGeomGetBody(contact[i].geom.g2));
+				contact[i].surface.mu = mu;
+				contact[i].surface.soft_erp = erp;
+				contact[i].surface.soft_cfm = cfm;
+				contact[i].surface.bounce = bounce; //in case specified
+				dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+				dJointAttach (c,
+						dGeomGetBody(contact[i].geom.g1),
+						dGeomGetBody(contact[i].geom.g2));
+			}
 		}
 	}
 	
