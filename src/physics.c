@@ -63,7 +63,17 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		dVector3 fdir = {0,0,0};
 
 		mu = (geom1->mu)*(geom2->mu);
+		erp = (geom1->erp)*(geom2->erp);
+		cfm = (geom1->cfm)*(geom2->cfm);
 		slip = 0.0;
+
+		//optional bouncyness (good for wheels?)
+		if (geom1->bounce||geom2->bounce)
+		{
+			mode |= dContactBounce;
+
+			bounce = (geom1->bounce)*(geom2->bounce);
+		}
 
 		//determine if _one_of the geoms is a wheel
 		geom_data *wheel = NULL;
@@ -90,17 +100,6 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 			fdir[1] = rot[6];
 			fdir[2] = rot[10];
 		}
-
-		//optional bouncyness (good for wheels?)
-		if (geom1->bounce||geom2->bounce)
-		{
-			mode |= dContactBounce;
-
-			bounce = ((geom1->bounce)+(geom2->bounce))/2;
-		}
-
-		erp = ((geom1->erp)+(geom2->erp))/2;
-		cfm = ((geom1->cfm)+(geom2->cfm))/2;
 
 		int i;
 		for (i=0; i<count; ++i)
