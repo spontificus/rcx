@@ -1320,6 +1320,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	if (target->spawned)
 	{
 		printlog(0, "ERROR: trying to spawn already spawned car!\n");
+		//TODO: separate car into car_data and car_spawned to make one car spawnable for several players...
 		return;
 	}
 
@@ -1427,6 +1428,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 		//friction
 		wheel_data[i]->mu = target->wheel_mu;
+		wheel_data[i]->mu_rim = target->rim_mu;
 		wheel_data[i]->wheel = true;
 		wheel_data[i]->slip = target->wheel_slip;
 		wheel_data[i]->bounce = target->wheel_bounce;

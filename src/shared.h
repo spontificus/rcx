@@ -27,6 +27,7 @@ struct internal_struct {
 	int contact_points;
 	bool finite_rotation;
 	dReal scale; //TODO
+	dReal rim_angle;
 	dReal mu,erp,cfm,slip;
 
 	dReal dis_linear, dis_angular, dis_time;
@@ -51,6 +52,7 @@ struct data_index internal_index[] = {
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},
 	{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
 	//TODO: SCALE
+	{"rim_angle",		'f',1, offsetof(struct internal_struct, rim_angle)},
 	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
 	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
 	{"default_cfm",		'f',1, offsetof(struct internal_struct, cfm)},
@@ -158,7 +160,7 @@ typedef struct geom_data_struct {
 
 	//Physics data:
 	//placeholder for more physics data
-	dReal mu, erp, cfm, slip, bounce;
+	dReal mu, mu_rim, erp, cfm, slip, bounce;
 
 	bool wheel; //true if wheel side slip and connected to hinge2
 	dJointID hinge2;
@@ -255,7 +257,7 @@ typedef struct car_struct {
 	dReal max_torque, motor_tweak, max_break;
 	dReal body_mass, wheel_mass;
 	dReal suspension_erp, suspension_cfm;
-	dReal wheel_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
+	dReal wheel_mu, rim_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
 	dReal body_mu, body_slip, body_erp, body_cfm;
 
 	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
@@ -298,6 +300,7 @@ struct data_index car_index[] = {
 	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp)},
 	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm)},
 	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu)},
+	{"rim_mu",		'f',1, offsetof(struct car_struct, rim_mu)},
 	{"wheel_slip",		'f',1, offsetof(struct car_struct, wheel_slip)},
 	{"wheel_erp",		'f',1, offsetof(struct car_struct, wheel_erp)},
 	{"wheel_cfm",		'f',1, offsetof(struct car_struct, wheel_cfm)},

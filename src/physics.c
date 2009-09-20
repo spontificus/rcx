@@ -76,16 +76,22 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		}
 
 		//determine if _one_of the geoms is a wheel
-		geom_data *wheel = NULL;
+		geom_data *other, *wheel = NULL;
 		if (geom1->wheel&&!geom2->wheel)
+		{
 			wheel = geom1;
+			other = geom2;
+		}
 		else if (!geom1->wheel&&geom2->wheel)
+		{
 			wheel = geom2;
+			other = geom1;
+		}
 
 		int i;
 		if (wheel)
 		{
-			mode |= dContactSlip1 | dContactFDir1; //add slip calculations and specified direction
+			int mode_tyre = mode | dContactSlip1 | dContactFDir1; //add slip calculations and specified direction
 
 			//get slip value (based on the two geoms' slip value and the wheel's rotation speed)
 			dReal speed = dJointGetHinge2Angle2Rate (wheel->hinge2);
@@ -95,29 +101,55 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 
 			slip = (geom1->slip)*(geom2->slip)*speed;
 
-			//now get the axis direction of the wheel (slip in the right direction) note: axis is along Z
+			//now get the axis direction of the wheel (for slip and rim detection), note: axis is along Z
 			const dReal *rot = dGeomGetRotation(wheel->geom_id);
 			fdir[0] = rot[2];
 			fdir[1] = rot[6];
 			fdir[2] = rot[10];
 
+			//when rim is colliding, no slip, different mu...
+			dReal mu_rim = (wheel->mu_rim)*(other->mu);
+			//note: there's gotta be another way instead of storing a mu_rim in every geom_data...
+
 			for (i=0; i<count; ++i)
 			{
-				contact[i].surface.mode = mode;
+				//dot product between wheel axis and force direction (contact normal)
+				dReal dot = contact[i].geom.normal[0]*fdir[0]+contact[i].geom.normal[1]*fdir[1]+contact[i].geom.normal[2]*fdir[2];
 
-				contact[i].fdir1[0] = fdir[0];
-				contact[i].fdir1[1] = fdir[1];
-				contact[i].fdir1[2] = fdir[2];
+				//tyre
+				if (-internal.rim_angle < dot && dot < internal.rim_angle)
+				{
+					contact[i].surface.mode = mode_tyre;
 
-				contact[i].surface.slip1 = slip;
-				contact[i].surface.mu = mu;
-				contact[i].surface.soft_erp = erp;
-				contact[i].surface.soft_cfm = cfm;
-				contact[i].surface.bounce = bounce; //in case specified
-				dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-				dJointAttach (c,
-						dGeomGetBody(contact[i].geom.g1),
-						dGeomGetBody(contact[i].geom.g2));
+					contact[i].fdir1[0] = fdir[0];
+					contact[i].fdir1[1] = fdir[1];
+					contact[i].fdir1[2] = fdir[2];
+
+					contact[i].surface.slip1 = slip;
+					contact[i].surface.mu = mu;
+					contact[i].surface.soft_erp = erp;
+					contact[i].surface.soft_cfm = cfm;
+					contact[i].surface.bounce = bounce; //in case specified
+					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+					dJointAttach (c,
+							dGeomGetBody(contact[i].geom.g1),
+							dGeomGetBody(contact[i].geom.g2));
+				}
+				//rim
+				else
+				{
+					contact[i].surface.mode = mode;
+
+					contact[i].surface.mu = mu_rim;
+					contact[i].surface.soft_erp = erp;
+					contact[i].surface.soft_cfm = cfm;
+					contact[i].surface.bounce = bounce; //in case specified
+					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+					dJointAttach (c,
+							dGeomGetBody(contact[i].geom.g1),
+							dGeomGetBody(contact[i].geom.g2));
+				}
+
 			}
 		}
 
