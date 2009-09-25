@@ -200,8 +200,10 @@ void car_physics_step(void)
 		else
 		{
 			//disable motor (used for breaks...)
+			dJointSetHinge2Param (carp->joint[0],dParamFMax2,0);
 			dJointSetHinge2Param (carp->joint[1],dParamFMax2,0);
 			dJointSetHinge2Param (carp->joint[2],dParamFMax2,0);
+			dJointSetHinge2Param (carp->joint[3],dParamFMax2,0);
 
 			//add torques directly (no "motor")
 			dReal wheel1 = dJointGetHinge2Angle2Rate (carp->joint[0]);
