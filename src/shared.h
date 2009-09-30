@@ -25,8 +25,9 @@ struct internal_struct {
 	dReal stepsize;
 	int iterations;
 	int contact_points;
-	bool finite_rotation;
+	//bool finite_rotation;
 	dReal scale; //TODO
+	dReal rim_angle;
 	dReal mu,erp,cfm,slip;
 
 	dReal dis_linear, dis_angular, dis_time;
@@ -49,8 +50,9 @@ struct data_index internal_index[] = {
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
 	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},
-	{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
+	//{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
 	//TODO: SCALE
+	{"rim_angle",		'f',1, offsetof(struct internal_struct, rim_angle)},
 	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
 	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
 	{"default_cfm",		'f',1, offsetof(struct internal_struct, cfm)},
@@ -158,7 +160,7 @@ typedef struct geom_data_struct {
 
 	//Physics data:
 	//placeholder for more physics data
-	dReal mu, erp, cfm, slip, bounce;
+	dReal mu, mu_rim, erp, cfm, slip, bounce;
 
 	bool wheel; //true if wheel side slip and connected to hinge2
 	dJointID hinge2;
@@ -255,7 +257,7 @@ typedef struct car_struct {
 	dReal max_torque, motor_tweak, max_break;
 	dReal body_mass, wheel_mass;
 	dReal suspension_erp, suspension_cfm;
-	dReal wheel_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
+	dReal wheel_mu, rim_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
 	dReal body_mu, body_slip, body_erp, body_cfm;
 
 	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
@@ -280,6 +282,11 @@ typedef struct car_struct {
 
 	dReal body[3];
 	dReal box[CAR_MAX_BOXES][6];
+
+	//values for moving steering/breaking/turning between front/rear wheels
+	int steer_ratio, motor_ratio, break_ratio;
+	dReal fsteer, rsteer, fmotor, rmotor, fbreak, rbreak;
+	
 	//debug sizes
 	dReal s[4],w[2],wp[2],jx;
 
@@ -295,9 +302,15 @@ struct data_index car_index[] = {
 	{"max_break",		'f',1, offsetof(struct car_struct, max_break)},
 	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass)},
 	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass)},
+
+	{"front/rear_steer",	'i',1, offsetof(struct car_struct, steer_ratio)},
+	{"front/rear_motor",	'i',1, offsetof(struct car_struct, motor_ratio)},
+	{"front/rear_break",	'i',1, offsetof(struct car_struct, break_ratio)},
+
 	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp)},
 	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm)},
 	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu)},
+	{"rim_mu",		'f',1, offsetof(struct car_struct, rim_mu)},
 	{"wheel_slip",		'f',1, offsetof(struct car_struct, wheel_slip)},
 	{"wheel_erp",		'f',1, offsetof(struct car_struct, wheel_erp)},
 	{"wheel_cfm",		'f',1, offsetof(struct car_struct, wheel_cfm)},

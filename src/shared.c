@@ -138,6 +138,7 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	//collision contactpoint data
 	geom_data_head->file_3d = NULL; //default, isn't rendered
 	geom_data_head->mu = internal.mu;
+	geom_data_head->mu_rim = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
 	geom_data_head->slip = internal.slip; //no FDS slip

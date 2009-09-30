@@ -65,18 +65,35 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		dVector3 fdir = {0,0,0};
 
 		mu = (geom1->mu)*(geom2->mu);
+		erp = (geom1->erp)*(geom2->erp);
+		cfm = (geom1->cfm)*(geom2->cfm);
 		slip = 0.0;
 
-		//determine if _one_of the geoms is a wheel
-		geom_data *wheel = NULL;
-		if (geom1->wheel&&!geom2->wheel)
-			wheel = geom1;
-		else if (!geom1->wheel&&geom2->wheel)
-			wheel = geom2;
+		//optional bouncyness (good for wheels?)
+		if (geom1->bounce||geom2->bounce)
+		{
+			mode |= dContactBounce;
 
+			bounce = (geom1->bounce)*(geom2->bounce);
+		}
+
+		//determine if _one_of the geoms is a wheel
+		geom_data *other, *wheel = NULL;
+		if (geom1->wheel&&!geom2->wheel)
+		{
+			wheel = geom1;
+			other = geom2;
+		}
+		else if (!geom1->wheel&&geom2->wheel)
+		{
+			wheel = geom2;
+			other = geom1;
+		}
+
+		int i;
 		if (wheel)
 		{
-			mode |= dContactSlip1 | dContactFDir1; //add slip calculations and specified direction
+			int mode_tyre = mode | dContactSlip1 | dContactFDir1; //add slip calculations and specified direction
 
 			//get slip value (based on the two geoms' slip value and the wheel's rotation speed)
 			dReal speed = dJointGetHinge2Angle2Rate (wheel->hinge2);
@@ -86,41 +103,73 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 
 			slip = (geom1->slip)*(geom2->slip)*speed;
 
-			//now get the axis direction of the wheel (slip in the right direction) note: axis is along Z
+			//now get the axis direction of the wheel (for slip and rim detection), note: axis is along Z
 			const dReal *rot = dGeomGetRotation(wheel->geom_id);
 			fdir[0] = rot[2];
 			fdir[1] = rot[6];
 			fdir[2] = rot[10];
+
+			//when rim is colliding, no slip, different mu...
+			dReal mu_rim = (wheel->mu_rim)*(other->mu);
+			//note: there's gotta be another way instead of storing a mu_rim in every geom_data...
+
+			for (i=0; i<count; ++i)
+			{
+				//dot product between wheel axis and force direction (contact normal)
+				dReal dot = contact[i].geom.normal[0]*fdir[0]+contact[i].geom.normal[1]*fdir[1]+contact[i].geom.normal[2]*fdir[2];
+
+				//tyre
+				if (-internal.rim_angle < dot && dot < internal.rim_angle)
+				{
+					contact[i].surface.mode = mode_tyre;
+
+					contact[i].fdir1[0] = fdir[0];
+					contact[i].fdir1[1] = fdir[1];
+					contact[i].fdir1[2] = fdir[2];
+
+					contact[i].surface.slip1 = slip;
+					contact[i].surface.mu = mu;
+					contact[i].surface.soft_erp = erp;
+					contact[i].surface.soft_cfm = cfm;
+					contact[i].surface.bounce = bounce; //in case specified
+					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+					dJointAttach (c,
+							dGeomGetBody(contact[i].geom.g1),
+							dGeomGetBody(contact[i].geom.g2));
+				}
+				//rim
+				else
+				{
+					contact[i].surface.mode = mode;
+
+					contact[i].surface.mu = mu_rim;
+					contact[i].surface.soft_erp = erp;
+					contact[i].surface.soft_cfm = cfm;
+					contact[i].surface.bounce = bounce; //in case specified
+					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+					dJointAttach (c,
+							dGeomGetBody(contact[i].geom.g1),
+							dGeomGetBody(contact[i].geom.g2));
+				}
+
+			}
 		}
 
-		//optional bouncyness (good for wheels?)
-		if (geom1->bounce||geom2->bounce)
+		else
 		{
-			mode |= dContactBounce;
+			for (i=0; i<count; ++i)
+			{
+				contact[i].surface.mode = mode;
 
-			bounce = ((geom1->bounce)+(geom2->bounce))/2;
-		}
-
-		erp = ((geom1->erp)+(geom2->erp))/2;
-		cfm = ((geom1->cfm)+(geom2->cfm))/2;
-
-		int i;
-		for (i=0; i<count; ++i)
-		{
-			contact[i].fdir1[0] = fdir[0];
-			contact[i].fdir1[1] = fdir[1];
-			contact[i].fdir1[2] = fdir[2];
-
-			contact[i].surface.mode = mode;
-			contact[i].surface.slip1 = slip;
-			contact[i].surface.mu = mu;
-			contact[i].surface.soft_erp = erp;
-			contact[i].surface.soft_cfm = cfm;
-			contact[i].surface.bounce = bounce;
-			dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-			dJointAttach (c,
-					dGeomGetBody(contact[i].geom.g1),
-					dGeomGetBody(contact[i].geom.g2));
+				contact[i].surface.mu = mu;
+				contact[i].surface.soft_erp = erp;
+				contact[i].surface.soft_cfm = cfm;
+				contact[i].surface.bounce = bounce; //in case specified
+				dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+				dJointAttach (c,
+						dGeomGetBody(contact[i].geom.g1),
+						dGeomGetBody(contact[i].geom.g2));
+			}
 		}
 	}
 	
@@ -190,45 +239,67 @@ void car_physics_step(void)
 		else if (carp->breaks)
 		{
 			dJointSetHinge2Param (carp->joint[1],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[1],dParamFMax2,carp->max_break);
+			dJointSetHinge2Param (carp->joint[1],dParamFMax2,carp->max_break*carp->rbreak);
 			dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[2],dParamFMax2,carp->max_break);
+			dJointSetHinge2Param (carp->joint[2],dParamFMax2,carp->max_break*carp->rbreak);
+
+			dJointSetHinge2Param (carp->joint[0],dParamVel2,0);
+			dJointSetHinge2Param (carp->joint[0],dParamFMax2,carp->max_break*carp->fbreak);
+			dJointSetHinge2Param (carp->joint[3],dParamVel2,0);
+			dJointSetHinge2Param (carp->joint[3],dParamFMax2,carp->max_break*carp->fbreak);
 		}
 		else
 		{
 			//disable motor (used for breaks...)
+			dJointSetHinge2Param (carp->joint[0],dParamFMax2,0);
 			dJointSetHinge2Param (carp->joint[1],dParamFMax2,0);
 			dJointSetHinge2Param (carp->joint[2],dParamFMax2,0);
+			dJointSetHinge2Param (carp->joint[3],dParamFMax2,0);
 
 			//add torques directly (no "motor")
-			dReal wheel1 = dJointGetHinge2Angle2Rate (carp->joint[1]);
-			dReal wheel2 = dJointGetHinge2Angle2Rate (carp->joint[2]);
+			dReal wheel1 = dJointGetHinge2Angle2Rate (carp->joint[0]);
+			dReal wheel2 = dJointGetHinge2Angle2Rate (carp->joint[1]);
+			dReal wheel3 = dJointGetHinge2Angle2Rate (carp->joint[2]);
+			dReal wheel4 = dJointGetHinge2Angle2Rate (carp->joint[3]);
 			if (wheel1 < 0)
 				wheel1 = -wheel1;
 			if (wheel2 < 0)
 				wheel2 = -wheel2;
+			if (wheel3 < 0)
+				wheel3 = -wheel3;
+			if (wheel4 < 0)
+				wheel4 = -wheel4;
 
 			dReal torque1=carp->max_torque/(1+wheel1*carp->motor_tweak);
 			dReal torque2=carp->max_torque/(1+wheel2*carp->motor_tweak);
+			dReal torque3=carp->max_torque/(1+wheel3*carp->motor_tweak);
+			dReal torque4=carp->max_torque/(1+wheel4*carp->motor_tweak);
 
-			dJointAddHinge2Torques (carp->joint[1],0,torque1*carp->throttle*carp->dir);
-			dJointAddHinge2Torques (carp->joint[2],0,torque2*carp->throttle*carp->dir);
+			dJointAddHinge2Torques (carp->joint[0],0,torque1*carp->throttle*carp->dir*carp->fmotor);
+			dJointAddHinge2Torques (carp->joint[1],0,torque2*carp->throttle*carp->dir*carp->rmotor);
+			dJointAddHinge2Torques (carp->joint[2],0,torque3*carp->throttle*carp->dir*carp->rmotor);
+			dJointAddHinge2Torques (carp->joint[3],0,torque4*carp->throttle*carp->dir*carp->fmotor);
 		}
 
-		dJointSetHinge2Param (carp->joint[0],dParamLoStop,carp->steering*carp->dir);
-		dJointSetHinge2Param (carp->joint[0],dParamHiStop,carp->steering*carp->dir);
-		dJointSetHinge2Param (carp->joint[3],dParamLoStop,carp->steering*carp->dir);
-		dJointSetHinge2Param (carp->joint[3],dParamHiStop,carp->steering*carp->dir);
+		dJointSetHinge2Param (carp->joint[0],dParamLoStop,carp->steering*carp->dir *carp->fsteer);
+		dJointSetHinge2Param (carp->joint[0],dParamHiStop,carp->steering*carp->dir *carp->fsteer);
+		dJointSetHinge2Param (carp->joint[3],dParamLoStop,carp->steering*carp->dir *carp->fsteer);
+		dJointSetHinge2Param (carp->joint[3],dParamHiStop,carp->steering*carp->dir *carp->fsteer);
+
+		dJointSetHinge2Param (carp->joint[1],dParamLoStop,carp->steering*carp->dir *carp->rsteer);
+		dJointSetHinge2Param (carp->joint[1],dParamHiStop,carp->steering*carp->dir *carp->rsteer);
+		dJointSetHinge2Param (carp->joint[2],dParamLoStop,carp->steering*carp->dir *carp->rsteer);
+		dJointSetHinge2Param (carp->joint[2],dParamHiStop,carp->steering*carp->dir *carp->rsteer);
 
 
 		//set finite rotation axis (to prevent bending of rear axes)
-		if (internal.finite_rotation)
+		/*if (internal.finite_rotation)
 		{
 			const dReal *rot = dBodyGetRotation (carp->bodyid);
 
 			dBodySetFiniteRotationAxis (carp->wheel_body[1],-rot[0],-rot[4],-rot[8]);
 			dBodySetFiniteRotationAxis (carp->wheel_body[2],-rot[0],-rot[4],-rot[8]);
-		}
+		}*/
 
 		//done, next car...
 		carp=carp->next;
