@@ -6,7 +6,7 @@ void camera_physics_step(dReal step)
 		dGeomSetPosition(camera.geom, camera.pos[0], camera.pos[1], camera.pos[2]);
 
 		dContactGeom contact[internal.contact_points];
-		int count = dCollide (track.object->space, camera.geom, internal.contact_points, &contact[0], sizeof(dContactGeom));
+		int count = dCollide ( (dGeomID)(track.object->space), camera.geom, internal.contact_points, &contact[0], sizeof(dContactGeom));
 
 		if (!count)
 			return;

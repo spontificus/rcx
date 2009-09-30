@@ -79,15 +79,20 @@ void camera_graphics_step(Uint32 step)
 			accel[2] *= change;
 		}
 
-		//now add acceleration
-		camera.vel[0] += accel[0]*time;
-		camera.vel[1] += accel[1]*time;
-		camera.vel[2] += accel[2]*time;
+		dReal dV[3];
+		dV[0] = accel[0]*time;
+		dV[1] = accel[1]*time;
+		dV[2] = accel[2]*time;
 
 		//move camera
-		camera.pos[0] += camera.vel[0]*time;
-		camera.pos[1] += camera.vel[1]*time;
-		camera.pos[2] += camera.vel[2]*time;
+		camera.pos[0] += time*(camera.vel[0] + accel[0]/2);
+		camera.pos[1] += time*(camera.vel[1] + accel[1]/2);
+		camera.pos[2] += time*(camera.vel[2] + accel[2]/2);
+
+		//now add acceleration
+		camera.vel[0] += dV[0];
+		camera.vel[1] += dV[1];
+		camera.vel[2] += dV[2];
 
 
 		//set camera
