@@ -1,3 +1,6 @@
+//length of vector
+#define v_length(x, y, z) (dSqrt( (x)*(x) + (y*y)*(y*y) + (z)*(z) ))
+
 void set_camera_settings (camera_settings *settings)
 {
 	if (settings)
@@ -19,81 +22,77 @@ void camera_graphics_step(Uint32 step)
 
 	if (car && settings) //do some magic ;-)
 	{
+		//random values that might come handy
+
 		//get position of target, simple
 		dVector3 target;
 		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, target);
 
+		//position and velocity of wanted position
+		dVector3 t_pos, t_vel;
+		dBodyGetRelPointPos (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, t_pos);
+		dBodyGetRelPointVel (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, t_vel);
+
+		//relative vectors
+		dReal pos[3] = {t_pos[0]-camera.pos[0], t_pos[1]-camera.pos[1], t_pos[2]-camera.pos[2]};
+		dReal vel[3] = {t_vel[0]-camera.vel[0], t_vel[1]-camera.vel[1], t_vel[2]-camera.vel[2]};
+
+		//vector lengths
+		dReal pos_l = v_length(pos[0], pos[1], pos[2]);
+		dReal vel_l = v_length(vel[0], vel[1], vel[2]);
+
+		//unit vectors
+		dReal pos_u[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l};
+		dReal vel_u[3] = {vel[0]/vel_l, vel[1]/vel_l, vel[2]/vel_l};
 
 
-		//smart/soft camera movement, fun
-		dVector3 tmp;
-		dReal accel[3];
 
-		//relative position and velocity
-		dBodyGetRelPointPos (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, tmp);
-		dReal pos[3] = {tmp[0]-camera.pos[0], tmp[1]-camera.pos[1], tmp[2]-camera.pos[2]};
-		dBodyGetRelPointVel (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, tmp);
-		dReal vel[3] = {tmp[0]-camera.vel[0], tmp[1]-camera.vel[1], tmp[2]-camera.vel[2]};
 
-		dReal pos_l = sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]); //length
-		dReal pos_n[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l}; //normalized
-
-		if (pos_l == 0)
-			printf("TODO: add logic for handling keeping right position\n");
-
-		//find point on length that gives projection by velocity on length
-		dReal p = (pos_n[0]*vel[0]+pos_n[1]*vel[1]+pos_n[2]*vel[2]);
-		dReal v[3] = {p*pos_n[0], p*pos_n[1], p*pos_n[2]}; //vector
-
-		//remove the movement in the desired axis from total, and add breaking
-		accel[0] = (vel[0]-v[0])*settings->accel_tweak;
-		accel[1] = (vel[1]-v[1])*settings->accel_tweak;
-		accel[2] = (vel[2]-v[2])*settings->accel_tweak;
-
-		//deceleration over distance > current velocity (=keep on accelerating)
-		dReal possible_change = settings->accel_max*time;
-		if (sqrt(2*(pos_l-possible_change*time)*settings->accel_max) > -p+possible_change)
+		//check if relative pos and vel can be set to 0 in this one step...
+		//1) accel for breaking to v=0
+		dReal A1[3] = {-vel[0]/time, -vel[1]/time, -vel[2]/time};
+		//2) accel for moving to p=0  (one time for accelerating, one time (negative) for breaking)
+		dReal tmp = 4.0/(time*time);
+		dReal A2[3] = {pos[0]*tmp, pos[1]*tmp, pos[2]*tmp};
+		//3) can all accelerations be done in one step?
+		if ((v_length(A1[0]+A2[0], A1[1]+A2[1], A1[2]+A2[2]) +
+			v_length(A1[0]-A2[0], A1[1]-A2[1], A1[2]-A2[2]))/2.0 <= settings->accel_max)
 		{
-			//printf("accel\n");
-			accel[0] += pos_n[0]*settings->accel_max;
-			accel[1] += pos_n[1]*settings->accel_max;
-			accel[2] += pos_n[2]*settings->accel_max;
+			camera.pos[0] = t_pos[0];
+			camera.pos[1] = t_pos[1];
+			camera.pos[2] = t_pos[2];
+			
+			camera.vel[0] = t_vel[0];
+			camera.vel[1] = t_vel[1];
+			camera.vel[2] = t_vel[2];
 		}
-		else //we need to break
+		else //we can only approach wanted pos/vel in this step...
 		{
-			//printf("break\n");
-			dReal acceleration= (p*p)/(2*pos_l);
-			accel[0] -= pos_n[0]*acceleration;
-			accel[1] -= pos_n[1]*acceleration;
-			accel[2] -= pos_n[2]*acceleration;
+			dReal accel[3] = {0,0,0};
+			printf("TODO!!!\n");
+
+
+
+
+			//done...
+			dReal dV[3];
+			dV[0] = accel[0]*time;
+			dV[1] = accel[1]*time;
+			dV[2] = accel[2]*time;
+
+			//move camera
+			camera.pos[0] += time*(camera.vel[0] + accel[0]/2);
+			camera.pos[1] += time*(camera.vel[1] + accel[1]/2);
+			camera.pos[2] += time*(camera.vel[2] + accel[2]/2);
+
+			//now add acceleration
+			camera.vel[0] += dV[0];
+			camera.vel[1] += dV[1];
+			camera.vel[2] += dV[2];
 		}
 
-		//see if wanted acceleration is above accepted max
-		dReal accel_l = sqrt(accel[0]*accel[0]+accel[1]*accel[1]+accel[2]*accel[2]);
 
-		dReal change = (settings->accel_max/accel_l);
-		if (change < 1)
-		{
-			accel[0] *= change;
-			accel[1] *= change;
-			accel[2] *= change;
-		}
-
-		dReal dV[3];
-		dV[0] = accel[0]*time;
-		dV[1] = accel[1]*time;
-		dV[2] = accel[2]*time;
-
-		//move camera
-		camera.pos[0] += time*(camera.vel[0] + accel[0]/2);
-		camera.pos[1] += time*(camera.vel[1] + accel[1]/2);
-		camera.pos[2] += time*(camera.vel[2] + accel[2]/2);
-
-		//now add acceleration
-		camera.vel[0] += dV[0];
-		camera.vel[1] += dV[1];
-		camera.vel[2] += dV[2];
-
+		
 
 		//set camera
 		gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], target[0], target[1], target[2], 0,0,1);
