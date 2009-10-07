@@ -19,6 +19,7 @@ void camera_graphics_step(Uint32 step)
 	dReal time = step/1000.0;
 	car_struct *car = camera.car;
 	camera_settings *settings = camera.settings;
+	dReal max_accel = settings->accel_max;
 
 	if (car && settings) //do some magic ;-)
 	{
@@ -72,6 +73,12 @@ void camera_graphics_step(Uint32 step)
 			printf("TODO!!!\n");
 
 
+			//ONLY DEMO, NOT REAL SOLUTION!
+			//(just move against wanted position)
+			accel[0] = pos_u[0]*max_accel;
+			accel[1] = pos_u[1]*max_accel;
+			accel[2] = pos_u[2]*max_accel;
+			//!
 
 
 			//done...
