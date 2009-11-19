@@ -66,7 +66,7 @@ void camera_graphics_step(Uint32 step)
 			{
 				//split position into two distances: one along velocity, one perpendicular (d1 and d2)
 				//project position on velocity vector:
-				dReal d1 = {vel_u[0]*pos[0]+vel_u[1]*pos[1]+vel_u[2]*pos[2]};
+				dReal d1 = (vel_u[0]*pos[0]+vel_u[1]*pos[1]+vel_u[2]*pos[2]);
 				dReal d1v[3] = {d1*vel_u[0], d1*vel_u[1], d1*vel_u[2]};
 				//perpendicular (funny: could use z²=x²+y², but need vector later)
 				dReal d2v[3] = {pos[0]-d1v[0], pos[1]-d1v[1], pos[2]-d1v[2]};
@@ -120,10 +120,24 @@ void camera_graphics_step(Uint32 step)
 						camera.pos[1]+=vel_u[1]*move;
 						camera.pos[2]+=vel_u[2]*move;
 
-						//since pos changed, recalculate relative
-						dReal pos[3] = {t_pos[0]-camera.pos[0], t_pos[1]-camera.pos[1], t_pos[2]-camera.pos[2]}; //rel to cam
+						time_left=(time-break_time); //remove time spent breaking (rest will be used later)
 
-						time_left=(time-break_time); //remove time breaked (rest will be used later)
+						//since pos changed, some values need recalculation
+						pos[0] = t_pos[0]-camera.pos[0];
+						pos[1] = t_pos[1]-camera.pos[1];
+						pos[1] = t_pos[2]-camera.pos[2];
+						pos_l = v_length(pos[0], pos[1], pos[2]);
+						//velocity still got the same "direction", but now is 0
+						vel_l = 0;
+						//unit vector
+						pos_u[0] = pos[0]/pos_l;
+						pos_u[1] = pos[1]/pos_l;
+						pos_u[2] = pos[2]/pos_l;
+						//direction1 
+						d1 = (vel_u[0]*pos[0]+vel_u[1]*pos[1]+vel_u[2]*pos[2]);
+						d1v[0] = d1*vel_u[0];
+						d1v[1] = d1*vel_u[1];
+						d1v[2] = d1*vel_u[2];
 					}
 				}
 				else
@@ -132,92 +146,66 @@ void camera_graphics_step(Uint32 step)
 				//if we got time left (even if breaked earlier). guaranteed not needing to stop
 				if (time_left)
 				{
-					//how much can we accelerate?
+					dReal time_accel, time_break; //time to break and then time to accelerate
 
-
-
-
-
-					//OLD:
-					/*
-					//if current velocity is towards d1 (it's positive), might overshoot position along this axis
-					if ( (vel_l*vel_l/(2*max_accel)) > d1 ) //towards wanted position, and will overshoot
+					//do we have velocity?
+					if (vel_l)
 					{
-						dReal time_break = (vel_l/max_accel); //time it takes to break
+						dReal time_passed = vel_l/max_accel; //time it would take to get current velocity
+						//time it would take to move half way if starting at position with v=0
+						dReal time_half = sqrt(d1/max_accel + time_passed*time_passed/2);
 
-						if (time > time_break) //break and correct
-							printf("overshoot, TODO: break+correct\n");
-						else //just break
-						{
-							//velocity
-							dReal accel = max_accel*time; //acceleration/deceleration achieved
-							camera.vel[0]-=vel_u[0]*accel;
-							camera.vel[1]-=vel_u[1]*accel;
-							camera.vel[2]-=vel_u[2]*accel;
-
-							//move
-							dReal min_vel = vel_l-accel; //smallest velocity
-							dReal move = min_vel*time + max_accel*time*time/2;
-							//dReal time_left = (time_break-time); //time left needed to fully break
-							//dReal dist = max_accel*time_break*time_break/2; //how far if completely breaking
-							//dist -= max_accel*time_left*time_left/2; //remove time that's left
-							camera.pos[0]+=vel_u[0]*move;
-							camera.pos[1]+=vel_u[1]*move;
-							camera.pos[2]+=vel_u[2]*move;
-						}
-
-
+						time_accel=time_half-time_passed; //remove already passed
+						time_break=time_half; //already removed passed from acceleration
+							
 					}
-					else //will be able to break in time
+					else //simple
 					{
-						//"imaginary" time that has passed (from standstill to current vel)
-						dReal time_gone = vel_l/max_accel;
-						dReal time_half = sqrt(d1/max_accel + time_gone*time_gone/2); //time between max and 0 speed
-
-						if (time > (2*time_half-time_gone)) //will be able to jump directly
-						{
-							//set the same velocity
-							camera.vel[0]=t_vel[0];
-							camera.vel[1]=t_vel[1];
-							camera.vel[2]=t_vel[2];
-
-							//set wanted position
-							camera.pos[0]=t_pos[0];
-							camera.pos[1]=t_pos[1];
-							camera.pos[2]=t_pos[2];
-						}
-						else if (time > (time_half-time_gone)) //accelerate and enough time to start breaking
-						{
-							//movement (distance _from_ wanted position)
-							dReal time_left = 2*time_half-(time_gone+time);
-							dReal pos = d1-max_accel*time_left*time_left/2;
-							camera.pos[0]=vel_u[0]*pos;
-							camera.pos[1]=vel_u[1]*pos;
-							camera.pos[2]=vel_u[2]*pos;
-
-							//change velocity
-							dReal accel = max_accel*time_left;
-							camera.vel[0]+=vel_u[0]*accel;
-							camera.vel[0]+=vel_u[0]*accel;
-							camera.vel[0]+=vel_u[0]*accel;
-
-						}
-						else //just accelerate
-						{
-							//movement
-							dReal move = vel_l*time+max_accel*time*time/2;
-							camera.pos[0]+=vel_u[0]*move;
-							camera.pos[1]+=vel_u[1]*move;
-							camera.pos[2]+=vel_u[2]*move;
-
-							//change velocity
-							dReal accel = max_accel*time;
-							camera.vel[0]+=vel_u[0]*accel;
-							camera.vel[0]+=vel_u[0]*accel;
-							camera.vel[0]+=vel_u[0]*accel;
-						}
+						time_accel = time_break = sqrt(d1/max_accel);
 					}
-				*/
+
+
+					if (time_left <= time_accel) //we can only accelerate
+					{
+						//velocity
+						dReal velocity = time_left*max_accel;
+						camera.vel[0]+=vel_u[0]*velocity;
+						camera.vel[1]+=vel_u[1]*velocity;
+						camera.vel[2]+=vel_u[2]*velocity;
+
+						//movement
+						dReal move = (vel_l*time_left) + (max_accel*time_left*time_left/2);
+						camera.pos[0]+=vel_u[0]*move;
+						camera.pos[1]+=vel_u[1]*move;
+						camera.pos[2]+=vel_u[2]*move;
+					}
+					else if (time_left < (time_accel+time_break)) //can accelerate and break
+					{
+						//(move calculated from wanted position)
+						dReal time_from_breaked = time_break+time_accel-time_left; //how much time do we miss from jumping to wanted pos?
+
+						//velocity
+						dReal velocity = max_accel*time_from_breaked;
+						camera.vel[0]+=vel_u[0]*velocity;
+						camera.vel[1]+=vel_u[1]*velocity;
+						camera.vel[2]+=vel_u[2]*velocity;
+
+						//movement
+						dReal move = d1-(max_accel*time_from_breaked*time_from_breaked/2);
+						camera.pos[0]+=vel_u[0]*move;
+						camera.pos[1]+=vel_u[1]*move;
+						camera.pos[2]+=vel_u[2]*move;
+					}
+					else //enough time to jump directly to wanted position
+					{
+						printf("TODO: something is wrong here?!\n");
+						camera.pos[0]=t_pos[0];
+						camera.pos[1]=t_pos[1];
+						camera.pos[2]=t_pos[2];
+						camera.vel[0]=t_vel[0];
+						camera.vel[1]=t_vel[1];
+						camera.vel[2]=t_vel[2];
+					}
 				}
 
 				//
@@ -272,49 +260,6 @@ void camera_graphics_step(Uint32 step)
 		}
 
 
-
-
-
-		/*//check if relative pos and vel can be set to 0 in this one step...
-		//1) accel for breaking to v=0
-		dReal A1[3] = {-vel[0]/time, -vel[1]/time, -vel[2]/time};
-		//2) accel for moving to p=0  (one time for accelerating, one time (negative) for breaking)
-		dReal tmp = 4.0/(time*time);
-		dReal A2[3] = {pos[0]*tmp, pos[1]*tmp, pos[2]*tmp};
-		//3) can all accelerations be done in one step?
-		if ((v_length(A1[0]+A2[0], A1[1]+A2[1], A1[2]+A2[2]) +
-			v_length(A1[0]-A2[0], A1[1]-A2[1], A1[2]-A2[2]))/2.0 <= settings->accel_max)
-		{
-			camera.pos[0] = t_pos[0];
-			camera.pos[1] = t_pos[1];
-			camera.pos[2] = t_pos[2];
-			
-			camera.vel[0] = t_vel[0];
-			camera.vel[1] = t_vel[1];
-			camera.vel[2] = t_vel[2];
-		}
-		else //we can only approach wanted pos/vel in this step...
-		{
-			dReal accel[3] = {0,0,0};
-			printf("TODO!!!\n");
-
-
-			//done...
-			dReal dV[3];
-			dV[0] = accel[0]*time;
-			dV[1] = accel[1]*time;
-			dV[2] = accel[2]*time;
-
-			//move camera
-			camera.pos[0] += time*(camera.vel[0] + accel[0]/2);
-			camera.pos[1] += time*(camera.vel[1] + accel[1]/2);
-			camera.pos[2] += time*(camera.vel[2] + accel[2]/2);
-
-			//now add acceleration
-			camera.vel[0] += dV[0];
-			camera.vel[1] += dV[1];
-			camera.vel[2] += dV[2];
-		}*/
 
 		//TODO: smooth rotation
 
