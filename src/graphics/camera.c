@@ -75,13 +75,39 @@ void camera_graphics_step(Uint32 step)
 
 				//acceleration/deceleration of velocity (d1)
 				//if current velocity is towards d1 (it's positive), might overshoot position along this axis
-				if (d1 > 0 && (vel_l*vel_l/(2*max_accel)) > d1 ) //yes, we will overshoot
+				if (d1 < 0) //moving in wrong direction
 				{
-					//todo
+					//time it takes to break
+					dReal break_time = vel_l/max_accel;
+
+					if (time <= break_time) //will only be able to break
+					{
+						dReal time_left = (break_time-time); //time left needed to fully break
+
+						//velocity
+						dReal diff = time_left/break_time; //how much of original velocity left (0 to 1)
+						camera.vel[0]*=diff;
+						camera.vel[1]*=diff;
+						camera.vel[2]*=diff;
+
+						//movement
+						dReal dist = max_accel*break_time*break_time/2; //how far if completely breaking
+						dist -= max_accel*time_left*time_left/2; //remove time that's left
+						camera.pos[0]+=vel_u[0]*dist;
+						camera.pos[1]+=vel_u[1]*dist;
+						camera.pos[2]+=vel_u[2]*dist;
+
+					}
+					else
+						printf("TODO: break n correct\n");
 				}
-				else
+				else if ( (vel_l*vel_l/(2*max_accel)) > d1 ) //towards wanted position, and will overshoot
 				{
-					//todo
+					printf("TODO: overshoot\n");
+				}
+				else //will be able to break in time
+				{
+					printf("TODO: undershoot\n");
 				}
 
 				//movement correction (d2)
