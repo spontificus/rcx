@@ -85,10 +85,10 @@ void camera_graphics_step(Uint32 step)
 						dReal time_left = (break_time-time); //time left needed to fully break
 
 						//velocity
-						dReal diff = time_left/break_time; //how much of original velocity left (0 to 1)
-						camera.vel[0]*=diff;
-						camera.vel[1]*=diff;
-						camera.vel[2]*=diff;
+						dReal accel = max_accel*time; //acceleration/deceleration achieved
+						camera.vel[0]-=vel_u[0]*accel;
+						camera.vel[1]-=vel_u[1]*accel;
+						camera.vel[2]-=vel_u[2]*accel;
 
 						//movement
 						dReal dist = max_accel*break_time*break_time/2; //how far if completely breaking
@@ -99,15 +99,45 @@ void camera_graphics_step(Uint32 step)
 
 					}
 					else
-						printf("TODO: break n correct\n");
+						printf("TODO: break + correct\n");
 				}
 				else if ( (vel_l*vel_l/(2*max_accel)) > d1 ) //towards wanted position, and will overshoot
 				{
-					printf("TODO: overshoot\n");
+					dReal time_break = (vel_l/max_accel); //time it takes to break
+
+					if (time > time_break) //break and correct
+						printf("overshoot, TODO: break+correct\n");
+					else
+					{
+						//velocity
+						dReal accel = max_accel*time; //acceleration/deceleration achieved
+						camera.vel[0]-=vel_u[0]*accel;
+						camera.vel[1]-=vel_u[1]*accel;
+						camera.vel[2]-=vel_u[2]*accel;
+
+						//move
+						dReal time_left = (time_break-time); //time left needed to fully break
+						dReal dist = max_accel*time_break*time_break/2; //how far if completely breaking
+						dist -= max_accel*time_left*time_left/2; //remove time that's left
+						camera.pos[0]+=vel_u[0]*dist;
+						camera.pos[1]+=vel_u[1]*dist;
+						camera.pos[2]+=vel_u[2]*dist;
+					}
+
+
 				}
 				else //will be able to break in time
 				{
-					printf("TODO: undershoot\n");
+					//"imaginary" time that has passed (from standstill to current vel)
+					dReal time_gone = vel_l/max_accel;
+					dReal time_half = sqrt(d1/max_accel + time_gone*time_gone/2); //time between max and 0 speed
+
+					if (time > (2*time_half-time_gone)) //will be able to jump directly
+						printf("TODO: direct jump\n");
+					else if (time > (time_half-time_gone)) //accelerate and enough time to start breaking
+						printf("TODO: correct + break\n");
+					else //just accelerate
+						printf("TODO: accelerate\n");
 				}
 
 				//movement correction (d2)
