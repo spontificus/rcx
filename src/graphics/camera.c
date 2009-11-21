@@ -77,8 +77,11 @@ void camera_graphics_step(Uint32 step)
 				//acceleration/deceleration of velocity (d1)
 				//
 
+				//default: will accelerate over all time
+				dReal time_left=time;
+				bool accelerate=true;
+
 				//first: is moving in wrong direction or overshooting? Then break
-				dReal time_left;
 				if (d1<0 || (vel_l*vel_l/(2*max_accel)) >d1) //moving in wrong direction
 				{
 					//time it takes to break
@@ -86,6 +89,7 @@ void camera_graphics_step(Uint32 step)
 
 					if (time <= break_time) //will only be able to break
 					{
+						printf("all break\n");
 						dReal time_left = (break_time-time); //time left needed to fully break (remove)
 
 						//velocity
@@ -101,10 +105,12 @@ void camera_graphics_step(Uint32 step)
 						camera.pos[1]+=vel_u[1]*dist;
 						camera.pos[2]+=vel_u[2]*dist;
 
-						time_left=0; //no more time after
+						//no more time
+						accelerate=false;
 					}
 					else
 					{
+						printf("some break\n");
 						//velocity
 						camera.vel[0]=t_vel[0];
 						camera.vel[1]=t_vel[1];
@@ -119,6 +125,8 @@ void camera_graphics_step(Uint32 step)
 						camera.pos[0]+=vel_u[0]*move;
 						camera.pos[1]+=vel_u[1]*move;
 						camera.pos[2]+=vel_u[2]*move;
+
+
 
 						time_left=(time-break_time); //remove time spent breaking (rest will be used later)
 
@@ -140,12 +148,11 @@ void camera_graphics_step(Uint32 step)
 						d1v[2] = d1*vel_u[2];
 					}
 				}
-				else
-					time_left=time; //we didn't break, got all time left
 
 				//if we got time left (even if breaked earlier). guaranteed not needing to stop
-				if (time_left)
+				if (accelerate)
 				{
+					printf("time: %f\n", time_left);
 					dReal time_accel, time_break; //time to break and then time to accelerate
 
 					//do we have velocity?
@@ -158,6 +165,7 @@ void camera_graphics_step(Uint32 step)
 						time_accel=time_half-time_passed; //remove already passed
 						time_break=time_half; //already removed passed from acceleration
 							
+					printf("%f - %f\n", time_half, time_passed);
 					}
 					else //simple
 					{
