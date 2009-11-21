@@ -198,10 +198,10 @@ void camera_graphics_step(Uint32 step)
 					}
 					else //enough time to jump directly to wanted position
 					{
-						printf("TODO: something is wrong here?!\n");
-						camera.pos[0]=t_pos[0];
-						camera.pos[1]=t_pos[1];
-						camera.pos[2]=t_pos[2];
+						//printf("TODO: something is wrong here?!\n");
+						camera.pos[0]+=d1v[0];
+						camera.pos[1]+=d1v[1];
+						camera.pos[2]+=d1v[2];
 						camera.vel[0]=t_vel[0];
 						camera.vel[1]=t_vel[1];
 						camera.vel[2]=t_vel[2];
