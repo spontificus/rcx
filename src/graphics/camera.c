@@ -7,10 +7,19 @@ void set_camera_settings (camera_settings *settings)
 	{
 		camera.settings = settings;
 
-		if (!camera.geom)
-			camera.geom = dCreateSphere(0, settings->radius);
+		if (settings->radius != 0)
+		{
+			if (!camera.geom)
+				camera.geom = dCreateSphere(0, settings->radius);
+			else
+				dGeomSphereSetRadius (camera.geom, settings->radius);
+		}
 		else
-			dGeomSphereSetRadius (camera.geom, settings->radius);
+		{
+			if (camera.geom)
+				dGeomDestroy(camera.geom);
+			camera.geom=NULL;
+		}
 	}
 }
 
