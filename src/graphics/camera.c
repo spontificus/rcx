@@ -73,6 +73,10 @@ void camera_graphics_step(Uint32 step)
 				dReal d2 = v_length(d2v[0], d2v[1], d2v[2]);
 				dReal d2u[3] = {d2v[0]/d2, d2v[1]/d2, d2v[2]/d2}; //unit vector
 
+				printf("> d1v: %f %f %f \n", d1v[0], d1v[1], d1v[2]);
+				printf("> d2v: %f %f %f \n", d2v[0], d2v[1], d2v[2]);
+				printf("> d1v*d2v: %f\n", d1v[0]*d2v[0]+d1v[1]*d2v[1]+d1v[2]*d2v[0]);
+				//printf("> pos: %f %f %f\n", pos[0], pos[1], pos[2]);
 				//
 				//acceleration/deceleration of velocity (d1)
 				//
@@ -89,9 +93,11 @@ void camera_graphics_step(Uint32 step)
 
 					if (time <= break_time) //will only be able to break
 					{
-						printf("all break\n");
-						dReal time_left = (break_time-time); //time left needed to fully break (remove)
+						//seems ok
+						//printf("all break\n");
+						dReal time_left_to_halt = (break_time-time); //time left needed to fully break (remove)
 
+						//printf("> break in:%f    time:%f    left:%f\n", break_time, time, time_left_to_halt);
 						//velocity
 						dReal accel = max_accel*time; //acceleration/deceleration achieved
 						camera.vel[0]-=vel_u[0]*accel;
@@ -100,7 +106,7 @@ void camera_graphics_step(Uint32 step)
 
 						//movement
 						dReal dist = max_accel*break_time*break_time/2; //how far if completely breaking
-						dist -= max_accel*time_left*time_left/2; //remove time that's left
+						dist -= max_accel*time_left_to_halt*time_left_to_halt/2; //remove time that's left
 						camera.pos[0]+=vel_u[0]*dist;
 						camera.pos[1]+=vel_u[1]*dist;
 						camera.pos[2]+=vel_u[2]*dist;
@@ -110,8 +116,9 @@ void camera_graphics_step(Uint32 step)
 					}
 					else
 					{
-						printf("some break\n");
-						//velocity
+						//something strange here
+						//printf("some break\n");
+						//velocity is 0 relative
 						camera.vel[0]=t_vel[0];
 						camera.vel[1]=t_vel[1];
 						camera.vel[2]=t_vel[2];
@@ -131,10 +138,12 @@ void camera_graphics_step(Uint32 step)
 						time_left=(time-break_time); //remove time spent breaking (rest will be used later)
 
 						//since pos changed, some values need recalculation
+						//printf("move=%f old=%f %f %f", move, pos[0], pos[1], pos[2]);
 						pos[0] = t_pos[0]-camera.pos[0];
 						pos[1] = t_pos[1]-camera.pos[1];
 						pos[1] = t_pos[2]-camera.pos[2];
 						pos_l = v_length(pos[0], pos[1], pos[2]);
+						//printf("   new=%f %f %f\n", pos[0], pos[1], pos[2]);
 						//velocity still got the same "direction", but now is 0
 						vel_l = 0;
 						//unit vector
@@ -142,17 +151,20 @@ void camera_graphics_step(Uint32 step)
 						pos_u[1] = pos[1]/pos_l;
 						pos_u[2] = pos[2]/pos_l;
 						//direction1 
-						d1 = (vel_u[0]*pos[0]+vel_u[1]*pos[1]+vel_u[2]*pos[2]);
+						//d1 = (vel_u[0]*pos[0]+vel_u[1]*pos[1]+vel_u[2]*pos[2]);
+						d1 -= move;
+
 						d1v[0] = d1*vel_u[0];
 						d1v[1] = d1*vel_u[1];
 						d1v[2] = d1*vel_u[2];
 					}
 				}
+				else
+					printf("no break\n");
 
-				//if we got time left (even if breaked earlier). guaranteed not needing to stop
+				//if we got time left (even if breaked earlier). guaranteed not needing to stop or reverse
 				if (accelerate)
 				{
-					printf("time: %f\n", time_left);
 					dReal time_accel, time_break; //time to break and then time to accelerate
 
 					//do we have velocity?
@@ -165,7 +177,6 @@ void camera_graphics_step(Uint32 step)
 						time_accel=time_half-time_passed; //remove already passed
 						time_break=time_half; //already removed passed from acceleration
 							
-					printf("%f - %f\n", time_half, time_passed);
 					}
 					else //simple
 					{
@@ -175,6 +186,7 @@ void camera_graphics_step(Uint32 step)
 
 					if (time_left <= time_accel) //we can only accelerate
 					{
+						//printf("accel\n");
 						//velocity
 						dReal velocity = time_left*max_accel;
 						camera.vel[0]+=vel_u[0]*velocity;
@@ -189,6 +201,7 @@ void camera_graphics_step(Uint32 step)
 					}
 					else if (time_left < (time_accel+time_break)) //can accelerate and break
 					{
+						//printf("accel+break\n");
 						//(move calculated from wanted position)
 						dReal time_from_breaked = time_break+time_accel-time_left; //how much time do we miss from jumping to wanted pos?
 
@@ -206,27 +219,41 @@ void camera_graphics_step(Uint32 step)
 					}
 					else //enough time to jump directly to wanted position
 					{
+						//printf("jump\n");
 						//printf("TODO: something is wrong here?!\n");
 						camera.pos[0]+=d1v[0];
 						camera.pos[1]+=d1v[1];
 						camera.pos[2]+=d1v[2];
+						//camera.pos[0]+=pos[0];
+						//camera.pos[1]+=pos[1];
+						//camera.pos[2]+=pos[2];
+						//camera.pos[0]=t_pos[0];
+						//camera.pos[1]=t_pos[1];
+						//camera.pos[2]=t_pos[2];
 						camera.vel[0]=t_vel[0];
 						camera.vel[1]=t_vel[1];
 						camera.vel[2]=t_vel[2];
 					}
 				}
+				else
+					printf("(no accel)\n");
 
 				//
 				//movement correction (d2)
 				//
-
 				//t is time it takes to correct, between 0 and t/2 acceleration, between t/2 and t break
 				dReal t = sqrt(4*d2/max_accel);
-				if (time >= t) //will be able to move to wanted position in one step
+				if (1) //(time >= t) //will be able to move to wanted position in one step
 				{
+					printf("jump\n");
+					//printf("> d1v: %f %f %f \n", d1v[0], d1v[1], d1v[2]);
+					//printf("> d2v: %f %f %f \n", d2v[0], d2v[1], d2v[2]);
+					//printf("> first camera: %f %f %f\n", camera.pos[0], camera.pos[1], camera.pos[2]);
 					camera.pos[0]+=d2v[0];
 					camera.pos[1]+=d2v[1];
 					camera.pos[2]+=d2v[2];
+					//printf("> now camera: %f %f %f\n", camera.pos[0], camera.pos[1], camera.pos[2]);
+					//printf("> target: %f %f %f\n", t_pos[0], t_pos[1], t_pos[2]);
 				}
 				else if (time > t/2)  //acceleration and some breaking
 				{
@@ -263,7 +290,6 @@ void camera_graphics_step(Uint32 step)
 					camera.vel[1]+=d2u[1]*accel;
 					camera.vel[2]+=d2u[2]*accel;
 				}
-
 			}
 		}
 
