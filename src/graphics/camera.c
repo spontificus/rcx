@@ -1,5 +1,5 @@
 //length of vector
-#define v_length(x, y, z) (dSqrt( (x)*(x) + (y*y)*(y*y) + (z)*(z) ))
+#define v_length(x, y, z) (dSqrt( (x)*(x) + (y)*(y) + (z)*(z) ))
 
 void set_camera_settings (camera_settings *settings)
 {
@@ -68,15 +68,21 @@ void camera_graphics_step(Uint32 step)
 				//project position on velocity vector:
 				dReal d1 = (vel_u[0]*pos[0]+vel_u[1]*pos[1]+vel_u[2]*pos[2]);
 				dReal d1v[3] = {d1*vel_u[0], d1*vel_u[1], d1*vel_u[2]};
-				//perpendicular (funny: could use z²=x²+y², but need vector later)
+				//perpendicular
 				dReal d2v[3] = {pos[0]-d1v[0], pos[1]-d1v[1], pos[2]-d1v[2]};
 				dReal d2 = v_length(d2v[0], d2v[1], d2v[2]);
 				dReal d2u[3] = {d2v[0]/d2, d2v[1]/d2, d2v[2]/d2}; //unit vector
 
+				printf("> pos: %f %f %f\n", pos[0], pos[1], pos[2]);
+				printf("> vel: %f %f %f\n", vel[0], vel[1], vel[2]);
+				printf("> vel_l: %f\n", vel_l);
+				printf("> vel_u: %f %f %f\n", vel_u[0], vel_u[1], vel_u[2]);
 				printf("> d1v: %f %f %f \n", d1v[0], d1v[1], d1v[2]);
 				printf("> d2v: %f %f %f \n", d2v[0], d2v[1], d2v[2]);
-				printf("> d1v*d2v: %f\n", d1v[0]*d2v[0]+d1v[1]*d2v[1]+d1v[2]*d2v[0]);
-				//printf("> pos: %f %f %f\n", pos[0], pos[1], pos[2]);
+				printf("> d1v+d2v: %f %f %f\n", d1v[0]+d2v[0],d1v[1]+d2v[1],d1v[2]+d2v[2]);
+				//printf("> d1v*d2v: %f\n", d1v[0]*d2v[0]+d1v[1]*d2v[1]+d1v[2]*d2v[2]);
+				printf("> 0: %f\n", vel[0]*d2v[0]+vel[1]*d2v[1]+vel[2]*d2v[2]);
+				printf("> pos_l: %f   d: %f\n", pos_l, sqrt(d1*d1+d2*d2));
 				//
 				//acceleration/deceleration of velocity (d1)
 				//
@@ -243,7 +249,7 @@ void camera_graphics_step(Uint32 step)
 				//
 				//t is time it takes to correct, between 0 and t/2 acceleration, between t/2 and t break
 				dReal t = sqrt(4*d2/max_accel);
-				if (1) //(time >= t) //will be able to move to wanted position in one step
+				if (time >= t) //will be able to move to wanted position in one step
 				{
 					printf("jump\n");
 					//printf("> d1v: %f %f %f \n", d1v[0], d1v[1], d1v[2]);
