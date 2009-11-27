@@ -100,7 +100,7 @@ void camera_graphics_step(Uint32 step)
 					if (time <= break_time) //will only be able to break
 					{
 						//seems ok
-						printf("all break %f\n", vel_l);
+						//printf("all break %f\n", vel_l);
 						dReal time_left_to_halt = (break_time-time); //time left needed to fully break (remove)
 
 						//printf("> break in:%f    time:%f    left:%f\n", break_time, time, time_left_to_halt);
@@ -123,7 +123,7 @@ void camera_graphics_step(Uint32 step)
 					else
 					{
 						//something strange here
-						printf("some break\n");
+						//printf("some break\n");
 						//velocity is 0 relative
 						camera.vel[0]=t_vel[0];
 						camera.vel[1]=t_vel[1];
@@ -165,8 +165,8 @@ void camera_graphics_step(Uint32 step)
 						d1v[2] = d1*vel_u[2];
 					}
 				}
-				else
-					printf("no break\n");
+				//else
+					//printf("no break\n");
 
 				//if we got time left (even if breaked earlier). guaranteed not needing to stop or reverse
 				if (accelerate)
@@ -174,9 +174,9 @@ void camera_graphics_step(Uint32 step)
 					dReal time_accel, time_break; //time to break and then time to accelerate
 
 					//do we have velocity?
-					if (vel_l)
+					if (vel_l > 0)
 					{
-						printf("we have vel %f\n", vel_l);
+						//printf("we have vel %f\n", vel_l);
 						dReal time_passed = vel_l/max_accel; //time it would take to get current velocity
 						//time it would take to move half way if starting at position with v=0
 						dReal time_half = sqrt(d1/max_accel + time_passed*time_passed/2);
@@ -187,15 +187,15 @@ void camera_graphics_step(Uint32 step)
 					}
 					else //simple
 					{
-						printf("no vel %f\n", vel_l);
+						//printf("no vel %f\n", vel_l);
 						time_accel = time_break = sqrt(d1/max_accel);
 					}
 
-					printf("time accel: %f time_break: %f\n", time_accel, time_break);
+					//printf("time accel: %f time_break: %f\n", time_accel, time_break);
 
 					if (time_left <= time_accel) //we can only accelerate
 					{
-						printf("accel\n");
+						//printf("accel\n");
 						//velocity
 						dReal velocity = time_left*max_accel;
 						camera.vel[0]+=vel_u[0]*velocity;
@@ -210,7 +210,7 @@ void camera_graphics_step(Uint32 step)
 					}
 					else if (time_left < (time_accel+time_break)) //can accelerate and break
 					{
-						printf("accel+break\n");
+						//printf("accel+break\n");
 						//(move calculated from wanted position)
 						dReal time_from_breaked = time_break+time_accel-time_left; //how much time do we miss from jumping to wanted pos?
 
@@ -228,7 +228,7 @@ void camera_graphics_step(Uint32 step)
 					}
 					else //enough time to jump directly to wanted position
 					{
-						printf("jump\n");
+						//printf("jump\n");
 						//printf("TODO: something is wrong here?!\n");
 						camera.pos[0]+=d1v[0];
 						camera.pos[1]+=d1v[1];
@@ -244,8 +244,8 @@ void camera_graphics_step(Uint32 step)
 						camera.vel[2]=t_vel[2];
 					}
 				}
-				else
-					printf("(no accel)\n");
+				//else
+					//printf("(no accel)\n");
 
 				//
 				//movement correction (d2)
