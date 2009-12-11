@@ -28,7 +28,7 @@ void camera_graphics_step(Uint32 step)
 	dReal time = step/1000.0;
 	car_struct *car = camera.car;
 	camera_settings *settings = camera.settings;
-	dReal max_accel = settings->accel_max;
+	//dReal max_accel = settings->accel_max;
 	dReal up[3] = {0,0,1};
 
 	if (car && settings) //do some magic ;-)
@@ -45,7 +45,7 @@ void camera_graphics_step(Uint32 step)
 		dBodyGetRelPointVel (car->bodyid, settings->position[0], settings->position[1], settings->position[2]*car->dir, t_vel);
 
 		//relative vectors
-		dReal pos[3] = {t_pos[0]-camera.pos[0], t_pos[1]-camera.pos[1], t_pos[2]-camera.pos[2]}; //rel to cam
+		dReal pos[3] = {camera.pos[0]-t_pos[0], camera.pos[1]-t_pos[1], camera.pos[2]-t_pos[2]}; //rel to obj
 		dReal vel[3] = {camera.vel[0]-t_vel[0], camera.vel[1]-t_vel[1], camera.vel[2]-t_vel[2]}; //rel to obj
 
 		//vector lengths
@@ -56,7 +56,28 @@ void camera_graphics_step(Uint32 step)
 		dReal pos_u[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l};
 		dReal vel_u[3] = {vel[0]/vel_l, vel[1]/vel_l, vel[2]/vel_l};
 
+		//spring physics
+		dReal total_acceleration = time*camera.settings->stiffness*pos_l;
 
+		camera.vel[0]-=pos_u[0]*total_acceleration;
+		camera.vel[1]-=pos_u[1]*total_acceleration;
+		camera.vel[2]-=pos_u[2]*total_acceleration;
+
+		//then: damping (of relative movement)
+		dReal damping = (time*camera.settings->damping);
+		if (damping > 1)
+			printf("WTF?!\n");
+
+		camera.vel[0]-=damping*vel[0];
+		camera.vel[1]-=damping*vel[1];
+		camera.vel[2]-=damping*vel[2];
+
+		//finally: move
+		camera.pos[0]+=camera.vel[0]*time;
+		camera.pos[1]+=camera.vel[1]*time;
+		camera.pos[2]+=camera.vel[2]*time;
+
+		/* OLD
 		//calculations
 		//NOTE: a_max will be used for both directions, making max acceleration vary between a_max and sqrt(2)*a_max
 
@@ -82,7 +103,7 @@ void camera_graphics_step(Uint32 step)
 				dReal d2 = v_length(d2v[0], d2v[1], d2v[2]);
 				dReal d2u[3] = {d2v[0]/d2, d2v[1]/d2, d2v[2]/d2}; //unit vector
 
-				/*printf("> pos: %f %f %f\n", pos[0], pos[1], pos[2]);
+				printf("> pos: %f %f %f\n", pos[0], pos[1], pos[2]);
 				printf("> vel: %f %f %f\n", vel[0], vel[1], vel[2]);
 				printf("> vel_l: %f\n", vel_l);
 				printf("> vel_u: %f %f %f\n", vel_u[0], vel_u[1], vel_u[2]);
@@ -91,7 +112,7 @@ void camera_graphics_step(Uint32 step)
 				printf("> d1v+d2v: %f %f %f\n", d1v[0]+d2v[0],d1v[1]+d2v[1],d1v[2]+d2v[2]);
 				//printf("> d1v*d2v: %f\n", d1v[0]*d2v[0]+d1v[1]*d2v[1]+d1v[2]*d2v[2]);
 				printf("> 0: %f\n", vel[0]*d2v[0]+vel[1]*d2v[1]+vel[2]*d2v[2]);
-				printf("> pos_l: %f   d: %f\n", pos_l, sqrt(d1*d1+d2*d2));*/
+				printf("> pos_l: %f   d: %f\n", pos_l, sqrt(d1*d1+d2*d2));
 				//
 				//acceleration/deceleration of velocity (d1)
 				//
@@ -310,6 +331,7 @@ void camera_graphics_step(Uint32 step)
 				}
 			}
 		}
+	*/
 
 
 
