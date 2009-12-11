@@ -365,6 +365,7 @@ typedef struct {
 	dReal radius;
 	dReal stiffness;
 	dReal damping;
+	dReal rotation;
 } camera_settings;
 
 struct {
@@ -373,6 +374,7 @@ struct {
 	dGeomID geom;
 	dReal pos[3];
 	dReal vel[3];
+	dReal up[3];
 } camera = {NULL, NULL, NULL, {0,0,0}, {0,0,0}};
 
 //profile: stores the user's settings (including key list)
@@ -438,6 +440,7 @@ struct data_index profile_index[] = {
 	{"camera3:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[2].radius)},
 	{"camera3:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[2].stiffness)},
 	{"camera3:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[2].damping)},
+	{"camera3:rotation",		'f' ,1 ,offsetof(struct profile_struct, cam[2].rotation)},
 
 	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
 	{"camera4:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].position)},

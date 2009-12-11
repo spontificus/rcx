@@ -29,7 +29,7 @@ void camera_graphics_step(Uint32 step)
 	car_struct *car = camera.car;
 	camera_settings *settings = camera.settings;
 	//dReal max_accel = settings->accel_max;
-	dReal up[3] = {0,0,1};
+	//dReal up[3] = {0,0,1};
 
 	if (car && settings) //do some magic ;-)
 	{
@@ -335,12 +335,35 @@ void camera_graphics_step(Uint32 step)
 
 
 
-		//TODO: smooth rotation
+		//smooth rotation
+		//(move partially from current "up" to car "up", and make unit)
 
+		//get rotation of car body
+		const dReal *rotation;
+		rotation = dBodyGetRotation (car->bodyid);
+
+		dReal target_up[3];
+		target_up[0] = rotation[2]*car->dir;
+		target_up[1] = rotation[6]*car->dir;
+		target_up[2] = rotation[10]*car->dir;
+
+		dReal diff[3]; //difference between
+		diff[0]=target_up[0]-camera.up[0];
+		diff[1]=target_up[1]-camera.up[1];
+		diff[2]=target_up[2]-camera.up[2];
 		
+		dReal movement=time*camera.settings->rotation;
+		camera.up[0]+=diff[0]*movement;
+		camera.up[1]+=diff[1]*movement;
+		camera.up[2]+=diff[2]*movement;
 
+		//gluLookAt wants up to be unit
+		dReal length=v_length(camera.up[0], camera.up[1], camera.up[2]);
+		camera.up[0]/=length;
+		camera.up[1]/=length;
+		camera.up[2]/=length;
 		//set camera
-		gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], target[0], target[1], target[2], up[0], up[1], up[2]);
+		gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], target[0], target[1], target[2], camera.up[0], camera.up[1], camera.up[2]);
 	}
 	else
 		gluLookAt (10, -10, 10, 0,0,0, 0,0,1);
