@@ -360,11 +360,12 @@ struct data_index car_index[] = {
 
 #define UNUSED_KEY SDLK_QUESTION //key that's not used during race ("safe" default)
 typedef struct {
-	dReal target[3], position[3];
-	//dReal accel_max;
+	dReal target[3], anchor[3];
+	dReal distance;
 	dReal radius;
 	dReal stiffness;
 	dReal damping;
+	bool relative_damping;
 	dReal rotation;
 } camera_settings;
 
@@ -422,32 +423,40 @@ struct data_index profile_index[] = {
 	{"camera_default",   	   	'i' ,1 ,offsetof(struct profile_struct, camera)},
 
 	{"camera1:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].target)},
-	{"camera1:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].position)},
-	//{"camera1:max_acceleration",	'f' ,1 ,offsetof(struct profile_struct, cam[0].accel_max)},
+	{"camera1:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].anchor)},
+	{"camera1:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[0].distance)},
 	{"camera1:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[0].radius)},
 	{"camera1:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[0].stiffness)},
 	{"camera1:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[0].damping)},
+	{"camera1:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[0].relative_damping)},
+	{"camera1:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[0].rotation)},
 
 	{"camera2:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].target)},
-	{"camera2:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].position)},
-	//{"camera2:max_acceleration",	'f' ,1 ,offsetof(struct profile_struct, cam[1].accel_max)},
+	{"camera2:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].anchor)},
+	{"camera2:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[1].distance)},
 	{"camera2:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[1].radius)},
 	{"camera2:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[1].stiffness)},
 	{"camera2:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[1].damping)},
+	{"camera2:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[1].relative_damping)},
+	{"camera2:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[1].rotation)},
 
 	{"camera3:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].target)},
-	{"camera3:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].position)},
+	{"camera3:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].anchor)},
+	{"camera3:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[2].distance)},
 	{"camera3:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[2].radius)},
 	{"camera3:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[2].stiffness)},
 	{"camera3:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[2].damping)},
-	{"camera3:rotation",		'f' ,1 ,offsetof(struct profile_struct, cam[2].rotation)},
+	{"camera3:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[2].relative_damping)},
+	{"camera3:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[2].rotation)},
 
 	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
-	{"camera4:position_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].position)},
-	//{"camera4:max_acceleration",	'f' ,1 ,offsetof(struct profile_struct, cam[3].accel_max)},
+	{"camera4:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].anchor)},
+	{"camera4:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[3].distance)},
 	{"camera4:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[3].radius)},
 	{"camera4:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[3].stiffness)},
 	{"camera4:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[3].damping)},
+	{"camera4:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[3].relative_damping)},
+	{"camera4:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[3].rotation)},
 	{"",0,0}}; //end
 
 //list of all buttons
