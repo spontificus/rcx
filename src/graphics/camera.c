@@ -56,11 +56,12 @@ void camera_graphics_step(Uint32 step)
 		//dReal vel_u[3] = {vel[0]/vel_l, vel[1]/vel_l, vel[2]/vel_l};
 
 		//spring physics
-		dReal total_acceleration = time*camera.settings->stiffness*pos_l;
+		//1: how much acceleration (based on distance from wanted distance)
+		dReal acceleration = -time*camera.settings->stiffness*(pos_l-(settings->distance)); ;
 
-		camera.vel[0]-=pos_u[0]*total_acceleration;
-		camera.vel[1]-=pos_u[1]*total_acceleration;
-		camera.vel[2]-=pos_u[2]*total_acceleration;
+		camera.vel[0]+=pos_u[0]*acceleration;
+		camera.vel[1]+=pos_u[1]*acceleration;
+		camera.vel[2]+=pos_u[2]*acceleration;
 
 		if (settings->relative_damping)
 		{
