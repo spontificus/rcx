@@ -104,7 +104,7 @@ void camera_graphics_step(Uint32 step)
 
 			dReal damping = (time*settings->damping);
 			if (damping > 1)
-				printf("WTF?!\n");
+				damping=1;
 
 			camera.vel[0]-=damping*vel[0];
 			camera.vel[1]-=damping*vel[1];
@@ -116,7 +116,7 @@ void camera_graphics_step(Uint32 step)
 			dReal damping = 1-(time*settings->damping);
 
 			if (damping < 0)
-				printf("WTF?\n");
+				damping=0;
 
 			camera.vel[0]*=damping;
 			camera.vel[1]*=damping;
