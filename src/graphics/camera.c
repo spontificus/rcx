@@ -142,7 +142,11 @@ void camera_graphics_step(Uint32 step)
 		diff[1]=target_up[1]-camera.up[1];
 		diff[2]=target_up[2]-camera.up[2];
 		
-		dReal movement=time*camera.settings->rotation;
+		dReal movement=time*(settings->rotation_tightness);
+
+		if (movement > 1)
+			movement=1;
+
 		camera.up[0]+=diff[0]*movement;
 		camera.up[1]+=diff[1]*movement;
 		camera.up[2]+=diff[2]*movement;
