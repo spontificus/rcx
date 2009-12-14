@@ -39,10 +39,6 @@ void camera_graphics_step(Uint32 step)
 		const dReal *rotation;
 		rotation = dBodyGetRotation (car->bodyid);
 
-		//get position of target
-		dVector3 target;
-		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, target);
-
 		//position and velocity of wanted position
 		dVector3 t_pos, t_vel;
 		dBodyGetRelPointPos (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, t_pos);
@@ -156,8 +152,14 @@ void camera_graphics_step(Uint32 step)
 		camera.up[0]/=length;
 		camera.up[1]/=length;
 		camera.up[2]/=length;
+
+
+		//smooth movement of target focus
+		diff[0]=t_pos[0]-camera.t_pos[0];
+		diff[1]=t_pos[1]-camera.t_pos[1];
+		diff[2]=t_pos[2]-camera.t_pos[2];
 		//set camera
-		gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], target[0], target[1], target[2], camera.up[0], camera.up[1], camera.up[2]);
+		gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], camera.t_pos[0], camera.t_pos[1], camera.t_pos[2], camera.up[0], camera.up[1], camera.up[2]);
 	}
 	else
 		gluLookAt (10, -10, 10, 0,0,0, 0,0,1);

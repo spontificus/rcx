@@ -368,6 +368,7 @@ typedef struct {
 	dReal damping;
 	bool relative_damping;
 	dReal rotation_tightness;
+	dReal target_tightness;
 } camera_settings;
 
 struct {
@@ -375,6 +376,7 @@ struct {
 	car_struct *car;
 	dGeomID geom;
 	dReal pos[3];
+	dReal t_pos[3];
 	dReal vel[3];
 	dReal up[3];
 } camera = {NULL, NULL, NULL, {0,0,0}, {0,0,0}};
@@ -514,6 +516,7 @@ struct track_struct {
 
 	dReal start[3];
 	GLdouble cam_start[3];
+	GLdouble target_start[3];
 
 	file_3d_struct *file_3d;
 	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
@@ -535,6 +538,7 @@ struct data_index track_index[] = {
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
 	{"cam_start",	'd',3,	offsetof(struct track_struct, cam_start)},
+	{"target_start",'d',3,	offsetof(struct track_struct, target_start)},
 	{"",0,0}};//end
 
 
