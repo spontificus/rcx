@@ -364,6 +364,7 @@ typedef struct {
 	dReal distance;
 	dReal radius;
 	dReal stiffness;
+	dReal angular_stiffness;
 	dReal damping;
 	bool relative_damping;
 	dReal rotation;
@@ -427,6 +428,7 @@ struct data_index profile_index[] = {
 	{"camera1:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[0].distance)},
 	{"camera1:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[0].radius)},
 	{"camera1:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[0].stiffness)},
+	{"camera1:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].angular_stiffness)},
 	{"camera1:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[0].damping)},
 	{"camera1:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[0].relative_damping)},
 	{"camera1:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[0].rotation)},
@@ -436,6 +438,7 @@ struct data_index profile_index[] = {
 	{"camera2:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[1].distance)},
 	{"camera2:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[1].radius)},
 	{"camera2:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[1].stiffness)},
+	{"camera2:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].angular_stiffness)},
 	{"camera2:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[1].damping)},
 	{"camera2:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[1].relative_damping)},
 	{"camera2:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[1].rotation)},
@@ -445,6 +448,7 @@ struct data_index profile_index[] = {
 	{"camera3:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[2].distance)},
 	{"camera3:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[2].radius)},
 	{"camera3:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[2].stiffness)},
+	{"camera3:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].angular_stiffness)},
 	{"camera3:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[2].damping)},
 	{"camera3:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[2].relative_damping)},
 	{"camera3:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[2].rotation)},
@@ -454,6 +458,7 @@ struct data_index profile_index[] = {
 	{"camera4:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[3].distance)},
 	{"camera4:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[3].radius)},
 	{"camera4:stiffness",		'f' ,1 ,offsetof(struct profile_struct, cam[3].stiffness)},
+	{"camera4:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].angular_stiffness)},
 	{"camera4:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[3].damping)},
 	{"camera4:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[3].relative_damping)},
 	{"camera4:rotation_speed",	'f' ,1 ,offsetof(struct profile_struct, cam[3].rotation)},

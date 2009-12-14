@@ -35,6 +35,10 @@ void camera_graphics_step(Uint32 step)
 	{
 		//random values that might come handy
 
+		//get rotation of car body
+		const dReal *rotation;
+		rotation = dBodyGetRotation (car->bodyid);
+
 		//get position of target
 		dVector3 target;
 		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, target);
@@ -56,12 +60,42 @@ void camera_graphics_step(Uint32 step)
 		//dReal vel_u[3] = {vel[0]/vel_l, vel[1]/vel_l, vel[2]/vel_l};
 
 		//spring physics
-		//1: how much acceleration (based on distance from wanted distance)
+
+		//spring linear between anchor and camera (distance)
+		//how much acceleration (based on distance from wanted distance)
 		dReal acceleration = -time*camera.settings->stiffness*(pos_l-(settings->distance)); ;
 
 		camera.vel[0]+=pos_u[0]*acceleration;
 		camera.vel[1]+=pos_u[1]*acceleration;
 		camera.vel[2]+=pos_u[2]*acceleration;
+
+		//perpendicular "angular" spring to move camera behind car
+		if (settings->distance > 0)
+		{
+			//directly behind anchor/car (is unit)
+			dReal wanted[3] = {-rotation[1], -rotation[5], -rotation[9]};
+
+			//dot product between wanted and current rotation
+			dReal dot = (wanted[0]*pos_u[0] + wanted[1]*pos_u[1] + wanted[2]*pos_u[2]);
+
+			//angle
+			dReal angle = acos(dot);
+
+			//how much acceleration
+			dReal accel = time*angle*(settings->angular_stiffness);
+
+			//direction of acceleration (remove part of wanted that's along current pos)
+			wanted[0]-=dot*pos_u[0];
+			wanted[1]-=dot*pos_u[1];
+			wanted[2]-=dot*pos_u[2];
+
+			//not unit, get length and modify accel to compensate for not unit
+			accel /= v_length(wanted[0], wanted[1], wanted[2]);
+
+			camera.vel[0]+=(accel*wanted[0]);
+			camera.vel[1]+=(accel*wanted[1]);
+			camera.vel[2]+=(accel*wanted[2]);
+		}
 
 		if (settings->relative_damping)
 		{
@@ -97,10 +131,6 @@ void camera_graphics_step(Uint32 step)
 
 		//smooth rotation
 		//(move partially from current "up" to car "up", and make unit)
-
-		//get rotation of car body
-		const dReal *rotation;
-		rotation = dBodyGetRotation (car->bodyid);
 
 		dReal target_up[3];
 		target_up[0] = rotation[2]*car->dir;
