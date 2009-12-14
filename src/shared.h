@@ -434,6 +434,7 @@ struct data_index profile_index[] = {
 	{"camera1:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[0].damping)},
 	{"camera1:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[0].relative_damping)},
 	{"camera1:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].rotation_tightness)},
+	{"camera1:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].target_tightness)},
 
 	{"camera2:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].target)},
 	{"camera2:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].anchor)},
@@ -444,6 +445,7 @@ struct data_index profile_index[] = {
 	{"camera2:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[1].damping)},
 	{"camera2:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[1].relative_damping)},
 	{"camera2:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].rotation_tightness)},
+	{"camera2:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].target_tightness)},
 
 	{"camera3:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].target)},
 	{"camera3:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].anchor)},
@@ -454,6 +456,7 @@ struct data_index profile_index[] = {
 	{"camera3:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[2].damping)},
 	{"camera3:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[2].relative_damping)},
 	{"camera3:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].rotation_tightness)},
+	{"camera3:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].target_tightness)},
 
 	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
 	{"camera4:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].anchor)},
@@ -464,6 +467,7 @@ struct data_index profile_index[] = {
 	{"camera4:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[3].damping)},
 	{"camera4:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[3].relative_damping)},
 	{"camera4:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].rotation_tightness)},
+	{"camera4:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].target_tightness)},
 	{"",0,0}}; //end
 
 //list of all buttons

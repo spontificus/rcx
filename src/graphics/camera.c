@@ -39,13 +39,18 @@ void camera_graphics_step(Uint32 step)
 		const dReal *rotation;
 		rotation = dBodyGetRotation (car->bodyid);
 
-		//position and velocity of wanted position
-		dVector3 t_pos, t_vel;
-		dBodyGetRelPointPos (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, t_pos);
-		dBodyGetRelPointVel (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, t_vel);
+		//position of "target" - position on car that should be focused
+		dVector3 t_pos;
+		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, t_pos);
+
+		//position and velocity of anchor
+		dVector3 a_pos, a_vel;
+		dBodyGetRelPointPos (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_pos);
+		dBodyGetRelPointVel (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_vel);
 
 		//relative vectors
-		dReal pos[3] = {camera.pos[0]-t_pos[0], camera.pos[1]-t_pos[1], camera.pos[2]-t_pos[2]}; //rel to obj
+		dReal pos[3] = {camera.pos[0]-a_pos[0], camera.pos[1]-a_pos[1], camera.pos[2]-a_pos[2]}; //rel to anchor
+		dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 
 		//vector lengths
 		dReal pos_l = v_length(pos[0], pos[1], pos[2]);
@@ -96,7 +101,6 @@ void camera_graphics_step(Uint32 step)
 		if (settings->relative_damping)
 		{
 			//damping (of relative movement)
-			dReal vel[3] = {camera.vel[0]-t_vel[0], camera.vel[1]-t_vel[1], camera.vel[2]-t_vel[2]}; //rel to obj
 
 			dReal damping = (time*settings->damping);
 			if (damping > 1)
@@ -125,7 +129,7 @@ void camera_graphics_step(Uint32 step)
 		camera.pos[2]+=camera.vel[2]*time;
 
 
-		//smooth rotation
+		//smooth rotation (if enabled)
 		//(move partially from current "up" to car "up", and make unit)
 
 		dReal target_up[3];
@@ -133,31 +137,60 @@ void camera_graphics_step(Uint32 step)
 		target_up[1] = rotation[6]*car->dir;
 		target_up[2] = rotation[10]*car->dir;
 
-		dReal diff[3]; //difference between
-		diff[0]=target_up[0]-camera.up[0];
-		diff[1]=target_up[1]-camera.up[1];
-		diff[2]=target_up[2]-camera.up[2];
-		
-		dReal movement=time*(settings->rotation_tightness);
+		if (settings->rotation_tightness == 0)
+		{
+			target_up[0]=target_up[0];
+			target_up[1]=target_up[1];
+			target_up[2]=target_up[2];
+		}
+		else
+		{
+			dReal diff[3]; //difference between
+			diff[0]=target_up[0]-camera.up[0];
+			diff[1]=target_up[1]-camera.up[1];
+			diff[2]=target_up[2]-camera.up[2];
+			
+			dReal movement=time*(settings->rotation_tightness);
 
-		if (movement > 1)
-			movement=1;
+			if (movement > 1)
+				movement=1;
 
-		camera.up[0]+=diff[0]*movement;
-		camera.up[1]+=diff[1]*movement;
-		camera.up[2]+=diff[2]*movement;
+			camera.up[0]+=diff[0]*movement;
+			camera.up[1]+=diff[1]*movement;
+			camera.up[2]+=diff[2]*movement;
 
-		//gluLookAt wants up to be unit
-		dReal length=v_length(camera.up[0], camera.up[1], camera.up[2]);
-		camera.up[0]/=length;
-		camera.up[1]/=length;
-		camera.up[2]/=length;
+			//gluLookAt wants up to be unit
+			dReal length=v_length(camera.up[0], camera.up[1], camera.up[2]);
+			camera.up[0]/=length;
+			camera.up[1]/=length;
+			camera.up[2]/=length;
+		}
 
+		//smooth movement of target focus (if enabled)
+		if (settings->target_tightness == 0)
+		{
+			camera.t_pos[0] = t_pos[0];
+			camera.t_pos[1] = t_pos[1];
+			camera.t_pos[2] = t_pos[2];
+		}
+		else
+		{
+			dReal diff[3], movement;
 
-		//smooth movement of target focus
-		diff[0]=t_pos[0]-camera.t_pos[0];
-		diff[1]=t_pos[1]-camera.t_pos[1];
-		diff[2]=t_pos[2]-camera.t_pos[2];
+			diff[0]=t_pos[0]-camera.t_pos[0];
+			diff[1]=t_pos[1]-camera.t_pos[1];
+			diff[2]=t_pos[2]-camera.t_pos[2];
+
+			movement = time*(settings->target_tightness);
+
+			if (movement>1)
+				movement=1;
+
+			camera.t_pos[0]+=diff[0]*movement;
+			camera.t_pos[1]+=diff[1]*movement;
+			camera.t_pos[2]+=diff[2]*movement;
+		}
+
 		//set camera
 		gluLookAt(camera.pos[0], camera.pos[1], camera.pos[2], camera.t_pos[0], camera.t_pos[1], camera.t_pos[2], camera.up[0], camera.up[1], camera.up[2]);
 	}
