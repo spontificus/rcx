@@ -50,7 +50,6 @@ void camera_graphics_step(Uint32 step)
 
 		//relative vectors
 		dReal pos[3] = {camera.pos[0]-a_pos[0], camera.pos[1]-a_pos[1], camera.pos[2]-a_pos[2]}; //rel to anchor
-		dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 
 		//vector lengths
 		dReal pos_l = v_length(pos[0], pos[1], pos[2]);
@@ -101,6 +100,7 @@ void camera_graphics_step(Uint32 step)
 		if (settings->relative_damping)
 		{
 			//damping (of relative movement)
+			dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 
 			dReal damping = (time*settings->damping);
 			if (damping > 1)
