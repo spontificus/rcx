@@ -64,10 +64,10 @@ void camera_graphics_step(Uint32 step)
 		//linear spring between anchor and camera (based on distance)
 		dReal dist = pos_l-(settings->distance);
 
-		if (settings->stiffness != 0)
+		if (settings->linear_stiffness != 0)
 		{
 			//how much acceleration (based on distance from wanted distance)
-			dReal acceleration = -time*(camera.settings->stiffness)*dist;
+			dReal acceleration = -time*(camera.settings->linear_stiffness)*dist;
 
 			camera.vel[0]+=pos_u[0]*acceleration;
 			camera.vel[1]+=pos_u[1]*acceleration;
