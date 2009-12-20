@@ -61,13 +61,45 @@ void camera_graphics_step(Uint32 step)
 
 		//spring physics
 
-		//spring linear between anchor and camera (distance)
-		//how much acceleration (based on distance from wanted distance)
-		dReal acceleration = -time*camera.settings->stiffness*(pos_l-(settings->distance)); ;
+		//linear spring between anchor and camera (based on distance)
+		dReal dist = pos_l-(settings->distance);
 
-		camera.vel[0]+=pos_u[0]*acceleration;
-		camera.vel[1]+=pos_u[1]*acceleration;
-		camera.vel[2]+=pos_u[2]*acceleration;
+		if (settings->stiffness != 0)
+		{
+			//how much acceleration (based on distance from wanted distance)
+			dReal acceleration = -time*(camera.settings->stiffness)*dist;
+
+			camera.vel[0]+=pos_u[0]*acceleration;
+			camera.vel[1]+=pos_u[1]*acceleration;
+			camera.vel[2]+=pos_u[2]*acceleration;
+		}
+		else //disabled smooth movement, jump directly
+		{
+			//set position
+			camera.pos[0]-=pos_u[0]*dist;
+			camera.pos[1]-=pos_u[1]*dist;
+			camera.pos[2]-=pos_u[2]*dist;
+
+			//chanses are we have an anchor distance of 0, then vel=wanted
+			if (settings->distance == 0)
+			{
+				camera.vel[0]=a_vel[0];
+				camera.vel[1]=a_vel[1];
+				camera.vel[2]=a_vel[2];
+			}
+			else //velocity towards/from anchor = 0
+			{
+				//relative vel
+				dReal rel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
+				//vel towards anchor
+				dReal vel = (pos_u[0]*rel[0]+pos_u[1]*rel[1]+pos_u[2]*rel[2]);
+
+				//remove vel towards anchor
+				camera.vel[0]-=pos_u[0]*vel;
+				camera.vel[1]-=pos_u[1]*vel;
+				camera.vel[2]-=pos_u[2]*vel;
+			}
+		}
 
 		//perpendicular "angular" spring to move camera behind car
 		if (settings->distance > 0)
