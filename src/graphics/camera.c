@@ -35,10 +35,6 @@ void camera_graphics_step(Uint32 step)
 	{
 		//random values that might come handy:
 
-		//get rotation of car body
-		//const dReal *rotation;
-		//rotation = dBodyGetRotation (car->bodyid);
-
 		//wanted position of "target" - position on car that should be focused
 		dVector3 t_pos;
 		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, t_pos);
@@ -52,10 +48,6 @@ void camera_graphics_step(Uint32 step)
 		dBodyGetRelPointVel (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_vel);
 
 		//relative pos and vel of camera (from anchor)
-		//const dReal *car_pos = dBodyGetPosition (car->bodyid);
-		//const dReal *car_vel = dBodyGetLinearVel (car->bodyid);
-		//dReal pos[3] = {camera.pos[0]-car_pos[0], camera.pos[1]-car_pos[1], camera.pos[2]-car_pos[2]};
-		//dReal vel[3] = {camera.vel[0]-car_vel[0], camera.vel[1]-car_vel[1], camera.vel[2]-car_vel[2]};
 		dReal pos[3] = {camera.pos[0]-a_pos[0], camera.pos[1]-a_pos[1], camera.pos[2]-a_pos[2]};
 		dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 
@@ -65,8 +57,6 @@ void camera_graphics_step(Uint32 step)
 		//how far from car we want to stay
 		//(TODO: could be computed just once - only when changing camera)
 		dReal pos_wanted_l = v_length(pos_wanted[0], pos_wanted[1], pos_wanted[2]);
-
-		//dReal vel_l = v_length(vel[0], vel[1], vel[2]);
 
 		//unit vectors
 		dReal pos_u[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l};
@@ -133,9 +123,6 @@ void camera_graphics_step(Uint32 step)
 			dReal accel = time*angle*(settings->angular_stiffness);
 
 			//direction of acceleration (remove part of wanted that's along current pos)
-			//wanted[0]-=dot*pos_u[0];
-			//wanted[1]-=dot*pos_u[1];
-			//wanted[2]-=dot*pos_u[2];
 			dReal dir[3];
 			dir[0]=pos_wanted_u[0]-dot*pos_u[0];
 			dir[1]=pos_wanted_u[1]-dot*pos_u[1];
