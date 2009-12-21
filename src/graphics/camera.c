@@ -49,18 +49,15 @@ void camera_graphics_step(Uint32 step)
 
 		//relative pos and vel of camera (from anchor)
 		dReal pos[3] = {camera.pos[0]-a_pos[0], camera.pos[1]-a_pos[1], camera.pos[2]-a_pos[2]};
-		dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 
 		//vector lengths
 		dReal pos_l = v_length(pos[0], pos[1], pos[2]);
-		dReal vel_l = v_length(vel[0], vel[1], vel[2]);
 		//how far from car we want to stay
 		//(TODO: could be computed just once - only when changing camera)
 		dReal pos_wanted_l = v_length(pos_wanted[0], pos_wanted[1], pos_wanted[2]);
 
 		//unit vectors
 		dReal pos_u[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l};
-		dReal vel_u[3] = {vel[0]/vel_l, vel[1]/vel_l, vel[2]/vel_l};
 		dReal pos_wanted_u[3] = {pos_wanted[0]/pos_wanted_l, pos_wanted[1]/pos_wanted_l, pos_wanted[2]/pos_wanted_l};
 
 		//
@@ -99,7 +96,7 @@ void camera_graphics_step(Uint32 step)
 			else //velocity towards/from anchor = 0
 			{
 				//relative vel
-				//dReal rel[3] = {camera.vel[0]-c_vel[0], camera.vel[1]-c_vel[1], camera.vel[2]-c_vel[2]};
+				dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 				//vel towards anchor
 				dReal dot = (pos_u[0]*vel[0]+pos_u[1]*vel[1]+pos_u[2]*vel[2]);
 
