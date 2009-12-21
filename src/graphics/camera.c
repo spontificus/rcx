@@ -200,9 +200,9 @@ void camera_graphics_step(Uint32 step)
 
 		if (settings->rotation_tightness == 0)
 		{
-			target_up[0]=target_up[0];
-			target_up[1]=target_up[1];
-			target_up[2]=target_up[2];
+			camera.up[0]=target_up[0];
+			camera.up[1]=target_up[1];
+			camera.up[2]=target_up[2];
 		}
 		else
 		{
