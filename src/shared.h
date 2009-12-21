@@ -360,9 +360,8 @@ struct data_index car_index[] = {
 
 #define UNUSED_KEY SDLK_QUESTION //key that's not used during race ("safe" default)
 typedef struct {
-	//dReal target[3], anchor[3];
-	dReal target[3], offset[3];
-	dReal distance;
+	dReal target[3];
+	dReal anchor[3], distance[3];
 	dReal radius;
 	dReal linear_stiffness;
 	dReal angular_stiffness;
@@ -427,9 +426,9 @@ struct data_index profile_index[] = {
 	{"camera_default",   	   	'i' ,1 ,offsetof(struct profile_struct, camera)},
 
 	{"camera1:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].target)},
-	//{"camera1:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].anchor)},
-	//{"camera1:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[0].distance)},
-	{"camera1:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[0].offset)},
+	{"camera1:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].anchor)},
+	{"camera1:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[0].distance)},
+	//{"camera1:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[0].offset)},
 	{"camera1:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[0].radius)},
 	{"camera1:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].linear_stiffness)},
 	{"camera1:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].angular_stiffness)},
@@ -439,9 +438,9 @@ struct data_index profile_index[] = {
 	{"camera1:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].target_tightness)},
 
 	{"camera2:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].target)},
-	//{"camera2:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].anchor)},
-	//{"camera2:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[1].distance)},
-	{"camera2:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[1].offset)},
+	{"camera2:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].anchor)},
+	{"camera2:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[1].distance)},
+	//{"camera2:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[1].offset)},
 	{"camera2:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[1].radius)},
 	{"camera2:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].linear_stiffness)},
 	{"camera2:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].angular_stiffness)},
@@ -451,9 +450,9 @@ struct data_index profile_index[] = {
 	{"camera2:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].target_tightness)},
 
 	{"camera3:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].target)},
-	//{"camera3:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].anchor)},
-	//{"camera3:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[2].distance)},
-	{"camera3:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[2].offset)},
+	{"camera3:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].anchor)},
+	{"camera3:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[2].distance)},
+	//{"camera3:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[2].offset)},
 	{"camera3:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[2].radius)},
 	{"camera3:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].linear_stiffness)},
 	{"camera3:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].angular_stiffness)},
@@ -463,9 +462,9 @@ struct data_index profile_index[] = {
 	{"camera3:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].target_tightness)},
 
 	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
-	//{"camera4:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].anchor)},
-	//{"camera4:anchor_distance",	'f' ,1 ,offsetof(struct profile_struct, cam[3].distance)},
-	{"camera4:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[3].offset)},
+	{"camera4:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].anchor)},
+	{"camera4:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[3].distance)},
+	//{"camera4:camera_offset",	'f', 3, offsetof(struct profile_struct, cam[3].offset)},
 	{"camera4:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[3].radius)},
 	{"camera4:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].linear_stiffness)},
 	{"camera4:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].angular_stiffness)},

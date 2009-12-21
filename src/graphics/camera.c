@@ -42,36 +42,36 @@ void camera_graphics_step(Uint32 step)
 		//wanted position of "target" - position on car that should be focused
 		dVector3 t_pos;
 		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, t_pos);
-		//wanted position of camera relative to car (translated to world coords)
-		dVector3 c_pos; //, c_vel;
-		dBodyVectorToWorld(car->bodyid, settings->offset[0], settings->offset[1], settings->offset[2]*car->dir, c_pos);
-
-		//dBodyGetRelPointPos (car->bodyid, settings->offset[0], settings->offset[1], settings->offset[2]*car->dir, c_pos);
-		//dBodyGetRelPointVel (car->bodyid, settings->offset[0], settings->offset[1], settings->offset[2]*car->dir, c_vel);
+		//wanted position of camera relative to anchor (translated to world coords)
+		dVector3 pos_wanted;
+		dBodyVectorToWorld(car->bodyid, settings->distance[0], settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
 
 		//position and velocity of anchor
-		//dVector3 a_pos, a_vel;
-		//dBodyGetRelPointPos (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_pos);
-		//dBodyGetRelPointVel (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_vel);
+		dVector3 a_pos, a_vel;
+		dBodyGetRelPointPos (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_pos);
+		dBodyGetRelPointVel (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_vel);
 
-		//relative pos and vel of camera
-		const dReal *car_pos = dBodyGetPosition (car->bodyid);
-		const dReal *car_vel = dBodyGetLinearVel (car->bodyid);
-		dReal pos[3] = {camera.pos[0]-car_pos[0], camera.pos[1]-car_pos[1], camera.pos[2]-car_pos[2]};
-		dReal vel[3] = {camera.vel[0]-car_vel[0], camera.vel[1]-car_vel[1], camera.vel[2]-car_vel[2]};
+		//relative pos and vel of camera (from anchor)
+		//const dReal *car_pos = dBodyGetPosition (car->bodyid);
+		//const dReal *car_vel = dBodyGetLinearVel (car->bodyid);
+		//dReal pos[3] = {camera.pos[0]-car_pos[0], camera.pos[1]-car_pos[1], camera.pos[2]-car_pos[2]};
+		//dReal vel[3] = {camera.vel[0]-car_vel[0], camera.vel[1]-car_vel[1], camera.vel[2]-car_vel[2]};
+		dReal pos[3] = {camera.pos[0]-a_pos[0], camera.pos[1]-a_pos[1], camera.pos[2]-a_pos[2]};
+		dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 
 		//vector lengths
 		dReal pos_l = v_length(pos[0], pos[1], pos[2]);
-		//dReal vel_l = v_length(vel[0], vel[1], vel[2]);
-		//how far from car we want to stay (TODO: could be computed just once - only when changing camera)
-		dReal c_pos_l = v_length(c_pos[0], c_pos[1], c_pos[2]);
+		dReal vel_l = v_length(vel[0], vel[1], vel[2]);
+		//how far from car we want to stay
+		//(TODO: could be computed just once - only when changing camera)
+		dReal pos_wanted_l = v_length(pos_wanted[0], pos_wanted[1], pos_wanted[2]);
 
 		//dReal vel_l = v_length(vel[0], vel[1], vel[2]);
 
 		//unit vectors
 		dReal pos_u[3] = {pos[0]/pos_l, pos[1]/pos_l, pos[2]/pos_l};
-		//dReal vel_u[3] = {vel[0]/vel_l, vel[1]/vel_l, vel[2]/vel_l};
-		dReal c_pos_u[3] = {c_pos[0]/c_pos_l, c_pos[1]/c_pos_l, c_pos[2]/c_pos_l};
+		dReal vel_u[3] = {vel[0]/vel_l, vel[1]/vel_l, vel[2]/vel_l};
+		dReal pos_wanted_u[3] = {pos_wanted[0]/pos_wanted_l, pos_wanted[1]/pos_wanted_l, pos_wanted[2]/pos_wanted_l};
 
 		//
 		//spring physics
@@ -81,7 +81,7 @@ void camera_graphics_step(Uint32 step)
 		//
 
 		//linear spring between anchor and camera (based on distance)
-		dReal dist = pos_l-c_pos_l;
+		dReal dist = pos_l-pos_wanted_l;
 
 		if (settings->linear_stiffness != 0)
 		{
@@ -100,14 +100,14 @@ void camera_graphics_step(Uint32 step)
 			camera.pos[2]-=pos_u[2]*dist;
 
 			//chanses are we have an anchor distance of 0, then vel=wanted
-			//if (settings->distance == 0)
-			//{
-				//camera.vel[0]=a_vel[0];
-				//camera.vel[1]=a_vel[1];
-				//camera.vel[2]=a_vel[2];
-			//}
-			//else //velocity towards/from anchor = 0
-			//{
+			if (pos_wanted_l == 0)
+			{
+				camera.vel[0]=a_vel[0];
+				camera.vel[1]=a_vel[1];
+				camera.vel[2]=a_vel[2];
+			}
+			else //velocity towards/from anchor = 0
+			{
 				//relative vel
 				//dReal rel[3] = {camera.vel[0]-c_vel[0], camera.vel[1]-c_vel[1], camera.vel[2]-c_vel[2]};
 				//vel towards anchor
@@ -117,14 +117,14 @@ void camera_graphics_step(Uint32 step)
 				camera.vel[0]-=pos_u[0]*dot;
 				camera.vel[1]-=pos_u[1]*dot;
 				camera.vel[2]-=pos_u[2]*dot;
-			//}
+			}
 		}
 
 		//perpendicular "angular" spring to move camera behind car
-		//if (settings->distance > 0)
-		//{
-			//dot product between wanted and current rotation
-			dReal dot = (c_pos_u[0]*pos_u[0] + c_pos_u[1]*pos_u[1] + c_pos_u[2]*pos_u[2]);
+		if (pos_wanted_l > 0)
+		{
+			//dot between wanted and current rotation
+			dReal dot = (pos_wanted_u[0]*pos_u[0] + pos_wanted_u[1]*pos_u[1] + pos_wanted_u[2]*pos_u[2]);
 
 			//angle
 			dReal angle = acos(dot);
@@ -137,9 +137,9 @@ void camera_graphics_step(Uint32 step)
 			//wanted[1]-=dot*pos_u[1];
 			//wanted[2]-=dot*pos_u[2];
 			dReal dir[3];
-			dir[0]=c_pos_u[0]-dot*pos_u[0];
-			dir[1]=c_pos_u[1]-dot*pos_u[1];
-			dir[2]=c_pos_u[2]-dot*pos_u[2];
+			dir[0]=pos_wanted_u[0]-dot*pos_u[0];
+			dir[1]=pos_wanted_u[1]-dot*pos_u[1];
+			dir[2]=pos_wanted_u[2]-dot*pos_u[2];
 
 			//not unit, get length and modify accel to compensate for not unit
 			accel /= v_length(dir[0], dir[1], dir[2]);
@@ -147,7 +147,7 @@ void camera_graphics_step(Uint32 step)
 			camera.vel[0]+=(accel*dir[0]);
 			camera.vel[1]+=(accel*dir[1]);
 			camera.vel[2]+=(accel*dir[2]);
-		//}
+		}
 
 		//
 		//damping
@@ -157,7 +157,7 @@ void camera_graphics_step(Uint32 step)
 		{
 			//damping (of relative movement)
 			//(recalculate relative vel, to account for current velocity)
-			dReal vel[3] = {camera.vel[0]-car_vel[0], camera.vel[1]-car_vel[1], camera.vel[2]-car_vel[2]};
+			dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 
 			dReal damping = (time*settings->damping);
 			if (damping > 1)
