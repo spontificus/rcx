@@ -116,22 +116,22 @@ void event_step(Uint32 step)
 			set_camera_settings (&prof->cam[3]);
 
 		//move camera
-		//camera_settings *settings = camera.settings;
-		//if (settings)
-		//{
-			//if (keys[prof->cam_x_pos])
-				//settings->position[0]+=step*0.03;
-			//else if (keys[prof->cam_x_neg])
-				//settings->position[0]-=step*0.03;
-			//if (keys[prof->cam_y_pos])
-				//settings->position[1]+=step*0.03;
-			//else if (keys[prof->cam_y_neg])
-				//settings->position[1]-=step*0.03;
-			//if (keys[prof->cam_z_pos])
-				//settings->position[2]+=step*0.03;
-			//else if (keys[prof->cam_z_neg])
-				//settings->position[2]-=step*0.03;
-		//}
+		camera_settings *settings = camera.settings;
+		if (settings)
+		{
+			if (keys[prof->cam_x_pos])
+				settings->distance[0]+=step*0.03;
+			else if (keys[prof->cam_x_neg])
+				settings->distance[0]-=step*0.03;
+			if (keys[prof->cam_y_pos])
+				settings->distance[1]+=step*0.03;
+			else if (keys[prof->cam_y_neg])
+				settings->distance[1]-=step*0.03;
+			if (keys[prof->cam_z_pos])
+				settings->distance[2]+=step*0.03;
+			else if (keys[prof->cam_z_neg])
+				settings->distance[2]-=step*0.03;
+		}
 
 		//if selected car, read input
 		if (prof->car)
