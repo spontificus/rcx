@@ -63,23 +63,11 @@ void camera_graphics_step(Uint32 step)
 		//
 		//spring physics
 		//
-		//
-		//TODO: option to lock camera position at offset (disable linear+angular smoothning)
-		//
 
 		//linear spring between anchor and camera (based on distance)
 		dReal dist = pos_l-pos_wanted_l;
 
-		if (settings->linear_stiffness != 0)
-		{
-			//how much acceleration (based on distance from wanted distance)
-			dReal acceleration = time*(camera.settings->linear_stiffness)*dist;
-
-			camera.vel[0]-=pos_u[0]*acceleration;
-			camera.vel[1]-=pos_u[1]*acceleration;
-			camera.vel[2]-=pos_u[2]*acceleration;
-		}
-		else //disabled smooth movement, jump directly
+		if (settings->linear_stiffness == 0) //disabled smooth movement, jump directly
 		{
 			//set position
 			camera.pos[0]-=pos_u[0]*dist;
@@ -105,6 +93,15 @@ void camera_graphics_step(Uint32 step)
 				camera.vel[1]-=pos_u[1]*dot;
 				camera.vel[2]-=pos_u[2]*dot;
 			}
+		}
+		else //smooth movement
+		{
+			//how much acceleration (based on distance from wanted distance)
+			dReal acceleration = time*(camera.settings->linear_stiffness)*dist;
+
+			camera.vel[0]-=pos_u[0]*acceleration;
+			camera.vel[1]-=pos_u[1]*acceleration;
+			camera.vel[2]-=pos_u[2]*acceleration;
 		}
 
 		//perpendicular "angular" spring to move camera behind car
