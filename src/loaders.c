@@ -1014,6 +1014,10 @@ int load_track (char *path)
 	camera.t_pos[0] = track.target_start[0];
 	camera.t_pos[1] = track.target_start[1];
 	camera.t_pos[2] = track.target_start[2];
+
+	camera.vel[0] = 0;
+	camera.vel[1] = 0;
+	camera.vel[2] = 0;
 	//append forced data
 	track.position[3] = 0.0f; //directional
 	track.ambient[3] = 1.0f; //a = 1.0f
