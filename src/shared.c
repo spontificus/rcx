@@ -338,7 +338,7 @@ car_struct *allocate_car(void)
 		car_head->box_graphics[i] = NULL;
 	car_head->wheel_graphics = NULL;
 
-	car_head->dir = 0; //initiate to 0
+	car_head->dir = 1; //initiate to 1 for default
 
 	car_head->drift_breaks = true; //if the user does nothing, lock wheels
 	car_head->breaks = false;
