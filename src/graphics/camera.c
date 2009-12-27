@@ -110,24 +110,27 @@ void camera_graphics_step(Uint32 step)
 			//dot between wanted and current rotation
 			dReal dot = (pos_wanted_u[0]*pos_u[0] + pos_wanted_u[1]*pos_u[1] + pos_wanted_u[2]*pos_u[2]);
 
-			//angle
-			dReal angle = acos(dot);
+			if (dot < 1.0) //if we aren't exactly at wanted position (and prevent possibility of acos a number bigger than 1.0)
+			{
+				//angle
+				dReal angle = acos(dot);
 
-			//how much acceleration
-			dReal accel = time*angle*(settings->angular_stiffness);
+				//how much acceleration
+				dReal accel = time*angle*(settings->angular_stiffness);
 
-			//direction of acceleration (remove part of wanted that's along current pos)
-			dReal dir[3];
-			dir[0]=pos_wanted_u[0]-dot*pos_u[0];
-			dir[1]=pos_wanted_u[1]-dot*pos_u[1];
-			dir[2]=pos_wanted_u[2]-dot*pos_u[2];
+				//direction of acceleration (remove part of wanted that's along current pos)
+				dReal dir[3];
+				dir[0]=pos_wanted_u[0]-dot*pos_u[0];
+				dir[1]=pos_wanted_u[1]-dot*pos_u[1];
+				dir[2]=pos_wanted_u[2]-dot*pos_u[2];
 
-			//not unit, get length and modify accel to compensate for not unit
-			accel /= v_length(dir[0], dir[1], dir[2]);
+				//not unit, get length and modify accel to compensate for not unit
+				accel /= v_length(dir[0], dir[1], dir[2]);
 
-			camera.vel[0]+=(accel*dir[0]);
-			camera.vel[1]+=(accel*dir[1]);
-			camera.vel[2]+=(accel*dir[2]);
+				camera.vel[0]+=(accel*dir[0]);
+				camera.vel[1]+=(accel*dir[1]);
+				camera.vel[2]+=(accel*dir[2]);
+			}
 		}
 
 		//
