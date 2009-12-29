@@ -33,6 +33,9 @@ void camera_graphics_step(Uint32 step)
 
 	if (car && settings) //do some magic ;-)
 	{
+		//store old velocity
+		dReal old_vel[3] = {camera.vel[0], camera.vel[1], camera.vel[2]};
+
 		//random values that might come handy:
 
 		//wanted position of "target" - position on car that should be focused
@@ -168,9 +171,11 @@ void camera_graphics_step(Uint32 step)
 		//move
 		//
 	
-		camera.pos[0]+=camera.vel[0]*time;
-		camera.pos[1]+=camera.vel[1]*time;
-		camera.pos[2]+=camera.vel[2]*time;
+		//during the step, camera will have linear acceleration from old velocity to new
+		//avarge velocity over the step is between new and old velocity
+		camera.pos[0]+=((camera.vel[0]+old_vel[0])/2)*time;
+		camera.pos[1]+=((camera.vel[1]+old_vel[1])/2)*time;
+		camera.pos[2]+=((camera.vel[2]+old_vel[2])/2)*time;
 
 
 		//smooth rotation (if enabled)
