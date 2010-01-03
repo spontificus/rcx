@@ -105,7 +105,7 @@ void graphics_step (Uint32 step)
 	glPushMatrix();
 
 	//move camera
-	camera_graphics_step(step);
+	camera_graphics_step();
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);
