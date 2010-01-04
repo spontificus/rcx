@@ -16,16 +16,21 @@ void camera_physics_step(dReal step)
 	//
 	if (car && settings)
 	{
-		//test
-		if (settings->reverse && car->throttle <= 0.0 && car->velocity < -0.1) //if enabled, not wanting to go forward and going backwards
-			printf("reversed\n");
+		//random values will come handy:
 
+
+		//check for some exceptions
+		bool reverse = false;
+		if (settings->reverse && car->throttle <= 0.0 && car->velocity < -0.1) //if enabled, not wanting to go forward and going backwards
+			reverse = true;
+
+		bool in_air = false;
 		if (settings->in_air) //in air enabled
 		{
 			if (!(car->sensor1->event) && !(car->sensor2->event)) //in air
 			{
 				if (camera.in_air_timer > settings->in_air_time)
-					printf("in air\n");
+					in_air = true;
 				else
 					camera.in_air_timer += time;
 			}
@@ -34,17 +39,33 @@ void camera_physics_step(dReal step)
 		}
 
 
-		//random values that might come handy:
-
 		//store old velocity
 		dReal old_vel[3] = {camera.vel[0], camera.vel[1], camera.vel[2]};
 
 		//wanted position of "target" - position on car that should be focused
 		dVector3 t_pos;
-		dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, t_pos);
 		//wanted position of camera relative to anchor (translated to world coords)
 		dVector3 pos_wanted;
-		dBodyVectorToWorld(car->bodyid, settings->distance[0], settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
+
+		if (in_air) //normal position, but target centre of car
+		{
+			const dReal * pos = dBodyGetPosition (car->bodyid);
+			t_pos[0] = pos[0];
+			t_pos[1] = pos[1];
+			t_pos[2] = pos[2];
+
+			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
+		}
+		else if (reverse) //move target and position to opposite side
+		{
+			dBodyGetRelPointPos (car->bodyid, settings->target[0], -settings->target[1], settings->target[2]*car->dir, t_pos);
+			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
+		}
+		else //normal
+		{
+			dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, t_pos);
+			dBodyVectorToWorld(car->bodyid, settings->distance[0], settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
+		}
 
 		//position and velocity of anchor
 		dVector3 a_pos, a_vel;
@@ -110,7 +131,7 @@ void camera_physics_step(dReal step)
 		}
 
 		//perpendicular "angular spring" to move camera behind car
-		if (pos_wanted_l > 0)
+		if (pos_wanted_l > 0 && !in_air)
 		{
 			//dot between wanted and current rotation
 			dReal dot = (pos_wanted_u[0]*pos_u[0] + pos_wanted_u[1]*pos_u[1] + pos_wanted_u[2]*pos_u[2]);
@@ -228,13 +249,23 @@ void camera_physics_step(dReal step)
 		//smooth rotation (if enabled)
 		//(move partially from current "up" to car "up", and make unit)
 
-		const dReal *rotation = dBodyGetRotation (car->bodyid);
 		dReal target_up[3];
-		target_up[0] = rotation[2]*car->dir;
-		target_up[1] = rotation[6]*car->dir;
-		target_up[2] = rotation[10]*car->dir;
 
-		if (settings->rotation_tightness == 0)
+		if (in_air) //if in air, use absolute up instead
+		{
+			target_up[0] = 0;
+			target_up[1] = 0;
+			target_up[2] = 1;
+		}
+		else //use car up
+		{
+			const dReal *rotation = dBodyGetRotation (car->bodyid);
+			target_up[0] = rotation[2]*car->dir;
+			target_up[1] = rotation[6]*car->dir;
+			target_up[2] = rotation[10]*car->dir;
+		}
+
+		if (settings->rotation_tightness == 0) //disabled, rotate directly
 		{
 			camera.up[0]=target_up[0];
 			camera.up[1]=target_up[1];
