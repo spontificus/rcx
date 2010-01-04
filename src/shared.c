@@ -344,6 +344,8 @@ car_struct *allocate_car(void)
 	car_head->breaks = false;
 	car_head->throttle = 0;
 	car_head->steering = 0;
+	
+	car_head->velocity = 0;
 
 	//default mass, friction, different stats... just to prevent segfaults
 	car_head->max_torque  = 8000;

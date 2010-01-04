@@ -251,7 +251,7 @@ typedef struct car_struct {
 	//data loaded from file (to be implemented)
 	//(max_break is for non-locking breaks, not drifting break (they are infinite))
 	char *name;
-	bool spawned; //don't assume loaded cars are participating in race
+	bool spawned; //don't assume loaded cars are participating in race (TODO: split struct into 2: loaded and spawned)
 
 
 	dReal max_torque, motor_tweak, max_break;
@@ -279,6 +279,7 @@ typedef struct car_struct {
 	//controlling values
 	bool drift_breaks, breaks;
 	dReal throttle, steering; //-1.0 to +1.0
+	dReal velocity; //keep track of car velocity
 
 	dReal body[3];
 	dReal box[CAR_MAX_BOXES][6];
