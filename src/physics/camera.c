@@ -34,7 +34,7 @@ void camera_physics_step(dReal step)
 			{
 				if (!camera.in_air) //camera not in "air mode"
 				{
-					if (camera.air_timer > settings->in_air_time)
+					if (camera.air_timer > settings->air_time)
 					{
 						camera.in_air = true; //go to air mode
 						camera.air_timer = 0; //reset timer
@@ -47,7 +47,7 @@ void camera_physics_step(dReal step)
 			{
 				if (camera.in_air) //camera in "air mode"
 				{
-					if (camera.air_timer > settings->in_air_time)
+					if (camera.air_timer > settings->air_time)
 					{
 						camera.in_air = false; //leave air mode
 						camera.air_timer = 0; //reset timer

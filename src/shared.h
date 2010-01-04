@@ -371,7 +371,7 @@ typedef struct {
 	dReal rotation_tightness;
 	dReal target_tightness;
 	bool reverse, in_air;
-	dReal in_air_time;
+	dReal air_time;
 } camera_settings;
 
 struct {
@@ -443,7 +443,7 @@ struct data_index profile_index[] = {
 	{"camera1:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].target_tightness)},
 	{"camera1:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[0].reverse)},
 	{"camera1:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[0].in_air)},
-	{"camera1:in_air_time",		'f', 1, offsetof(struct profile_struct, cam[0].in_air_time)},
+	{"camera1:air_time",		'f', 1, offsetof(struct profile_struct, cam[0].air_time)},
 
 	{"camera2:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].target)},
 	{"camera2:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].anchor)},
@@ -457,7 +457,7 @@ struct data_index profile_index[] = {
 	{"camera2:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].target_tightness)},
 	{"camera2:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[1].reverse)},
 	{"camera2:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[1].in_air)},
-	{"camera2:in_air_time",		'f', 1, offsetof(struct profile_struct, cam[1].in_air_time)},
+	{"camera2:air_time",		'f', 1, offsetof(struct profile_struct, cam[1].air_time)},
 
 	{"camera3:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].target)},
 	{"camera3:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].anchor)},
@@ -471,7 +471,7 @@ struct data_index profile_index[] = {
 	{"camera3:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].target_tightness)},
 	{"camera3:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[2].reverse)},
 	{"camera3:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[2].in_air)},
-	{"camera3:in_air_time",		'f', 1, offsetof(struct profile_struct, cam[2].in_air_time)},
+	{"camera3:air_time",		'f', 1, offsetof(struct profile_struct, cam[2].air_time)},
 
 	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
 	{"camera4:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].anchor)},
@@ -485,7 +485,7 @@ struct data_index profile_index[] = {
 	{"camera4:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].target_tightness)},
 	{"camera4:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[3].reverse)},
 	{"camera4:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[3].in_air)},
-	{"camera4:in_air_time",		'f', 1, offsetof(struct profile_struct, cam[3].in_air_time)},
+	{"camera4:air_time",		'f', 1, offsetof(struct profile_struct, cam[3].air_time)},
 	{"",0,0}}; //end
 
 //list of all buttons
