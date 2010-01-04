@@ -1023,9 +1023,9 @@ int load_track (char *path)
 	camera.up[1] = 0;
 	camera.up[2] = 1;
 
-	camera.in_air_timer = 0;
-
+	camera.air_timer = 0;
 	camera.reverse = false;
+	camera.in_air = false;
 
 	//append forced data
 	track.position[3] = 0.0f; //directional

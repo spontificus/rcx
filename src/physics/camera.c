@@ -28,18 +28,34 @@ void camera_physics_step(dReal step)
 				camera.reverse = true;
 		}
 
-		bool in_air = false;
 		if (settings->in_air) //in air enabled
 		{
 			if (!(car->sensor1->event) && !(car->sensor2->event)) //in air
 			{
-				if (camera.in_air_timer > settings->in_air_time)
-					in_air = true;
-				else
-					camera.in_air_timer += time;
+				if (!camera.in_air) //camera not in "air mode"
+				{
+					if (camera.air_timer > settings->in_air_time)
+					{
+						camera.in_air = true; //go to air mode
+						camera.air_timer = 0; //reset timer
+					}
+					else
+						camera.air_timer += time;
+				}
 			}
-			else
-				camera.in_air_timer = 0; //not in air, make sure timer is 0
+			else //not in air
+			{
+				if (camera.in_air) //camera in "air mode"
+				{
+					if (camera.air_timer > settings->in_air_time)
+					{
+						camera.in_air = false; //leave air mode
+						camera.air_timer = 0; //reset timer
+					}
+					else
+						camera.air_timer += time;
+				}
+			}
 		}
 
 
@@ -51,7 +67,7 @@ void camera_physics_step(dReal step)
 		//wanted position of camera relative to anchor (translated to world coords)
 		dVector3 pos_wanted;
 
-		if (in_air) //normal position, but target centre of car
+		if (camera.in_air) //normal position, but target centre of car
 		{
 			const dReal * pos = dBodyGetPosition (car->bodyid);
 			t_pos[0] = pos[0];
@@ -135,7 +151,7 @@ void camera_physics_step(dReal step)
 		}
 
 		//perpendicular "angular spring" to move camera behind car
-		if (pos_wanted_l > 0 && !in_air)
+		if (pos_wanted_l > 0 && !camera.in_air) //actually got distance, and camera not in "air mode"
 		{
 			//dot between wanted and current rotation
 			dReal dot = (pos_wanted_u[0]*pos_u[0] + pos_wanted_u[1]*pos_u[1] + pos_wanted_u[2]*pos_u[2]);
@@ -255,7 +271,7 @@ void camera_physics_step(dReal step)
 
 		dReal target_up[3];
 
-		if (in_air) //if in air, use absolute up instead
+		if (camera.in_air) //if in air, use absolute up instead
 		{
 			target_up[0] = 0;
 			target_up[1] = 0;
