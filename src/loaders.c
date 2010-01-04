@@ -1006,7 +1006,7 @@ int load_track (char *path)
 
 	free (conf);
 
-	//set camera position
+	//set camera default values, some from track specs
 	camera.pos[0] = track.cam_start[0];
 	camera.pos[1] = track.cam_start[1];
 	camera.pos[2] = track.cam_start[2];
@@ -1018,6 +1018,13 @@ int load_track (char *path)
 	camera.vel[0] = 0;
 	camera.vel[1] = 0;
 	camera.vel[2] = 0;
+
+	camera.up[0] = 0;
+	camera.up[1] = 0;
+	camera.up[2] = 1;
+
+	camera.in_air_timer = 0;
+
 	//append forced data
 	track.position[3] = 0.0f; //directional
 	track.ambient[3] = 1.0f; //a = 1.0f

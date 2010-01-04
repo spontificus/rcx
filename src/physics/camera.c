@@ -16,6 +16,24 @@ void camera_physics_step(dReal step)
 	//
 	if (car && settings)
 	{
+		//test
+		if (settings->reverse && car->throttle <= 0.0 && car->velocity < -0.1) //if enabled, not wanting to go forward and going backwards
+			printf("reversed\n");
+
+		if (settings->in_air) //in air enabled
+		{
+			if (!(car->sensor1->event) && !(car->sensor2->event)) //in air
+			{
+				if (camera.in_air_timer > settings->in_air_time)
+					printf("in air\n");
+				else
+					camera.in_air_timer += time;
+			}
+			else
+				camera.in_air_timer = 0; //not in air, make sure timer is 0
+		}
+
+
 		//random values that might come handy:
 
 		//store old velocity
