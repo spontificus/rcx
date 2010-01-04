@@ -383,6 +383,7 @@ struct {
 	dReal vel[3];
 	dReal up[3];
 	dReal in_air_timer;
+	bool reverse;
 } camera = {NULL, NULL, NULL, {0,0,0}, {0,0,0}};
 
 //profile: stores the user's settings (including key list)

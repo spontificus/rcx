@@ -20,9 +20,13 @@ void camera_physics_step(dReal step)
 
 
 		//check for some exceptions
-		bool reverse = false;
-		if (settings->reverse && car->throttle <= 0.0 && car->velocity < -0.1) //if enabled, not wanting to go forward and going backwards
-			reverse = true;
+		if (settings->reverse) //enabled
+		{
+			if (car->throttle > 0.0) //wanting to go forward
+				camera.reverse = false;
+			else if (car->throttle < 0.0 && car->velocity < 0.0) //wanting and going backwards
+				camera.reverse = true;
+		}
 
 		bool in_air = false;
 		if (settings->in_air) //in air enabled
@@ -56,7 +60,7 @@ void camera_physics_step(dReal step)
 
 			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
 		}
-		else if (reverse) //move target and position to opposite side
+		else if (camera.reverse) //move target and position to opposite side
 		{
 			dBodyGetRelPointPos (car->bodyid, settings->target[0], -settings->target[1], settings->target[2]*car->dir, t_pos);
 			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
