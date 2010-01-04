@@ -304,9 +304,7 @@ void car_physics_step(void)
 		//save ccar velocity
 		const dReal *vel = dBodyGetLinearVel (carp->bodyid);
 		const dReal *rot = dBodyGetRotation  (carp->bodyid);
-		printf("vel: %f %f %f\n", vel[0], vel[1], vel[2]);
 		carp->velocity = (rot[1]*vel[0] + rot[5]*vel[1] + rot[9]*vel[2]);
-		printf("v: %f\n", carp->velocity);
 
 		//done, next car...
 		carp=carp->next;
