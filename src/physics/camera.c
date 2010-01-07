@@ -74,7 +74,7 @@ void camera_physics_step(dReal step)
 			t_pos[1] = pos[1];
 			t_pos[2] = pos[2];
 
-			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
+			dBodyVectorToWorld(car->bodyid, settings->distance[0], settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
 		}
 		else if (camera.reverse) //move target and position to opposite side
 		{
