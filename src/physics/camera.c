@@ -67,16 +67,7 @@ void camera_physics_step(dReal step)
 		//wanted position of camera relative to anchor (translated to world coords)
 		dVector3 pos_wanted;
 
-		if (camera.in_air) //normal position, but target centre of car
-		{
-			const dReal * pos = dBodyGetPosition (car->bodyid);
-			t_pos[0] = pos[0];
-			t_pos[1] = pos[1];
-			t_pos[2] = pos[2];
-
-			dBodyVectorToWorld(car->bodyid, settings->distance[0], settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
-		}
-		else if (camera.reverse) //move target and position to opposite side
+		if (camera.reverse && !camera.in_air) //move target and position to opposite side (if not just in air)
 		{
 			dBodyGetRelPointPos (car->bodyid, settings->target[0], -settings->target[1], settings->target[2]*car->dir, t_pos);
 			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
