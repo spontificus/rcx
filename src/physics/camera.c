@@ -32,6 +32,14 @@ void camera_physics_step(dReal step)
 		{
 			if (!(car->sensor1->event) && !(car->sensor2->event)) //in air
 			{
+				if (camera.in_air) //in ground mode
+				{
+					//smooth transition between offset and center (and needed)
+					if (settings->offset_scale_speed != 0 && camera.offset_scale > 0)
+						camera.offset_scale -= (settings->offset_scale_speed*time);
+					else //jump directly
+						camera.offset_scale = 0;
+				}
 				if (!camera.in_air) //camera not in "air mode"
 				{
 					if (camera.air_timer > settings->air_time)
@@ -55,6 +63,14 @@ void camera_physics_step(dReal step)
 					else
 						camera.air_timer += time;
 				}
+				else //camera in "ground mode"
+				{
+					//smooth transition between center and offset (and needed)
+					if (settings->offset_scale_speed != 0 && camera.offset_scale < 1)
+						camera.offset_scale += (settings->offset_scale_speed*time);
+					else //jump directly
+						camera.offset_scale = 1;
+				}
 			}
 		}
 
@@ -67,14 +83,15 @@ void camera_physics_step(dReal step)
 		//wanted position of camera relative to anchor (translated to world coords)
 		dVector3 pos_wanted;
 
-		if (camera.reverse && !camera.in_air) //move target and position to opposite side (if not just in air)
+		if (camera.reverse && !camera.in_air) //move target and position to opposite side (if not just spinning in air)
 		{
 			dBodyGetRelPointPos (car->bodyid, settings->target[0], -settings->target[1], settings->target[2]*car->dir, t_pos);
 			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
 		}
 		else //normal
 		{
-			dBodyGetRelPointPos (car->bodyid, settings->target[0], settings->target[1], settings->target[2]*car->dir, t_pos);
+			dBodyGetRelPointPos (car->bodyid, settings->target[0]*camera.offset_scale,
+					settings->target[1]*camera.offset_scale, settings->target[2]*car->dir*camera.offset_scale, t_pos);
 			dBodyVectorToWorld(car->bodyid, settings->distance[0], settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
 		}
 
