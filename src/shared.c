@@ -4,6 +4,7 @@
 //
 //See main.c for licensing
 
+#include "shared/camera.c"
 
 //allocate new script storage, and add it to list
 //(not used yet, only for storing 3d list pointers...)
