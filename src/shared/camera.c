@@ -4,20 +4,6 @@ void set_camera_settings (camera_settings *settings)
 	{
 		camera.settings = settings;
 
-		if (settings->radius != 0)
-		{
-			if (!camera.geom)
-				camera.geom = dCreateSphere(0, settings->radius);
-			else
-				dGeomSphereSetRadius (camera.geom, settings->radius);
-		}
-		else
-		{
-			if (camera.geom)
-				dGeomDestroy(camera.geom);
-			camera.geom=NULL;
-		}
-
 		//if this camera mode doesn't have reverse enabled, make sure camera isn't stuck in reverse
 		if (!settings->reverse)
 			camera.reverse = false;

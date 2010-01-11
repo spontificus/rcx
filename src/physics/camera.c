@@ -195,12 +195,13 @@ void camera_physics_step(dReal step)
 		// 2) check for collision, and if so, remove possible movement into collision direction
 		//
 
-		if (camera.geom)
+		if (settings->radius > 0)
 		{
-			dGeomSetPosition(camera.geom, camera.pos[0], camera.pos[1], camera.pos[2]);
+			dGeomID geom = dCreateSphere (0, settings->radius);
+			dGeomSetPosition(geom, camera.pos[0], camera.pos[1], camera.pos[2]);
 
 			dContactGeom contact[internal.contact_points];
-			int count = dCollide ( (dGeomID)(track.object->space), camera.geom, internal.contact_points, &contact[0], sizeof(dContactGeom));
+			int count = dCollide ( (dGeomID)(track.object->space), geom, internal.contact_points, &contact[0], sizeof(dContactGeom));
 
 			int i;
 			dReal depth;
@@ -223,6 +224,8 @@ void camera_physics_step(dReal step)
 					camera.vel[2]-=V*contact[i].normal[2];
 				}
 			}
+
+			dGeomDestroy (geom);
 		}
 
 		//

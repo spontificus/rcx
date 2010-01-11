@@ -378,7 +378,6 @@ typedef struct {
 struct {
 	camera_settings *settings;
 	car_struct *car;
-	dGeomID geom;
 	dReal pos[3];
 	dReal t_pos[3];
 	dReal vel[3];
@@ -387,7 +386,7 @@ struct {
 	dReal offset_scale; //0-1   0 in air, 1 on ground
 	bool reverse;
 	bool in_air;
-} camera = {NULL, NULL, NULL, {0,0,0}, {0,0,0}};
+} camera = {NULL, NULL, {0,0,0}, {0,0,0}};
 
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
