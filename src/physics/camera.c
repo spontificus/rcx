@@ -1,3 +1,6 @@
+//length of vector
+#define v_length(x, y, z) (dSqrt( (x)*(x) + (y)*(y) + (z)*(z) ))
+
 //collide camera with track, generate acceleration on camera if collisding
 void camera_physics_step(dReal step)
 {

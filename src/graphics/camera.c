@@ -1,6 +1,3 @@
-//length of vector
-#define v_length(x, y, z) (dSqrt( (x)*(x) + (y)*(y) + (z)*(z) ))
-
 //set camera view before rendering
 void camera_graphics_step()
 {
