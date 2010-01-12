@@ -99,9 +99,8 @@ void camera_physics_step(dReal step)
 		}
 
 		//position and velocity of anchor
-		dVector3 a_pos, a_vel;
+		dVector3 a_pos;
 		dBodyGetRelPointPos (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_pos);
-		dBodyGetRelPointVel (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_vel);
 
 		//relative pos and vel of camera (from anchor)
 		dReal pos[3] = {camera.pos[0]-a_pos[0], camera.pos[1]-a_pos[1], camera.pos[2]-a_pos[2]};
@@ -131,19 +130,17 @@ void camera_physics_step(dReal step)
 			camera.pos[1]-=pos_u[1]*dist;
 			camera.pos[2]-=pos_u[2]*dist;
 
-			//chanses are we have an anchor distance of 0, then vel=wanted
+			//chanses are we have an anchor distance of 0, then vel=0
 			if (pos_wanted_l == 0)
 			{
-				camera.vel[0]=a_vel[0];
-				camera.vel[1]=a_vel[1];
-				camera.vel[2]=a_vel[2];
+				camera.vel[0]=0;
+				camera.vel[1]=0;
+				camera.vel[2]=0;
 			}
 			else //velocity towards/from anchor = 0
 			{
-				//relative vel
-				dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
 				//vel towards anchor
-				dReal dot = (pos_u[0]*vel[0]+pos_u[1]*vel[1]+pos_u[2]*vel[2]);
+				dReal dot = (pos_u[0]*camera.vel[0] + pos_u[1]*camera.vel[1] + pos_u[2]*camera.vel[2]);
 
 				//remove vel towards anchor
 				camera.vel[0]-=pos_u[0]*dot;
@@ -235,8 +232,9 @@ void camera_physics_step(dReal step)
 		if (settings->relative_damping)
 		{
 			//damping (of relative movement)
-			//(recalculate relative vel, to account for current velocity)
-			dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]};
+			dVector3 a_vel; //anchor velocity
+			dBodyGetRelPointVel (car->bodyid, settings->anchor[0], settings->anchor[1], settings->anchor[2]*car->dir, a_vel);
+			dReal vel[3] = {camera.vel[0]-a_vel[0], camera.vel[1]-a_vel[1], camera.vel[2]-a_vel[2]}; //velocity relative to anchor
 
 			dReal damping = (time*settings->damping);
 			if (damping > 1)
@@ -268,7 +266,6 @@ void camera_physics_step(dReal step)
 		camera.pos[0]+=((camera.vel[0]+old_vel[0])/2)*time;
 		camera.pos[1]+=((camera.vel[1]+old_vel[1])/2)*time;
 		camera.pos[2]+=((camera.vel[2]+old_vel[2])/2)*time;
-
 
 
 		//movement of camera done.
