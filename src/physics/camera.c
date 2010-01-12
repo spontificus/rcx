@@ -125,20 +125,27 @@ void camera_physics_step(dReal step)
 
 		if (settings->linear_stiffness == 0) //disabled smooth movement, jump directly
 		{
-			//set position
-			camera.pos[0]-=pos_u[0]*dist;
-			camera.pos[1]-=pos_u[1]*dist;
-			camera.pos[2]-=pos_u[2]*dist;
-
 			//chanses are we have an anchor distance of 0, then vel=0
 			if (pos_wanted_l == 0)
 			{
+				//position at wanted
+				camera.pos[0]=a_pos[0];
+				camera.pos[1]=a_pos[1];
+				camera.pos[2]=a_pos[2];
+
+				//velocity 0
 				camera.vel[0]=0;
 				camera.vel[1]=0;
 				camera.vel[2]=0;
 			}
-			else //velocity towards/from anchor = 0
+			else
 			{
+				//set position
+				camera.pos[0]-=pos_u[0]*dist;
+				camera.pos[1]-=pos_u[1]*dist;
+				camera.pos[2]-=pos_u[2]*dist;
+
+				//velocity towards/from anchor = 0
 				//vel towards anchor
 				dReal dot = (pos_u[0]*camera.vel[0] + pos_u[1]*camera.vel[1] + pos_u[2]*camera.vel[2]);
 
