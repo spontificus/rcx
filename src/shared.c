@@ -189,8 +189,6 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 	body_data_head->body_id = body;
 
 	//default values
-	body_data_head->use_drag = false;
-	body_data_head->use_rotation_drag = false;
 
 	body_data_head->threshold = 0; //no threshold (disables event testing)
 	body_data_head->buffer = 1; //almost empty buffer

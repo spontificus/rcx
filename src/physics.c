@@ -343,13 +343,13 @@ void joint_physics_step (void)
 void body_physics_step (void)
 {
 	body_data *d = body_data_head;
-	const dReal *a_vel;
-	dVector3 r_vel;
-	dReal forceX, forceY, forceZ;
+	//const dReal *a_vel;
+	//dVector3 r_vel;
+	//dReal forceX, forceY, forceZ;
 
 	while (d)
 	{
-		if (d->use_drag)
+		/*if (d->use_drag)
 		{
 			a_vel = dBodyGetLinearVel(d->body_id);
 
@@ -389,7 +389,7 @@ void body_physics_step (void)
 				forceZ = -forceZ;
 
 			dBodyAddRelTorque (d->body_id, forceX, forceY, forceZ);
-		}
+		}*/
 
 		d = d->next;
 	}

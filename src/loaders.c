@@ -1383,16 +1383,16 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	//set up air (and liquid) drag for body
 	body_data *odata;
 	odata = allocate_body_data (target->bodyid, target->object);
-	odata->use_drag = true;
-	odata->drag[0] = target->body_drag[0];
-	odata->drag[1] = target->body_drag[1];
-	odata->drag[2] = target->body_drag[2];
+	//odata->use_drag = true;
+	//odata->drag[0] = target->body_drag[0];
+	//odata->drag[1] = target->body_drag[1];
+	//odata->drag[2] = target->body_drag[2];
 
 	//rotational drag
-	odata->use_rotation_drag = true;
-	odata->rot_drag[0] = target->body_rotation_drag[0];
-	odata->rot_drag[1] = target->body_rotation_drag[1];
-	odata->rot_drag[2] = target->body_rotation_drag[2];
+	//odata->use_rotation_drag = true;
+	//odata->rot_drag[0] = target->body_rotation_drag[0];
+	//odata->rot_drag[1] = target->body_rotation_drag[1];
+	//odata->rot_drag[2] = target->body_rotation_drag[2];
 
 	dMassSetBox (&m,1,target->body[0], target->body[1], target->body[2]); //sides
 	dMassAdjust (&m,target->body_mass); //mass
@@ -1483,16 +1483,16 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 		//drag
 		odata = allocate_body_data (wheel_body[i], target->object);
-		odata->use_drag = true;
-		odata->drag[0] = target->wheel_drag[0];
-		odata->drag[1] = target->wheel_drag[1];
-		odata->drag[2] = target->wheel_drag[2];
+		//odata->use_drag = true;
+		//odata->drag[0] = target->wheel_drag[0];
+		//odata->drag[1] = target->wheel_drag[1];
+		//odata->drag[2] = target->wheel_drag[2];
 
 		//rotational drag
-		odata->use_rotation_drag = true;
-		odata->rot_drag[0] = target->wheel_rotation_drag[0];
-		odata->rot_drag[1] = target->wheel_rotation_drag[1];
-		odata->rot_drag[2] = target->wheel_rotation_drag[2];
+		//odata->use_rotation_drag = true;
+		//odata->rot_drag[0] = target->wheel_rotation_drag[0];
+		//odata->rot_drag[1] = target->wheel_rotation_drag[1];
+		//odata->rot_drag[2] = target->wheel_rotation_drag[2];
 
 		//graphics
 		wheel_data[i]->file_3d = target->wheel_graphics;
