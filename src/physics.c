@@ -397,7 +397,6 @@ void body_physics_step (void)
 
 void physics_step(void)
 {
-	camera_physics_step();
 	car_physics_step(); //control, antigrav...
 	joint_physics_step(); //joint forces
 	body_physics_step(); //drag (air/liquid "friction")
@@ -417,6 +416,8 @@ void physics_step(void)
 
 	dWorldQuickStep (world, internal.stepsize);
 	dJointGroupEmpty (contactgroup);
+
+	camera_physics_step(); //move camera to wanted postion
 }
 
 //TODO: add physics loop
