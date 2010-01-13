@@ -181,7 +181,7 @@ int load_conf (char *name, char *memory, struct data_index index[])
       break;
 
       case 'd':
-       argscan="%d";
+       argscan="%lf";
        argsize=sizeof(double);
       break;
 
@@ -288,6 +288,12 @@ profile *load_profile (char *path)
 		return NULL;
 
 	free (conf);
+
+	//set camera
+	if (prof->camera >0 && prof->camera <5)
+		set_camera_settings (&(prof->cam[prof->camera -1]));
+	else
+		printlog(0, "ERROR: default camera should be a value between 1 and 4!\n");
 
 	//load key list
 	char *list=(char *)calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
@@ -999,6 +1005,27 @@ int load_track (char *path)
 		return -1;
 
 	free (conf);
+
+	//set camera default values, some from track specs
+	camera.pos[0] = track.cam_start[0];
+	camera.pos[1] = track.cam_start[1];
+	camera.pos[2] = track.cam_start[2];
+
+	camera.t_pos[0] = track.target_start[0];
+	camera.t_pos[1] = track.target_start[1];
+	camera.t_pos[2] = track.target_start[2];
+
+	camera.vel[0] = 0;
+	camera.vel[1] = 0;
+	camera.vel[2] = 0;
+
+	camera.up[0] = 0;
+	camera.up[1] = 0;
+	camera.up[2] = 1;
+
+	camera.air_timer = 0;
+	camera.reverse = false;
+	camera.in_air = false;
 
 	//append forced data
 	track.position[3] = 0.0f; //directional

@@ -7,6 +7,8 @@ dWorldID world;
 dSpaceID space;
 dJointGroupID contactgroup;//TODO: move to shared.h data? good for event thread?
 
+#include "physics/camera.c"
+
 int physics_init(void)
 {
 	printlog(0, "=> Initiating physics\n");
@@ -299,6 +301,11 @@ void car_physics_step(void)
 			dBodySetFiniteRotationAxis (carp->wheel_body[2],-rot[0],-rot[4],-rot[8]);
 		}*/
 
+		//save ccar velocity
+		const dReal *vel = dBodyGetLinearVel (carp->bodyid);
+		const dReal *rot = dBodyGetRotation  (carp->bodyid);
+		carp->velocity = (rot[1]*vel[0] + rot[5]*vel[1] + rot[9]*vel[2]);
+
 		//done, next car...
 		carp=carp->next;
 	}
@@ -409,6 +416,8 @@ void physics_step(void)
 
 	dWorldQuickStep (world, internal.stepsize);
 	dJointGroupEmpty (contactgroup);
+
+	camera_physics_step(); //move camera to wanted postion
 }
 
 //TODO: add physics loop

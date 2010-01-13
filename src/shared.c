@@ -4,6 +4,7 @@
 //
 //See main.c for licensing
 
+#include "shared/camera.c"
 
 //allocate new script storage, and add it to list
 //(not used yet, only for storing 3d list pointers...)
@@ -338,10 +339,14 @@ car_struct *allocate_car(void)
 		car_head->box_graphics[i] = NULL;
 	car_head->wheel_graphics = NULL;
 
+	car_head->dir = 1; //initiate to 1 for default
+
 	car_head->drift_breaks = true; //if the user does nothing, lock wheels
 	car_head->breaks = false;
 	car_head->throttle = 0;
 	car_head->steering = 0;
+	
+	car_head->velocity = 0;
 
 	//default mass, friction, different stats... just to prevent segfaults
 	car_head->max_torque  = 8000;
@@ -558,6 +563,7 @@ void free_all (void)
 	printlog(2, ">>> TODO: optimize???\n");
 	//first thing to destroy: cars
 	printlog(2, ">>> TODO: change from free_car to destroy_car?\n\n");
+
 	while (car_head)
 		free_car(car_head);
 

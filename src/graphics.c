@@ -8,9 +8,9 @@
 #endif
 
 SDL_Surface *screen;
-GLdouble cpos[3] = {20,-25,20};
 Uint32 flags = SDL_OPENGL;
 
+#include "graphics/camera.c"
 
 void graphics_resize (int w, int h)
 {
@@ -95,8 +95,6 @@ int graphics_init(void)
 }
 
 
-
-dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
 {
@@ -106,14 +104,8 @@ void graphics_step (Uint32 step)
 
 	glPushMatrix();
 
-	const dReal *gpos;
-
-	if (!focused_car)
-		gpos = geom_pos_default; //not focused, use default
-	else
-		gpos = dBodyGetPosition(focused_car->bodyid);
-
-	gluLookAt (cpos[0],cpos[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
+	//move camera
+	camera_graphics_step();
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);
