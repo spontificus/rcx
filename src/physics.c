@@ -397,7 +397,7 @@ void body_physics_step (void)
 
 void physics_step(void)
 {
-	camera_physics_step(internal.stepsize);
+	camera_physics_step();
 	car_physics_step(); //control, antigrav...
 	joint_physics_step(); //joint forces
 	body_physics_step(); //drag (air/liquid "friction")
