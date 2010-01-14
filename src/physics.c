@@ -344,53 +344,15 @@ void joint_physics_step (void)
 void body_physics_step (void)
 {
 	body_data *d = body_data_head;
-	//const dReal *a_vel;
-	//dVector3 r_vel;
-	//dReal forceX, forceY, forceZ;
 
 	while (d)
 	{
-		/*if (d->use_drag)
-		{
-			a_vel = dBodyGetLinearVel(d->body_id);
-
-			dBodyVectorFromWorld (d->body_id, a_vel[0], a_vel[1],
-					a_vel[2], r_vel);
-
-			forceX = r_vel[0]*r_vel[0]*track.density*d->drag[0];
-			forceY = r_vel[1]*r_vel[1]*track.density*d->drag[1];
-			forceZ = r_vel[2]*r_vel[2]*track.density*d->drag[2];
-
-			if (r_vel[0] > 0.0)
-				forceX = -forceX;
-			if (r_vel[1] > 0.0)
-				forceY = -forceY;
-			if (r_vel[2] > 0.0)
-				forceZ = -forceZ;
-
-			dBodyAddRelForce(d->body_id, forceX, forceY, forceZ);
-		}
-
-		if (d->use_rotation_drag)
-		{
-			a_vel = dBodyGetAngularVel (d->body_id);
-	
-			dBodyVectorFromWorld (d->body_id, a_vel[0], a_vel[1],
-					a_vel[2], r_vel);
-
-			forceX = r_vel[0]*r_vel[0]*track.density*d->rot_drag[0];
-			forceY = r_vel[1]*r_vel[1]*track.density*d->rot_drag[1];
-			forceZ = r_vel[2]*r_vel[2]*track.density*d->rot_drag[2];
-
-			if (r_vel[0] > 0.0)
-				forceX = -forceX;
-			if (r_vel[1] > 0.0)
-				forceY = -forceY;
-			if (r_vel[2] > 0.0)
-				forceZ = -forceZ;
-
-			dBodyAddRelTorque (d->body_id, forceX, forceY, forceZ);
-		}*/
+		if (d->use_advanced_linear_drag)
+			Body_Data_Advanced_Linear_Drag (d);
+		else if (d->use_linear_drag) //might have simple drag instead
+			Body_Data_Linear_Drag (d);
+		if (d->use_angular_drag)
+			Body_Data_Angular_Drag (d);
 
 		d = d->next;
 	}

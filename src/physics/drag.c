@@ -1,6 +1,7 @@
-//functions for setting body drag
-//NOTE: modifying specified drag to the current mass (rice-burning optimization, or simply good idea)
+//functions for body drag
 
+//NOTE: modifying specified drag to the current mass (rice-burning optimization, or actually good idea?)
+//(this way the body mass doesn't need to be requested and used in every calculation)
 void Body_Data_Set_Linear_Drag (body_data *body, dReal drag)
 {
 	printlog(2, " * setting body linear drag\n");
@@ -36,3 +37,14 @@ void Body_Data_Set_Angular_Drag (body_data *body, dReal drag)
 	body->angular_drag = drag/(mass.mass);
 	body->use_angular_drag = true;
 }
+
+
+void Body_Data_Linear_Drag (body_data *body)
+{}
+
+void Body_Data_Advanced_Linear_Drag (body_data *body)
+{}
+
+void Body_Data_Angular_Drag (body_data *body)
+{}
+
