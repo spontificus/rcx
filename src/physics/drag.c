@@ -3,6 +3,7 @@
 
 void Body_Data_Set_Linear_Drag (body_data *body, dReal drag)
 {
+	printlog(2, " * setting body linear drag\n");
 	dMass mass;
 	dBodyGetMass (body->body_id, &mass);
 
@@ -13,6 +14,7 @@ void Body_Data_Set_Linear_Drag (body_data *body, dReal drag)
 
 void Body_Data_Set_Advanced_Linear_Drag (body_data *body, dReal drag_x, dReal drag_y, dReal drag_z)
 {
+	printlog(2, " * setting body advanced linear drag\n");
 	dMass mass;
 	dBodyGetMass (body->body_id, &mass);
 
@@ -26,6 +28,7 @@ void Body_Data_Set_Advanced_Linear_Drag (body_data *body, dReal drag_x, dReal dr
 
 void Body_Data_Set_Angular_Drag (body_data *body, dReal drag)
 {
+	printlog(2, " * setting body angular drag\n");
 	dMass mass;
 	dBodyGetMass (body->body_id, &mass);
 
