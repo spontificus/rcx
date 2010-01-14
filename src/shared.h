@@ -199,10 +199,12 @@ typedef struct body_data_struct {
 	dBodyID body_id;
 
 	//data for drag (air+water friction)
-	//bool use_drag;
-	//bool use_rotation_drag;
-	//dReal drag[3];
-	//dReal rot_drag[3];
+	//values for enabled/disabled drag
+	bool use_linear_drag, use_advanced_linear_drag;
+	bool use_angular_drag;
+	//drag values (must be adjusted to the body mass)
+	dReal linear_drag, advanced_linear_drag[3];
+	dReal angular_drag;
 
 	dReal threshold; //if allocated forces exceeds, eat buffer
 	dReal buffer; //if buffer reaches zero, trigger event

@@ -136,13 +136,14 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	geom_data_head->event = false; //no collision event yet
 	geom_data_head->script = NULL; //nothing to run on collision (yet)
 	
-	//collision contactpoint data
 	geom_data_head->file_3d = NULL; //default, isn't rendered
+	//collision contactpoint data
 	geom_data_head->mu = internal.mu;
 	geom_data_head->mu_rim = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
-	geom_data_head->slip = internal.slip; //no FDS slip
+	geom_data_head->slip = internal.slip;
+
 	geom_data_head->wheel = false; //not a wheel
 	geom_data_head->bounce = 0.0; //no bouncyness
 
@@ -189,6 +190,8 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 	body_data_head->body_id = body;
 
 	//default values
+	Body_Data_Set_Linear_Drag(body_data_head, internal.linear_drag);
+	Body_Data_Set_Angular_Drag(body_data_head, internal.angular_drag);
 
 	body_data_head->threshold = 0; //no threshold (disables event testing)
 	body_data_head->buffer = 1; //almost empty buffer
