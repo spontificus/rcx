@@ -637,6 +637,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassAdjust (&m,400); //mass
 	dBodySetMass (body, &m);
 
+	allocate_body_data(body, NULL); //just for drag
+
 	dGeomSetBody (geom, body);
 
 	dBodySetPosition (body, x, y, z);
@@ -717,6 +719,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassAdjust (&m,60); //mass
 	dBodySetMass (body1, &m);
 
+	allocate_body_data(body1, NULL);
+
 	dGeomSetBody (geom, body1);
 
 	dBodySetPosition (body1, x, y, z);
@@ -747,6 +751,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassSetSphere (&m,1,0.5); //radius
 	dMassAdjust (&m,30); //mass
 	dBodySetMass (body, &m);
+
+	allocate_body_data(body, NULL);
 
 	dGeomSetBody (geom, body);
 
@@ -786,6 +792,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassSetSphere (&m,1,1); //radius
 	dMassAdjust (&m,60); //mass
 	dBodySetMass (body1, &m);
+
+	allocate_body_data(body1, NULL);
 
 	dGeomSetBody (geom, body1);
 
@@ -828,6 +836,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassSetBox (&m,1,4,0.4,2.7); //sides
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body1[i], &m);
+
+			allocate_body_data(body1[i], NULL);
 
 			data->file_3d = script->graphics_debug1;
 		}
@@ -884,6 +894,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassSetBox (&m,1,4,4,0.2); //sides
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body2[i], &m);
+
+			allocate_body_data(body2[i], NULL);
 
 			data->file_3d = script->graphics_debug2;
 		}
@@ -944,6 +956,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body[i], &m);
 	
+			allocate_body_data(body[i], NULL);
+
 			dGeomSetBody (geom, body[i]);
 	
 			//friction
