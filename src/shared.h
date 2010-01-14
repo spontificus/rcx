@@ -29,6 +29,7 @@ struct internal_struct {
 	dReal scale; //TODO
 	dReal rim_angle;
 	dReal mu,erp,cfm,slip;
+	dReal linear_drag, angular_drag;
 
 	dReal dis_linear, dis_angular, dis_time;
 	int dis_steps;
@@ -56,9 +57,11 @@ struct data_index internal_index[] = {
 	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
 	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
 	{"default_cfm",		'f',1, offsetof(struct internal_struct, cfm)},
-	{"default_slip",		'f',1, offsetof(struct internal_struct, slip)},
+	{"default_slip",	'f',1, offsetof(struct internal_struct, slip)},
+	{"default_linear_drag",	'f',1, offsetof(struct internal_struct, linear_drag)},
+	{"default_angular_drag",'f',1, offsetof(struct internal_struct, angular_drag)},
 	{"auto_disable_linear",	'f',1, offsetof(struct internal_struct, dis_linear)},
-	{"auto_disable_angular",	'f',1, offsetof(struct internal_struct, dis_angular)},
+	{"auto_disable_angular",'f',1, offsetof(struct internal_struct, dis_angular)},
 	{"auto_disable_time",	'f',1, offsetof(struct internal_struct, dis_time)},
 	{"auto_disable_steps",	'i',1, offsetof(struct internal_struct, dis_steps)},
 	//graphics
@@ -260,7 +263,7 @@ typedef struct car_struct {
 	dReal wheel_mu, rim_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
 	dReal body_mu, body_slip, body_erp, body_cfm;
 
-	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
+	dReal body_linear_drag[3], body_angular_drag, wheel_linear_drag, wheel_angular_drag;
 
 	file_3d_struct *wheel_graphics; //add right/left wheels
 	file_3d_struct *box_graphics[CAR_MAX_BOXES];
@@ -321,10 +324,10 @@ struct data_index car_index[] = {
 	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp)},
 	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm)},
 
-	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag)},
-	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag)},
-	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag)},
-	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag)},
+	{"body_linear_drag",	'f',3, offsetof(struct car_struct, body_linear_drag)},
+	{"body_angular_drag",	'f',1, offsetof(struct car_struct, body_angular_drag)},
+	{"wheel_linear_drag",	'f',1, offsetof(struct car_struct, wheel_linear_drag)},
+	{"wheel_angular_drag",	'f',1, offsetof(struct car_struct, wheel_angular_drag)},
 
 	//body and geom (box) sizes:
 	{"body",	'f',	3,	offsetof(struct car_struct, body[0])}, //not a geom
@@ -544,6 +547,7 @@ struct track_struct {
 	dReal cfm;
 
 	dReal density; //for air drag (friction)
+	dReal wind[3];
 
 	dReal start[3];
 	GLdouble cam_start[3];
@@ -567,6 +571,7 @@ struct data_index track_index[] = {
 	{"erp",		'f',1,	offsetof(struct track_struct, erp)},
 	{"cfm",		'f',1,	offsetof(struct track_struct, cfm)},
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
+	{"wind",	'f',3,	offsetof(struct track_struct, wind)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
 	{"cam_start",	'd',3,	offsetof(struct track_struct, cam_start)},
 	{"target_start",'d',3,	offsetof(struct track_struct, target_start)},
