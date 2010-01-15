@@ -1394,18 +1394,18 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dBodySetAutoDisableFlag (target->bodyid, 0); //never disable main body
 	
 
+	//set mass
+	dMassSetBox (&m,1,target->body[0], target->body[1], target->body[2]); //sides
+	dMassAdjust (&m,target->body_mass); //mass
+	dBodySetMass (target->bodyid, &m);
+
 	//set up air (and liquid) drag for body
 	body_data *odata;
 	odata = allocate_body_data (target->bodyid, target->object);
 	Body_Data_Set_Advanced_Linear_Drag (odata, target->body_linear_drag[0],
 			target->body_linear_drag[1], target->body_linear_drag[2]);
-
 	//rotational drag
 	Body_Data_Set_Angular_Drag ( odata, target->body_angular_drag);
-
-	dMassSetBox (&m,1,target->body[0], target->body[1], target->body[2]); //sides
-	dMassAdjust (&m,target->body_mass); //mass
-	dBodySetMass (target->bodyid, &m);
 
 
 	dBodySetPosition (target->bodyid, x, y, z);
