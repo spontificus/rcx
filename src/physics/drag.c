@@ -39,6 +39,9 @@ void Body_Data_Set_Angular_Drag (body_data *body, dReal drag)
 }
 
 
+//simulation of drag
+//
+//not to self: if implementing different density areas, this is where density should be chosen
 void Body_Data_Linear_Drag (body_data *body)
 {
 	const dReal *abs_vel; //absolute vel
@@ -67,8 +70,22 @@ void Body_Data_Linear_Drag (body_data *body)
 }
 
 void Body_Data_Advanced_Linear_Drag (body_data *body)
-{}
+{
+
+}
 
 void Body_Data_Angular_Drag (body_data *body)
-{}
+{
+	const dReal *vel; //rotation velocity
+	vel = dBodyGetAngularVel (body->body_id);
+	dReal total_vel = v_length(vel[0], vel[1], vel[2]);
 
+	//how much of original velocity is left after breaking by air/liquid drag
+	dReal remain = 1-(total_vel*(track.density)*(body->angular_drag)*(internal.stepsize));
+
+	if (remain < 0) //in case breaking is so extreme it will reverse movement, just change velocity to 0
+		remain = 0;
+
+	//set velocity with change
+	dBodySetAngularVel(body->body_id, vel[0]*remain, vel[1]*remain, vel[2]*remain);
+}
