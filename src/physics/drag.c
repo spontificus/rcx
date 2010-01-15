@@ -40,7 +40,30 @@ void Body_Data_Set_Angular_Drag (body_data *body, dReal drag)
 
 
 void Body_Data_Linear_Drag (body_data *body)
-{}
+{
+	const dReal *abs_vel; //absolute vel
+	abs_vel = dBodyGetLinearVel (body->body_id);
+	dReal vel[3] = {abs_vel[0]-track.wind[0], abs_vel[1]-track.wind[1], abs_vel[2]-track.wind[2]}; //relative to wind
+	dReal total_vel = v_length(vel[0], vel[1], vel[2]);
+
+	dReal remain = 1-(total_vel*track.density*internal.stepsize); //how much of original vel is left after drag breaks it
+
+	if (remain < 0) //in case breaking is so extreme it will reverse movement, just change velocity to 0
+		remain = 0;
+
+	//change velocity
+	vel[0]*=remain;
+	vel[1]*=remain;
+	vel[2]*=remain;
+
+	//make absolute
+	vel[0]+=track.wind[0];
+	vel[1]+=track.wind[1];
+	vel[2]+=track.wind[2];
+
+	//set velocity
+	dBodySetLinearVel(body->body_id, vel[0], vel[1], vel[2]);
+}
 
 void Body_Data_Advanced_Linear_Drag (body_data *body)
 {}
