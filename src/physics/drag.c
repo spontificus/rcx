@@ -69,9 +69,45 @@ void Body_Data_Linear_Drag (body_data *body)
 	dBodySetLinearVel(body->body_id, vel[0], vel[1], vel[2]);
 }
 
+//similar to linear_drag, but different drag for different directions
 void Body_Data_Advanced_Linear_Drag (body_data *body)
 {
+	//absolute velocity
+	const dReal *abs_vel;
+	abs_vel = dBodyGetLinearVel (body->body_id);
 
+	//translate movement to relative to car (and to wind)
+	dVector3 vel;
+	dBodyVectorFromWorld (body->body_id, (abs_vel[0]-track.wind[0]), (abs_vel[1]-track.wind[1]), (abs_vel[2]-track.wind[2]), vel);
+	dReal total_vel = v_length(vel[0], vel[1], vel[2]);
+
+	//how much of original velocities is left after breaking by air/liquid drag
+	dReal remain;
+	int i;
+	for (i=0; i<3; ++i)
+	{
+		//how much of original velocity remains after drag?
+		remain = 1-(total_vel*(track.density)*(body->advanced_linear_drag[i])*(internal.stepsize));
+
+		//check so not going negative
+		if (remain < 0)
+			remain = 0;
+
+		//change velocity
+		vel[i]*=remain;
+	}
+
+	//make absolute
+	dVector3 vel_result;
+	dBodyVectorToWorld (body->body_id, vel[0], vel[1], vel[2], vel_result);
+
+	//add wind
+	vel_result[0]+=track.wind[0];
+	vel_result[1]+=track.wind[1];
+	vel_result[2]+=track.wind[2];
+
+	//set velocity
+	dBodySetLinearVel(body->body_id, vel_result[0], vel_result[1], vel_result[2]);
 }
 
 void Body_Data_Angular_Drag (body_data *body)
