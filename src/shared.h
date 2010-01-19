@@ -27,6 +27,7 @@ struct internal_struct {
 	int contact_points;
 	//bool finite_rotation;
 	dReal scale; //TODO
+	dReal max_wheel_rotation;
 	dReal rim_angle;
 	dReal mu,erp,cfm,slip;
 	dReal linear_drag, angular_drag;
@@ -53,6 +54,7 @@ struct data_index internal_index[] = {
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},
 	//{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
 	//TODO: SCALE
+	{"max_wheel_rotation",	'f',1, offsetof(struct internal_struct, max_wheel_rotation)},
 	{"rim_angle",		'f',1, offsetof(struct internal_struct, rim_angle)},
 	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
 	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
