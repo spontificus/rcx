@@ -250,35 +250,35 @@ void car_physics_step(void)
 		}
 		else
 		{
-			//disable motor (used for breaks...)
-			dJointSetHinge2Param (carp->joint[0],dParamFMax2,0);
-			dJointSetHinge2Param (carp->joint[1],dParamFMax2,0);
-			dJointSetHinge2Param (carp->joint[2],dParamFMax2,0);
-			dJointSetHinge2Param (carp->joint[3],dParamFMax2,0);
+			dReal torque[4];
+			int i;
+			for (i=0; i<4; ++i)
+			{
+				//disable motor (used for breaks...)
+				dJointSetHinge2Param (carp->joint[i],dParamFMax2,0);
 
-			//add torques directly (no "motor")
-			dReal wheel1 = dJointGetHinge2Angle2Rate (carp->joint[0]);
-			dReal wheel2 = dJointGetHinge2Angle2Rate (carp->joint[1]);
-			dReal wheel3 = dJointGetHinge2Angle2Rate (carp->joint[2]);
-			dReal wheel4 = dJointGetHinge2Angle2Rate (carp->joint[3]);
-			if (wheel1 < 0)
-				wheel1 = -wheel1;
-			if (wheel2 < 0)
-				wheel2 = -wheel2;
-			if (wheel3 < 0)
-				wheel3 = -wheel3;
-			if (wheel4 < 0)
-				wheel4 = -wheel4;
+				//add torques directly (no "motor")
+				dReal rotation = dJointGetHinge2Angle2Rate (carp->joint[i]);
 
-			dReal torque1=carp->max_torque/(1+wheel1*carp->motor_tweak);
-			dReal torque2=carp->max_torque/(1+wheel2*carp->motor_tweak);
-			dReal torque3=carp->max_torque/(1+wheel3*carp->motor_tweak);
-			dReal torque4=carp->max_torque/(1+wheel4*carp->motor_tweak);
+				//we want total speed, not negative
+				if (rotation < 0)
+					rotation = -rotation;
 
-			dJointAddHinge2Torques (carp->joint[0],0,torque1*carp->throttle*carp->dir*carp->fmotor);
-			dJointAddHinge2Torques (carp->joint[1],0,torque2*carp->throttle*carp->dir*carp->rmotor);
-			dJointAddHinge2Torques (carp->joint[2],0,torque3*carp->throttle*carp->dir*carp->rmotor);
-			dJointAddHinge2Torques (carp->joint[3],0,torque4*carp->throttle*carp->dir*carp->fmotor);
+				//in case wheel is already rotating so fast we get simulation errors, no simulation
+				if (rotation > internal.max_wheel_rotation)
+					torque[i] = 0.0;
+				else
+				{
+					//else we will add torque
+					//motor torque is geared by stepless gearbox
+					torque[i]=carp->max_torque/(1+rotation*carp->motor_tweak);
+				}
+			}
+
+			dJointAddHinge2Torques (carp->joint[0],0,torque[0]*carp->throttle*carp->dir*carp->fmotor);
+			dJointAddHinge2Torques (carp->joint[1],0,torque[1]*carp->throttle*carp->dir*carp->rmotor);
+			dJointAddHinge2Torques (carp->joint[2],0,torque[2]*carp->throttle*carp->dir*carp->rmotor);
+			dJointAddHinge2Torques (carp->joint[3],0,torque[3]*carp->throttle*carp->dir*carp->fmotor);
 		}
 
 		dJointSetHinge2Param (carp->joint[0],dParamLoStop,carp->steering*carp->dir *carp->fsteer);
