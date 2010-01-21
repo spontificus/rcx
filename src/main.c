@@ -1,5 +1,5 @@
 /* RollCageX (fanmade clone of the original RollCage games)
- * Copyright (C) 2009  "Soul Slinger" (on gorcx.net forum)
+ * Copyright (C) 2009-2010  "Slinger" (on gorcx.net forum)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
 
-#define VERSION "0.05" //supports alphanumeric versioning
+#define VERSION "0.06 (NOT DONE)" //supports alphanumeric versioning
 
 //Required stuff:
 #include <SDL.h>
