@@ -8,7 +8,7 @@
 #endif
 
 SDL_Surface *screen;
-Uint32 flags = SDL_OPENGL;
+Uint32 flags = SDL_OPENGL | SDL_RESIZABLE;
 
 #include "graphics/camera.c"
 
@@ -51,11 +51,6 @@ void graphics_resize (int w, int h)
 int graphics_init(void)
 {
 	printlog(0, "=> Initiating graphics\n");
-
-	//SDL (1.2) can't resize window on some systems (...windowz... OSX...)
-	//without destroying OGL context... only enable resizing if requested
-	if (internal.resize)
-		flags |= SDL_RESIZABLE;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	screen = SDL_SetVideoMode (internal.res[0], internal.res[1], 0, flags);

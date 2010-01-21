@@ -42,7 +42,6 @@ struct internal_struct {
 	bool force;
 	float angle;
 	bool fullscreen;
-	bool resize;
 } internal;
 
 struct data_index internal_index[] = {
@@ -70,7 +69,6 @@ struct data_index internal_index[] = {
 	{"force_angle",		'b',1, offsetof(struct internal_struct, force)},
 	{"view_angle",		'f',1, offsetof(struct internal_struct, angle)},
 	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen)},
-	{"resize",		'b',1, offsetof(struct internal_struct, resize)},
 	{"",0,0}};
 
 
