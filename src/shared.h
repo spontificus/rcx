@@ -380,7 +380,7 @@ typedef struct {
 	dReal offset_scale_speed;
 } camera_settings;
 
-struct {
+typedef struct {
 	camera_settings *settings;
 	car_struct *car;
 	dReal pos[3];
@@ -391,7 +391,9 @@ struct {
 	dReal offset_scale; //0-1   0 in air, 1 on ground
 	bool reverse;
 	bool in_air;
-} camera = {NULL, NULL, {0,0,0}, {0,0,0}};
+} camera_struct;
+
+camera_struct camera = {NULL, NULL, {0,0,0}, {0,0,0}};
 
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
