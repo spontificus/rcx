@@ -10,11 +10,11 @@ W32ARGS = -O2 -pipe -Wall -march=i686   -mtune=i686   -lm
 
 
 normal: $(SOURCE)
-	gcc -o ../rcx main.c `pkg-config --cflags --libs $(LIBS)` $(ARGS)
+	g++ -o ../rcx main.c `pkg-config --cflags --libs $(LIBS)` $(ARGS)
 
 #only use with a suitable port of gcc (MinGW, CygWin, etc)
 win32-static: $(SOURCE)
-	gcc -o ../rcx.exe main.c $(W32LIBS) -static -lstdc++ -lwinmm -lgdi32 -Dwindows $(W32ARGS)
+	g++ -o ../rcx.exe main.c $(W32LIBS) -static -lstdc++ -lwinmm -lgdi32 -Dwindows $(W32ARGS)
 
 clean:
-	-rm -f ../rcx ../rcx.static ../rcx.exe
+	-rm -f ../rcx ../rcx.exe
