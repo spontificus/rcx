@@ -12,13 +12,6 @@ W32ARGS = -O2 -pipe -Wall -march=i686   -mtune=i686   -lm
 normal: $(SOURCE)
 	gcc -o ../rcx main.c `pkg-config --cflags --libs $(LIBS)` $(ARGS)
 
-fedora: $(SOURCE)
-	gcc -o ../rcx main.c `pkg-config --cflags --libs sdl gl glu` `ode-config --cflags --libs` $(ARGS)
-
-#might cause ("nVidious") problems... :-P
-static: $(SOURCE)
-	gcc -o ../rcx main.c `pkg-config --static --cflags --libs $(LIBS)` -static $(ARGS)
-
 #only use with a suitable port of gcc (MinGW, CygWin, etc)
 win32-static: $(SOURCE)
 	gcc -o ../rcx.exe main.c $(W32LIBS) -static -lstdc++ -lwinmm -lgdi32 -Dwindows $(W32ARGS)
