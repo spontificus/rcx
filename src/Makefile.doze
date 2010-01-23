@@ -4,7 +4,7 @@
 OBJS	= main.o shared.o events.o loaders.o graphics.o physics.o
 
 #pkg-config is rarely installed, use ode-/sdl-config instead
-LIBS	= `sdl-config --static-libs --libs` `ode-config --libs` -opengl32 -lglu32 -lm -static -lstdc++ -lwinmm -lgdi32
+LIBS	= `sdl-config --static-libs --libs` `ode-config --libs` -lm -lopengl32 -lglu32 -static -lstdc++ -lwinmm -lgdi32
 FLAGS	= `sdl-config --cflags` `ode-config --cflags`
 ARGS	= -O2 -pipe -Wall -march=i686 -mtune=i686 $(FLAGS) -Dwindows
 
@@ -32,4 +32,4 @@ physics.o: physics/physics.c physics/physics.h physics/camera.c physics/drag.c s
 
 .PHONY: clean
 clean:
-	-rm -f ../rcx.exe $(OBJS)
+	-rm -f ../rcx $(OBJS)
