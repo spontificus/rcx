@@ -57,7 +57,7 @@ const char ISSUE[] =
 #include <unistd.h>
 
 //local stuff:
-#include "shared.h" //custom data definitions
+#include "shared/shared.h" //custom data definitions
 
 car_struct *venom;
 script_struct *box; //keep track of our loaded debug box
@@ -66,11 +66,11 @@ car_struct *focused_car = NULL;
 
 void printlog (int, const char*, ...); //prototype (for included functions
 
-#include "graphics.c"
-#include "physics.c"
-#include "shared.c" //functions for handling custom data
-#include "loaders.c" //loading functions for confs, tracks, cars, etc...
-#include "events.c"  //responds to events both OS- and game simulation related
+#include "graphics/graphics.c"
+#include "physics/physics.c"
+#include "shared/shared.c" //functions for handling custom data
+#include "loaders/loaders.c" //loading functions for confs, tracks, cars, etc...
+#include "events/events.c"  //responds to events both OS- and game simulation related
 
 //keep track of warnings
 unsigned int stepsize_warnings = 0;

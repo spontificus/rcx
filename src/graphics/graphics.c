@@ -10,7 +10,7 @@
 SDL_Surface *screen;
 Uint32 flags = SDL_OPENGL | SDL_RESIZABLE;
 
-#include "graphics/camera.c"
+#include "camera.c"
 
 void graphics_resize (int w, int h)
 {

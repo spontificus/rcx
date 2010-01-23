@@ -7,8 +7,8 @@ dWorldID world;
 dSpaceID space;
 dJointGroupID contactgroup;//TODO: move to shared.h data? good for event thread?
 
-#include "physics/camera.c"
-#include "physics/drag.c"
+#include "camera.c"
+#include "drag.c"
 
 int physics_init(void)
 {

@@ -1,4 +1,5 @@
-SOURCE = main.c shared.c graphics.c physics.c events.c loaders.c
+SOURCE = main.c shared/shared.c graphics/graphics.c \
+	 physics/physics.c events/events.c loaders/loaders.c
 
 #normal args and libs
 LIBS    = sdl gl glu ode
