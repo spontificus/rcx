@@ -3,10 +3,7 @@
 //See main.c about licensing
 //
 
-dWorldID world;
-dSpaceID space;
-dJointGroupID contactgroup;//TODO: move to shared.h data? good for event thread?
-
+#include "../shared/shared.h"
 #include "camera.c"
 #include "drag.c"
 

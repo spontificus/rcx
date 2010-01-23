@@ -4,6 +4,10 @@
 //
 //See main.c for licensing
 
+#include "../shared/shared.h" //shared (global defined) data
+#include "../graphics/graphics.h" //for window resizing events
+#include "../loaders/loaders.h" //spawn/destroy events
+
 SDL_Event event;
 Uint8 *keys;
 
@@ -55,8 +59,9 @@ void event_step(Uint32 step)
 		switch (event.type)
 		{
 			case SDL_VIDEORESIZE:
-				screen = SDL_SetVideoMode (event.resize.w, event.resize.h, 0, flags);
-				graphics_resize (screen->w, screen->h);
+				//screen = SDL_SetVideoMode (event.resize.w, event.resize.h, 0, flags);
+				//graphics_resize (screen->w, screen->h);
+				graphics_resize (event.resize.w, event.resize.h);
 			break;
 
 			case SDL_QUIT:

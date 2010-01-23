@@ -4,6 +4,7 @@
 //
 //See main.c for licensing info
 
+#include "../shared/shared.h"
 
 #define MAX_WORDS 100
 
@@ -140,7 +141,7 @@ void free_word_list (char **target)
 //loads configuration file to memory (using index)
 //
 //(you may indent my code?)
-int load_conf (char *name, char *memory, struct data_index index[])
+int load_conf (char *name, char *memory, const struct data_index index[])
 {
  printlog(1, "-> loading conf file: %s\n", name);
  FILE *fp;
@@ -1028,18 +1029,6 @@ int load_track (char *path)
 	camera.t_pos[0] = track.target_start[0];
 	camera.t_pos[1] = track.target_start[1];
 	camera.t_pos[2] = track.target_start[2];
-
-	camera.vel[0] = 0;
-	camera.vel[1] = 0;
-	camera.vel[2] = 0;
-
-	camera.up[0] = 0;
-	camera.up[1] = 0;
-	camera.up[2] = 1;
-
-	camera.air_timer = 0;
-	camera.reverse = false;
-	camera.in_air = false;
 
 	//append forced data
 	track.position[3] = 0.0f; //directional

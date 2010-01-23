@@ -2,11 +2,55 @@
 //
 //See licensing info in main.c
 
+//Required stuff:
+#include <SDL.h>
+#include <SDL_opengl.h>
+#include <ode/ode.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <unistd.h>
+
+//general info
+#define VERSION "0.06 (NOT DONE)" //supports alphanumeric versioning
+
+const char ISSUE[] =
+"    RollCageX  Copyright (C) 2009-2010  \"Slinger\" (on gorcx.net forum)\n\n\
+   This program is free software: you can redistribute it and/or modify\n\
+   it under the terms of the GNU General Public License as published by\n\
+   the Free Software Foundation, either version 3 of the License, or\n\
+   (at your option) any later version.\n\n\
+   This program comes with ABSOLUTELY NO WARRANTY:\n\n\
+   This program is distributed in the hope that it will be useful,\n\
+   but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+   GNU General Public License for more details.\n\n\
+   You should have received a copy of the GNU General Public License\n\
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\n\
+    = Credits =\n\
+      * \"Slinger\"	Creator (coder)\n\
+      * \"XEWEASEL\"	3D Models\n\n\
+    = Special Thanks =\n\
+      * \"K.Mac\"		Extensive testing and new ideas\n\
+      * \"MeAkaJon\"	Creator/maintainer of gorcx.net webpage\n\
+      * \"Spontificus\"	Testing, hacks, github registion and various fixes\n\n\
+    = Other Projects that made RCX possible =\n\
+      * \"Simple DirectMedia Layer\"	OS/hardware abstractions\n\
+      * \"Open Dynamics Engine\"	Rigid body dynamics and collision detection\n\
+      * \"The GNU Project\"		Its fight for computer freedom has changed the world\n\n\
+    - See README for more info -\n\n";
+ 
+
 //use a "runlevel" (enum) variable to make all threads/loops aware of status
 //(locked is used when we want to pause the loops, but still try to catch
 //up with real time when unlocked, basically: stop simulation, but do not
 //reset "simulated time" variables... Use it when building objects)
-static enum {running, done, paused, locked, error} runlevel;
+typedef enum {running, done, paused, locked, error} runlevel_type;
+extern runlevel_type runlevel;
+
 
 //to make the conf loader able to find variable names in structs, use indexes
 struct data_index {
@@ -14,10 +58,10 @@ struct data_index {
 	char type; //f for float, b for bool, i for int, 0 for end of list
 	int length; //normaly 1 (or else more)
 	size_t offset;
-} data_index;
+};
 
 //important system configuration variables
-struct internal_struct {
+extern struct internal_struct {
 	int verbosity;
 	bool multithread; //TODO
 
@@ -45,7 +89,7 @@ struct internal_struct {
 	bool fullscreen;
 } internal;
 
-struct data_index internal_index[] = {
+const struct data_index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
 	//TODO: MULTITHREAD
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
@@ -85,8 +129,7 @@ typedef struct file_3d_struct {
 	struct file_3d_struct *next;
 } file_3d_struct;
 
-//graphics_list *graphics_list_head = NULL;
-file_3d_struct *file_3d_head = NULL;
+extern file_3d_struct *file_3d_head;
 
 
 //script: human readable (read: not _programming_) langue which will
@@ -114,7 +157,7 @@ typedef struct script_struct {
 	struct script_struct *next;
 } script_struct;
 
-script_struct *script_head = NULL;
+extern script_struct *script_head;
 
 //object: one "thing" on the track, from a complex building to a tree, spawning
 //will be controlled by a custom scripting langue in future versions, the most
@@ -143,7 +186,7 @@ typedef struct object_struct {
 	struct object_struct *next;
 } object_struct;
 
-object_struct *object_head = NULL;
+extern object_struct *object_head;
 
 
 //geom_data: data for geometrical shape (for collision detection), for: 
@@ -185,7 +228,7 @@ typedef struct geom_data_struct {
 	struct geom_data_struct *next;
 } geom_data;
 
-geom_data *geom_data_head = NULL; //points at the first component in chain
+extern geom_data *geom_data_head; //points at the first component in chain
 
 //body_data: data for body (describes mass and mass positioning), used for:
 //currently only for triggering event script (force threshold and event variables)
@@ -217,7 +260,7 @@ typedef struct body_data_struct {
 	struct body_data_struct *next;
 } body_data;
 
-body_data *body_data_head = NULL;
+extern body_data *body_data_head;
 
 
 //joint_data: data for joint (connects bodies), is used for:
@@ -242,7 +285,7 @@ typedef struct joint_data_struct {
 	struct joint_data_struct *next;
 } joint_data;
 
-joint_data *joint_data_head = NULL;
+extern joint_data *joint_data_head;
 
 
 //car: pointer to object and extra data, adjusted for controlled cars. No
@@ -300,9 +343,9 @@ typedef struct car_struct {
 	struct car_struct *prev;
 } car_struct;
 
-car_struct *car_head = NULL;
+extern car_struct *car_head;
 
-struct data_index car_index[] = {
+const struct data_index car_index[] = {
 	{"max_torque",		'f',1, offsetof(struct car_struct, max_torque)},
 	{"motor_tweak",		'f',1, offsetof(struct car_struct, motor_tweak)},
 	{"max_break",		'f',1, offsetof(struct car_struct, max_break)},
@@ -393,7 +436,7 @@ typedef struct {
 	bool in_air;
 } camera_struct;
 
-camera_struct camera = {NULL, NULL, {0,0,0}, {0,0,0}};
+extern camera_struct camera;
 
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
@@ -430,9 +473,9 @@ typedef struct profile_struct {
 	SDLKey cam4;
 } profile;
 
-profile *profile_head;
+extern profile *profile_head;
 
-struct data_index profile_index[] = {
+const struct data_index profile_index[] = {
 	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed)},
 	{"steer_max",      'f' ,1 ,offsetof(struct profile_struct, steer_max)},
 	{"throttle_speed", 'f' ,1 ,offsetof(struct profile_struct, throttle_speed)},
@@ -535,7 +578,7 @@ const struct {
 //gravity) - crappy solution for now...
 //Allocated at start
 //(in contrary to the other structs, this is actually not allocated on runtime!)
-struct track_struct {
+extern struct track_struct {
 	//placeholder for stuff like if it's raining/snowing and lightsources
 	GLfloat sky[3]; //RGB, alpha is always 1.0f
 
@@ -563,7 +606,7 @@ struct track_struct {
 } track;
 //index:
 
-struct data_index track_index[] = {
+const struct data_index track_index[] = {
 	{"sky",		'f',3,	offsetof(struct track_struct, sky[0])},
 	{"ambient",	'f',3,	offsetof(struct track_struct, ambient[0])},
 	{"diffuse",	'f',3,	offsetof(struct track_struct, diffuse[0])},
@@ -583,4 +626,41 @@ struct data_index track_index[] = {
 
 
 //TODO: weapons
+
+
+//prototypes
+void printlog (int, const char*, ...);
+void free_joint_data (joint_data *target);
+void free_all (void);
+void Body_Data_Set_Linear_Drag (body_data *body, dReal drag);
+void Body_Data_Set_Advanced_Linear_Drag (body_data *body, dReal drag_x, dReal drag_y, dReal drag_z);
+void Body_Data_Set_Angular_Drag (body_data *body, dReal drag);
+void set_camera_settings (camera_settings *settings);
+
+//prototypes specific for shared data
+void shared_init (void);
+script_struct *allocate_script(void);
+object_struct *allocate_object (bool adspace, bool adjointgroup);
+geom_data *allocate_geom_data (dGeomID geom, object_struct *obj);
+body_data *allocate_body_data (dBodyID body, object_struct *obj);
+joint_data *allocate_joint_data (dJointID joint, object_struct *obj, bool feedback);
+profile *allocate_profile(void);
+void free_profile (profile *target);
+car_struct *allocate_car(void);
+file_3d_struct *allocate_file_3d (void);
+void free_object(object_struct *target);
+void free_geom_data(geom_data *target);
+void free_body_data (body_data *target);
+void free_joint_data (joint_data *target);
+void free_car (car_struct *target);
+void free_all (void);
+
+//global variables
+extern dWorldID world;
+extern dSpaceID space;
+extern dJointGroupID contactgroup;
+
+extern car_struct *venom;
+extern script_struct *box; //keep track of our loaded debug box
+extern script_struct *sphere;
 

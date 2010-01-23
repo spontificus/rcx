@@ -14,63 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
-
-#define VERSION "0.06 (NOT DONE)" //supports alphanumeric versioning
-
-const char ISSUE[] =
-"    RollCageX  Copyright (C) 2009-2010  \"Slinger\" (on gorcx.net forum)\n\n\
-   This program is free software: you can redistribute it and/or modify\n\
-   it under the terms of the GNU General Public License as published by\n\
-   the Free Software Foundation, either version 3 of the License, or\n\
-   (at your option) any later version.\n\n\
-   This program comes with ABSOLUTELY NO WARRANTY:\n\n\
-   This program is distributed in the hope that it will be useful,\n\
-   but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-   GNU General Public License for more details.\n\n\
-   You should have received a copy of the GNU General Public License\n\
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.\n\n\
-    = Credits =\n\
-      * \"Slinger\"	Creator (coder)\n\
-      * \"XEWEASEL\"	3D Models\n\n\
-    = Special Thanks =\n\
-      * \"K.Mac\"		Extensive testing and new ideas\n\
-      * \"MeAkaJon\"	Creator/maintainer of gorcx.net webpage\n\
-      * \"Spontificus\"	Testing, hacks, github registion and various fixes\n\n\
-    = Other Projects that made RCX possible =\n\
-      * \"Simple DirectMedia Layer\"	OS/hardware abstractions\n\
-      * \"Open Dynamics Engine\"	Rigid body dynamics and collision detection\n\
-      * \"The GNU Project\"		Its fight for computer freedom has changed the world\n\n\
-    - See README for more info -\n\n";
-   
-
-//Required stuff:
-#include <SDL.h>
-#include <SDL_opengl.h>
-#include <ode/ode.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <unistd.h>
-
-//local stuff:
-#include "shared/shared.h" //custom data definitions
-
-car_struct *venom;
-script_struct *box; //keep track of our loaded debug box
-script_struct *sphere;
-car_struct *focused_car = NULL;
-
-void printlog (int, const char*, ...); //prototype (for included functions
-
-#include "graphics/graphics.c"
-#include "physics/physics.c"
-#include "shared/shared.c" //functions for handling custom data
-#include "loaders/loaders.c" //loading functions for confs, tracks, cars, etc...
-#include "events/events.c"  //responds to events both OS- and game simulation related
+  
+//local definitions:
+#include "shared/shared.h"
+#include "events/events.h"
+#include "graphics/graphics.h"
+#include "physics/physics.h"
+#include "loaders/loaders.h"
 
 //keep track of warnings
 unsigned int stepsize_warnings = 0;
@@ -106,6 +56,8 @@ int main (int argc, char *argv[])
 	//issue
 	printf("\n     -=[ Hello, and welcome to RollCageX version %s ]=-\n\n%s\n", VERSION, ISSUE);
 	//end
+
+	shared_init(); //initiates variables (sets pointers to NULL)
 
 	if (argc != 1)
 		printf("(Passing arguments - not supported)\n\n");
@@ -161,7 +113,6 @@ int main (int argc, char *argv[])
 		emergency_quit();
 
 	spawn_car (venom, track.start[0], track.start[1], track.start[2]);
-	focused_car = venom;
 
 	//single-thread function
 	//WARNING: Don't run the game constantly for more than around 49 days!

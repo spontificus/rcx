@@ -2,6 +2,8 @@
 //
 //See main.c for licensing
 
+#include "../shared/shared.h"
+
 //Just in case it's not defined...
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
@@ -12,8 +14,12 @@ Uint32 flags = SDL_OPENGL | SDL_RESIZABLE;
 
 #include "camera.c"
 
-void graphics_resize (int w, int h)
+void graphics_resize (int new_w, int new_h)
 {
+	screen = SDL_SetVideoMode (new_w, new_h, 0, flags);
+	int w=screen->w;
+	int h=screen->h;
+
 	glViewport (0,0,w,h);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();

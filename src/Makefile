@@ -1,21 +1,41 @@
-SOURCE = main.c shared/shared.c graphics/graphics.c \
-	 physics/physics.c events/events.c loaders/loaders.c
+OBJS	= main.o shared.o events.o loaders.o graphics.o physics.o
+LIBLST	= sdl gl glu ode
 
-#normal args and libs
-LIBS    = sdl gl glu ode
-ARGS    = -O2 -pipe -Wall -march=native -mtune=native -lm
+LIBS	= `pkg-config --libs $(LIBLST)`
+FLAGS	= `pkg-config --cflags $(LIBLST)`
+ARGS	= -O2 -pipe -Wall -march=native -mtune=native -lm $(FLAGS)
 
 #windows specific args and libs
-W32LIBS = `sdl-config --static-libs --cflags --libs` `ode-config --cflags --libs` -lm -lopengl32 -lglu32
-W32ARGS = -O2 -pipe -Wall -march=i686   -mtune=i686   -lm
+#W32LIBS = `sdl-config --static-libs --cflags --libs` `ode-config --cflags --libs` -lm -lopengl32 -lglu32
+#W32ARGS = -O2 -pipe -Wall -march=i686   -mtune=i686   -lm
 
 
-normal: $(SOURCE)
-	g++ -o ../rcx main.c `pkg-config --cflags --libs $(LIBS)` $(ARGS)
+rcx: $(OBJS)
+	g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
+
+main.o: main.c shared/shared.h
+	g++ -c -o main.o main.c $(ARGS)
+
+shared.o: shared/shared.c shared/shared.h shared/camera.c
+	g++ -c -o shared.o shared/shared.c $(ARGS)
+
+events.o: events/events.c events/events.h shared/shared.h
+	g++ -c -o events.o events/events.c $(ARGS)
+
+loaders.o: loaders/loaders.c loaders/loaders.h shared/shared.h
+	g++ -c -o loaders.o loaders/loaders.c $(ARGS)
+
+graphics.o: graphics/graphics.c graphics/graphics.h graphics/camera.c shared/shared.h
+	g++ -c -o graphics.o graphics/graphics.c $(ARGS)
+
+physics.o: physics/physics.c physics/physics.h physics/camera.c physics/drag.c shared/shared.h
+	g++ -c -o physics.o physics/physics.c $(ARGS)
+
+
 
 #only use with a suitable port of gcc (MinGW, CygWin, etc)
-win32-static: $(SOURCE)
-	g++ -o ../rcx.exe main.c $(W32LIBS) -static -lstdc++ -lwinmm -lgdi32 -Dwindows $(W32ARGS)
+#win32-static: $(SOURCE)
+	#g++ -o ../rcx.exe main.c $(W32LIBS) -static -lstdc++ -lwinmm -lgdi32 -Dwindows $(W32ARGS)
 
 clean:
-	-rm -f ../rcx ../rcx.exe
+	-rm -f ../rcx $(OBJS)
