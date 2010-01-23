@@ -1,12 +1,15 @@
-OBJS	= main.o shared.o events.o loaders.o graphics.o physics.o
-LIBLST	= sdl gl glu ode
+#makefile for windows (compiles _static_ binary)
+#usage: "make -f Makefile.doze"
 
-LIBS	= `pkg-config --libs $(LIBLST)`
-FLAGS	= `pkg-config --cflags $(LIBLST)`
-ARGS	= -O2 -pipe -Wall -march=native -mtune=native -lm $(FLAGS)
+OBJS	= main.o shared.o events.o loaders.o graphics.o physics.o
+
+#pkg-config is rarely installed, use ode-/sdl-config instead
+LIBS	= `sdl-config --static-libs --libs` `ode-config --libs` -opengl32 -lglu32 -lm -static -lstdc++ -lwinmm -lgdi32
+FLAGS	= `sdl-config --cflags` `ode-config --cflags`
+ARGS	= -O2 -pipe -Wall -march=i686 -mtune=i686 $(FLAGS) -Dwindows
 
 rcx: $(OBJS)
-	g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
+	g++ -o ../rcx.exe $(OBJS) $(ARGS) $(LIBS)
 
 main.o: main.c shared/shared.h
 	g++ -c -o main.o main.c $(ARGS)
@@ -29,4 +32,4 @@ physics.o: physics/physics.c physics/physics.h physics/camera.c physics/drag.c s
 
 .PHONY: clean
 clean:
-	-rm -f ../rcx $(OBJS)
+	-rm -f ../rcx.exe $(OBJS)
