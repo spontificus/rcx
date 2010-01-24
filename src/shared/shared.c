@@ -9,66 +9,29 @@
 
 
 //initiate global variables defined in shared.h
-runlevel_type runlevel;
+runlevel_type runlevel = done;
+camera_struct camera = {NULL, NULL, //settings, car
+		       {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, //pos, vel, up
+			0,0,false,false}; //timer, scale, reverse, air
 struct internal_struct internal;
-file_3d_struct *file_3d_head;
-script_struct *script_head;
-object_struct *object_head;
-geom_data *geom_data_head;
-body_data *body_data_head;
-joint_data *joint_data_head;
-car_struct *car_head;
-camera_struct camera;
-profile *profile_head;
 struct track_struct track;
+file_3d_struct *file_3d_head = NULL;
+script_struct *script_head = NULL;
+object_struct *object_head = NULL;
+geom_data *geom_data_head = NULL;
+body_data *body_data_head = NULL;
+joint_data *joint_data_head = NULL;
+car_struct *car_head = NULL;
+profile *profile_head = NULL;
 //variables
 dWorldID world;
 dSpaceID space;
 dJointGroupID contactgroup;
-car_struct *venom;
-script_struct *box;
-script_struct *sphere;
+car_struct *venom = NULL;
+script_struct *box = NULL;
+script_struct *sphere = NULL;
 
 
-//sets global variables to NULL and similar
-//could be done above, but this seems cleaner
-void shared_init(void)
-{
-	//set default camera to defaults
-	camera.settings = NULL;
-	camera.car = NULL;
-
-	camera.pos[0] = 0;
-	camera.pos[1] = 0;
-	camera.pos[2] = 0;
-
-	camera.t_pos[0] = 0;
-	camera.t_pos[1] = 0;
-	camera.t_pos[2] = 0;
-
-	camera.vel[0] = 0;
-	camera.vel[1] = 0;
-	camera.vel[2] = 0;
-
-	camera.up[0] = 0;
-	camera.up[1] = 0;
-	camera.up[2] = 0;
-
-	camera.air_timer = 0;
-	camera.offset_scale = 0;
-	camera.reverse = false;
-	camera.in_air = false;
-
-	//list heads
-	file_3d_head = NULL;
-	script_head = NULL;
-	object_head = NULL;
-	geom_data_head = NULL;
-	body_data_head = NULL;
-	joint_data_head = NULL;
-	car_head = NULL;
-	profile_head = NULL;
-}
 
 //allocate new script storage, and add it to list
 //(not used yet, only for storing 3d list pointers...)

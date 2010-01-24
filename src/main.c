@@ -57,8 +57,6 @@ int main (int argc, char *argv[])
 	printf("\n     -=[ Hello, and welcome to RollCageX version %s ]=-\n\n%s\n", VERSION, ISSUE);
 	//end
 
-	shared_init(); //initiates variables (sets pointers to NULL)
-
 	if (argc != 1)
 		printf("(Passing arguments - not supported)\n\n");
 
