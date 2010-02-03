@@ -9,138 +9,6 @@
 #include "text_file.cpp"
 #include "conf.cpp"
 
-#define MAX_WORDS 100
-
-//read a line from file pointer, remove blanks and sepparate words
-//guaranteed to return at least one word, or (if nothing left), NULL
-int get_word_length(FILE *fp)
-{
-	printlog(2, " > get_word_length\n");
-	int i = 0;
-	char c;
-	while ((c=fgetc(fp)) != EOF &&!isspace(c) &&c!='#')
-		++i;
-	if (fseek(fp, -(i+2), SEEK_CUR) == -1)
-		printlog(0, "ERROR: error seeking in file!\n");
-	return (i+1);
-}
-
-//ignore newline, return NULL on EOF
-char *get_word (FILE *fp, bool newline_sensitive)
-{
-	printlog(2, " > get_word\n");
-	char c;
-	do
-	{
-		if ((c = fgetc(fp)) == EOF)
-			return NULL;
-		if (newline_sensitive&& c=='\n')
-			return NULL;
-	}
-	while (isspace(c));
-
-	if (c == '#')
-	{
-		printlog(2, " * comment\n");
-		do
-		{
-			if ((c = fgetc(fp)) == EOF)
-				return NULL;
-		}
-		while (c != '\n');
-
-		if (newline_sensitive)
-			return NULL;
-		else
-			return get_word(fp, false);
-	}
-
-	//we've got a word
-	int l; //word length
-	bool last_step = false; //do a step after last char (when it is ")
-
-	if (c == '"')
-	{
-		printlog(2, " * quoted (special) word\n");
-		l = 0;
-		while ((c = fgetc(fp)) != EOF)
-		{
-			if (c == '\"')
-			{
-				last_step = true;
-				break;
-			}
-			++l;
-		}
-
-		if (fseek(fp, -(l+1), SEEK_CUR) == -1)
-			printlog(0, "ERROR: error seeking in file!\n");
-	}
-	else
-		l = get_word_length(fp);
-
-	printlog(2, " * length: %i\n", l);
-
-	if (l == 0) //shouldn't be too usual
-	{
-		printlog (2, " * no length, trying new word\n");
-		return get_word(fp, newline_sensitive);
-	}
-
-	char *word = (char *)calloc(l+1, sizeof(char));
-
-	fread (word, sizeof(char), l, fp);
-
-	word[l] = '\0';
-	printlog(2, " * word: %s\n", word);
-
-	//in case we need to throw away the next char (if quoted)
-	if (last_step)
-		fgetc(fp);
-
-	return (word);
-}
-
-char **get_word_list (FILE *fp)
-{
-	printlog(2, " > get_word_list\n");
-
-	char *word0;
-	//get first word
-	if ((word0 = get_word(fp, false)))
-	{
-		char **word = (char **)calloc(MAX_WORDS, sizeof(char*));
-		word[0] = word0;
-		int i;
-		for (i=1; (word[i]=get_word(fp,true)); ++i)
-			if (i==MAX_WORDS)
-			{
-				printlog(0, "ERROR: too many words in one line!\n");
-				break;
-			}
-
-		word[i+1] = NULL;
-	
-		return word;
-	}
-	else
-		return NULL;
-}
-
-
-//safely free ragged array
-void free_word_list (char **target)
-{
-	printlog(2, " > free_word_list\n");
-	int i;
-	if (target == NULL)
-		printlog(0, "ERROR: TARGET NULL");
-
-	for (i=0; target[i]!=NULL; ++i)
-		free (target[i]);
-	free (target);
-}
-
 #ifdef __cplusplus
 // required to iterate through an enum in C++
 template <class Enum>
@@ -196,53 +64,35 @@ profile *load_profile (char *path)
 		printlog(0, "ERROR: default camera should be a value between 1 and 4!\n");
 
 	//load key list
-	char *list=(char *)calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
+	char list[strlen(path)+9+1];
 	strcpy (list,path);
 	strcat (list,"/keys.lst");
 
 	printlog(1, "-> loading key list: %s\n", list);
-	FILE *fp;
+	Text_File file(list);
 
-#ifdef windows
-	fp = fopen(list, "rb");
-#else
-	fp = fopen(list, "r");
-#endif
-
-	if (!fp)
-	{
-		printlog(0, "ERROR opening file %s (doesn't exist?)\n", list);
-		free (list);
+	if (!file.open)
 		return NULL;
-	}
-	else
+
+	while (file.Read_Line())
 	{
-		free (list);
-#ifdef windows
-		printlog(2, "(using binary read mode)\n");
-#endif
-		char **word;
-		while ((word = get_word_list(fp)))
+		printlog(2, " * action: %s\n", file.words[0]);
+
+		//find match
+		int i;
+		for (i=0; (profile_key_list[i].name != '\0') && (strcmp(profile_key_list[i].name, file.words[0])); ++i);
+
+		if (profile_key_list[i].name == '\0') //we reached end (no found)
+			printlog(0, "ERROR: no key action match: %s!\n",file.words[0]);
+		else //found
 		{
-		 printlog(2, " * action: %s\n", word[0]);
-
-		 int i;
-		 for (i=0; (profile_key_list[i].name != '\0'); ++i)
-		  if (strcmp(profile_key_list[i].name,word[0]) == 0)
-		  {
-		   printlog(2, " * match found\n");
-		   *(SDLKey*)((char*)prof+profile_key_list[i].offset) = get_key(word[1]);
-		   break;
-		  }
-
-		 if (profile_key_list[i].name == '\0') //we reached end (no found)
-			 printlog(0, "ERROR: no key action match: %s!\n",word[0]);
-
-		 free_word_list(word);
+			printlog(2, " * match found\n");
+			if (file.word_count == 2) //got a key name
+				*(SDLKey*)((char*)prof+profile_key_list[i].offset) = get_key(file.words[1]);
+			else
+				printlog(0, "ERROR: no key specified for action \"%s\"\n", file.words[i]);
 		}
 	}
-
-	fclose(fp);
 
 	printlog(1, "\n");
 	return prof;
@@ -1055,91 +905,76 @@ int load_track (char *path)
 
 
 	//now lets load some objects!
-	char *list=(char *)calloc(strlen(path)+12+1,sizeof(char));//+1 for \0
+	char list[strlen(path)+12+1];
 	strcpy (list,path);
 	strcat (list,"/objects.lst");
 
 	printlog(1, "-> Loading track object list: %s\n", path);
-	FILE *fp;
+	Text_File file(list);
 
-#ifdef windows
-	fp = fopen(list, "rb");
-#else
-	fp = fopen(list, "r");
-#endif
+	//each object is loaded/selected at a time (NULL if none loaded so far)
+	script_struct *obj = NULL;
 
-	if (!fp)
+	//don't fail if can't find file, maybe there is no need for it anyway
+	if (file.open)
 	{
-		printlog(0, "ERROR opening file %s (doesn't exist?)\n", list);
-		free (list);
-		return -1;
-	}
-	else
-	{
-		free (list);
-#ifdef windows
-		printlog(2, "(using binary read mode)\n");
-#endif
-		char **w;
-		w = get_word_list(fp);
-		if (w[0][0]!='>'||w[1]=='\0')
+		while (file.Read_Line())
 		{
-			printlog(0, "ERROR: expected first word to be load request (> object)\n");
-			free_word_list(w);
-			return -1;
-		}
-		else
-		{
-			script_struct *obj;
-			char *obj_list = (char *)calloc(strlen(w[1])+13+1, sizeof(char));
-			strcpy (obj_list,"data/objects/");
-			strcat (obj_list,w[1]);
-
-			obj = load_object(obj_list);
-			dReal x,y,z;
-			bool fail = false;
-
-			if (!obj)
-				return -1;
-
-			while (!fail && (w = get_word_list(fp)))
+			//object load request
+			if (file.word_count==2 && !strcmp(file.words[0], ">"))
 			{
-				if (w[0][0] == '>'&&w[1][0] != '\0')
-				{
-					obj_list = (char *)calloc(strlen(w[1])+13+1,
-							sizeof(char));
-					strcpy (obj_list,"data/objects/");
-					strcat (obj_list,w[1]);
+				printlog(2, " * object load request: %s\n", file.words[1]);
+				char obj_name[13+strlen(file.words[1])+1];
+				strcpy (obj_name, "data/objects/");
+				strcat (obj_name, file.words[1]);
 
-					obj = load_object(obj_list);
+				obj = load_object(obj_name);
 
-					if (!obj)
-						fail = true;
-				}
-				//three words
-				else if ( w[0][0]!='\0' && w[1][0]!='\0'
-						&& w[2][0]!='\0')
-				{
-					if (!(sscanf(w[0], "%f", &x) == 1&&
-						sscanf(w[1], "%f", &y) == 1&&
-						sscanf(w[2], "%f", &z)))
-					{
-					 printlog(0, "ERROR: couldn't read position value!\n");
-					 fail = true;
-					}
-					else
-						spawn_object(obj, x, y, z);
-				}
-				else
-				{
-					printlog(0, "ERROR: unknown line!\n");
-					fail = true;
-				}
-				free_word_list(w);
+				//failure to load object
+				if (!obj)
+					break;
 			}
-			fclose (fp);
+			//three words (x, y and z coord for spawning): spawning
+			else if (file.word_count == 3)
+			{
+				printlog(2, " * object spawn request\n");
+				//in case no object has been loaded yet
+				if (!obj)
+				{
+					printlog(0, "ERROR: trying to spawn object without specifying what object!\n");
+					break;
+				}
+
+				//translate words to values
+				int x,y,z;
+
+				//indicates error if not changed
+				x=FP_NAN;
+				y=FP_NAN;
+				z=FP_NAN;
+
+				x = atof(file.words[0]);
+				y = atof(file.words[1]);
+				z = atof(file.words[2]);
+
+				//in case loading fails
+				if (isnan(x) || isnan(y) || isnan(z))
+				{
+					printlog(0, "ERROR: couldn't read position value!\n");
+					break;
+				}
+
+				//ok
+				spawn_object(obj, x, y, z);
+			}
+			else
+			{
+				printlog(0, "ERROR: unknown line in object list!\n");
+				break;
+			}
 		}
 	}
+
 	//that's it!
 	printlog(1, "\n");
 	return 0;
