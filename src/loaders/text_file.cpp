@@ -3,16 +3,6 @@
 
 Text_File::Text_File (const char *name)
 {
-	//stream.open(name.c_str());
-	//stream.open(name);
-
-	//if (stream.is_open())
-	//{
-		//open = true;
-		//printf("yay!\n");
-	//}
-	//else
-		//printf("failure\n");
 	open = false; //default until attempting opening
 	word_count = 0; //npo words read yet
 
@@ -76,9 +66,7 @@ void Text_File::Close()
 
 bool Text_File::Read_Line ()
 {
-	//don't use:
-	//stream >> noskipws >> string
-	//use strtok
+	//remove the old words
 	Free_Words();
 
 	//the following actions goes false if end of file
@@ -89,6 +77,7 @@ bool Text_File::Read_Line ()
 	if (!Buffer_To_Words())
 		return false;
 
+	//ok
 	return true;
 }
 
@@ -129,8 +118,6 @@ bool Text_File::Line_To_Buffer()
 			return false;
 
 		text_read = strlen(buffer);
-		//printf("read: %i \"%s\"\n", text_read, buffer);
-		//size_t end = strlen(buffer);
 
 		//if EOF or read a newline, everything ok
 		if (feof(fp) || buffer[text_read-1] == '\n')
@@ -138,7 +125,6 @@ bool Text_File::Line_To_Buffer()
 		
 		//else: I guess the buffer was too small...
 		printlog(1, "WARNING: Text_File buffer was too small, resizing\n");
-		//return false; //TODO (now: infinite loop!)
 		buffer_size += INITIAL_BUFFER_SIZE;
 		buffer = (char*) realloc (buffer, buffer_size);
 	}
@@ -158,17 +144,11 @@ bool Text_File::Buffer_To_Words()
 	if (!sup)
 		return false;
 
-	//printf("processing buffer\n");
-	//word_count = 0;
 	while (sup)
 	{
 		if (quoted) //this is quoted
 		{
-			//++word_count; //one more "word"
-			//words.push_back(sup);
 			Append_Word(sup);
-
-			//printf("quoted: \"%s\"\n", sup);
 
 			quoted = false; //next time is normal
 		}
@@ -186,18 +166,16 @@ bool Text_File::Buffer_To_Words()
 				if (sub[0] == '#') //comment starting
 					break;
 
-				//++word_count; //one more for each word
 				Append_Word(sub);
-				//words.push_back(sub);
 
-				//printf("normal: \"%s\"\n", sub);
-
+				//get next
 				sub = strtok_r(NULL, " \f\n\r\t\v", &saveptr2);
-
-				quoted = true; //next time is quote
 			}
+
+			quoted = true; //next time is quote
 		}
 
+		//get next
 		sup = strtok_r(NULL, "\"\n", &saveptr1);
 	}
 
@@ -219,24 +197,21 @@ bool Text_File::Throw_Line ()
 
 void Text_File::Append_Word(char *word)
 {
-	//printf("appending: \"%s\"\n", word);
 	++word_count;
+
 	if (word_count > list_size)
 	{
 		printlog(1, "WARNING: Text_File word list was too small, resizing\n");
 		list_size+=INITIAL_LIST_SIZE;
 		words = (char**) realloc(words, list_size*sizeof(char**));
 	}
+
 	words[word_count-1] = (char*) calloc(strlen(word)+1, sizeof(char));
 	strcpy(words[word_count-1], word);
-	//printf("currently holding %i words\n", word_count);
 }
 
 void Text_File::Free_Words()
 {
-	//since using "std::string", their destructor takes care of all
-	//words.clear();
-	//word_count=0;
 	for (int i=0; i<word_count; ++i)
 		free (words[i]);
 

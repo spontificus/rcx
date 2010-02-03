@@ -79,19 +79,6 @@ int main (int argc, char *argv[])
 	if (load_conf ((char *)"data/internal.conf", (char *)&internal, internal_index))
 		return -1;
 
-	//printf("testing\n");
-	//Text_File test("hello");
-	//if (test.open)
-	//{
-		//while (test.Read_Line())
-		//{
-			//printf("line:\n");
-			//for (int i=0; i<test.word_count; ++i)
-				//printf("word: \"%s\"\n", test.words[i]);
-		//}
-	//}
-
-
 	if (graphics_init())
 		return -1;
 
