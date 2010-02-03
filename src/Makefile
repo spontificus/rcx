@@ -8,22 +8,22 @@ ARGS	= -O2 -pipe -Wall -march=native -mtune=native -lm $(FLAGS)
 rcx: $(OBJS)
 	g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
 
-main.o: main.c shared/shared.h
+main.o: main.c shared/shared.hpp
 	g++ -c -o main.o main.c $(ARGS)
 
-shared.o: shared/shared.c shared/shared.h shared/camera.c
+shared.o: shared/shared.c shared/shared.hpp shared/camera.c
 	g++ -c -o shared.o shared/shared.c $(ARGS)
 
-events.o: events/events.c events/events.h shared/shared.h
+events.o: events/events.c events/events.h shared/shared.hpp
 	g++ -c -o events.o events/events.c $(ARGS)
 
-loaders.o: loaders/loaders.c loaders/loaders.h shared/shared.h
+loaders.o: loaders/loaders.c loaders/loaders.h loaders/text_file.hpp loaders/text_file.cpp shared/shared.hpp
 	g++ -c -o loaders.o loaders/loaders.c $(ARGS)
 
-graphics.o: graphics/graphics.c graphics/graphics.h graphics/camera.c shared/shared.h
+graphics.o: graphics/graphics.c graphics/graphics.h graphics/camera.c shared/shared.hpp
 	g++ -c -o graphics.o graphics/graphics.c $(ARGS)
 
-physics.o: physics/physics.c physics/physics.h physics/camera.c physics/drag.c shared/shared.h
+physics.o: physics/physics.c physics/physics.h physics/camera.c physics/drag.c shared/shared.hpp
 	g++ -c -o physics.o physics/physics.c $(ARGS)
 
 

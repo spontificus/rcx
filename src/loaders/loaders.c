@@ -4,7 +4,9 @@
 //
 //See main.c for licensing info
 
-#include "../shared/shared.h"
+#include "../shared/shared.hpp"
+#include "loaders.h"
+#include "text_file.cpp"
 
 #define MAX_WORDS 100
 

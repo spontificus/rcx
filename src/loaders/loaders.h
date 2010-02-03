@@ -1,3 +1,4 @@
+#include "text_file.hpp"
 
 int load_conf (char *name, char *memory, const struct data_index index[]);
 profile *load_profile (char *path);

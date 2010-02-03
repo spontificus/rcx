@@ -2,7 +2,7 @@
 //
 //See main.c for licensing
 
-#include "../shared/shared.h"
+#include "../shared/shared.hpp"
 
 //Just in case it's not defined...
 #ifndef M_PI

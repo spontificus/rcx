@@ -4,7 +4,7 @@
 //
 //See main.c for licensing
 
-#include "../shared/shared.h" //shared (global defined) data
+#include "../shared/shared.hpp" //shared (global defined) data
 #include "../graphics/graphics.h" //for window resizing events
 #include "../loaders/loaders.h" //spawn/destroy events
 

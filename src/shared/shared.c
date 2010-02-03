@@ -4,7 +4,7 @@
 //
 //See main.c for licensing
 
-#include "shared.h"
+#include "shared.hpp"
 #include "camera.c"
 
 

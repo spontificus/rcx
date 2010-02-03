@@ -7,6 +7,12 @@
 #include <SDL_opengl.h>
 #include <ode/ode.h>
 
+//C++ libs
+//#include <string>
+//#include <vector>
+//#include <fstream>
+
+//C libs
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

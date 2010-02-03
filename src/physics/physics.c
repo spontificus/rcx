@@ -3,7 +3,7 @@
 //See main.c about licensing
 //
 
-#include "../shared/shared.h"
+#include "../shared/shared.hpp"
 #include "camera.c"
 #include "drag.c"
 
