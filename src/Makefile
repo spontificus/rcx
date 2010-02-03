@@ -8,7 +8,7 @@ ARGS	= -O2 -pipe -Wall -march=native -mtune=native -lm $(FLAGS)
 rcx: $(OBJS)
 	g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
 
-main.o: main.c shared/shared.hpp
+main.o: main.c shared/shared.hpp loaders/conf.cpp
 	g++ -c -o main.o main.c $(ARGS)
 
 shared.o: shared/shared.c shared/shared.hpp shared/camera.c

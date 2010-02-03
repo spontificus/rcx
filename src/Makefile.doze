@@ -11,7 +11,7 @@ ARGS	= -O2 -pipe -Wall -march=i686 -mtune=i686 $(FLAGS) -Dwindows
 rcx: $(OBJS)
 	g++ -o ../rcx.exe $(OBJS) $(ARGS) $(LIBS)
 
-main.o: main.c shared/shared.h
+main.o: main.c shared/shared.h loaders/conf.cpp
 	g++ -c -o main.o main.c $(ARGS)
 
 shared.o: shared/shared.c shared/shared.h shared/camera.c
