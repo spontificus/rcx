@@ -146,33 +146,20 @@ void free_word_list (char **target)
 int load_conf (char *name, char *memory, const struct data_index index[])
 {
  printlog(1, "-> loading conf file: %s\n", name);
- FILE *fp;
+ Text_File file(name);
 
-#ifdef windows
- fp = fopen(name, "rb");
-#else
- fp = fopen(name, "r");
-#endif
-
- if (!fp)
- {
-  printlog(0, "ERROR opening file %s (doesn't exist?)\n", name);
+ if (!file.open)
   return -1;
- }
  else
  {
-#ifdef windows
-  printlog(2, "(using binary read mode)\n");
-#endif
-  int i,j,tmp;
-  char **word;
+  int i,j;
   const char *argscan;
   size_t argsize;
-  while ((word=get_word_list(fp)))
+  while (file.Read_Line())
   {
-   printlog(2, " * Parameter: %s\n", word[0]);
+   printlog(2, " * Parameter: %s\n", file.words[0]);
    for (i=0; index[i].type !=0; ++i)
-    if (strcmp(index[i].name,word[0]) == 0)
+    if (strcmp(index[i].name,file.words[0]) == 0)
     {
      printlog(2, " * match found!, %i, %c, %i\n",i,index[i].type,index[i].length);
      //arguments (first:what kind?)
@@ -199,46 +186,43 @@ int load_conf (char *name, char *memory, const struct data_index index[])
       break;
 
       default:
-       printlog(0, "ERROR: Parameter: %s - unknown type(%c)!\n", word[0], index[i].type);
+       printlog(0, "ERROR: Parameter: %s - unknown type(%c)!\n", file.words[0], index[i].type);
        argscan="";
        argsize=0;
       break;
      }
 
     //see if ammount of args is correct
-    for(tmp=0;word[tmp+1];++tmp);
-    if (tmp!=index[i].length)
+    //argument name+values == words
+    if (index[i].length+1 != file.word_count)
     {
-     printlog(0, "ERROR: Parameter: %s - wrong ammount of args: %i, expected: %i!\n",word[0], tmp, index[i].length);
+     printlog(0, "ERROR: Parameter: %s - wrong ammount of args: %i, expected: %i!\n",file.words[0], file.word_count, index[i].length);
      break;
     }
 
     for (j=0;j<index[i].length;++j)
     {
      if (argscan[1]=='b')
-      if(strcmp(word[j+1],"true") == 0)
+      if(strcmp(file.words[j+1],"true") == 0)
        *(bool*)(memory+index[i].offset+j*argsize) = true;
       else
        *(bool*)(memory+index[i].offset+j*argsize) = false;
 
 #ifdef windows //windows (MinGW?) sscanf can't process "inf" for infinite float
-     else if (argscan[1]=='f'&&strcmp(word[j+1],"inf") == 0)
+     else if (argscan[1]=='f'&&strcmp(file.words[j+1],"inf") == 0)
       *(float*)(memory+index[i].offset+j*argsize) = 1.0f/0.0f;
 #endif
      else
-      if(sscanf(word[j+1],argscan,(memory+index[i].offset+j*argsize)) != 1)
-            printlog(0, "ERROR: Parameter: %s - Error reading argument %i!\n", word[0],j);
+      if(sscanf(file.words[j+1],argscan,(memory+index[i].offset+j*argsize)) != 1)
+            printlog(0, "ERROR: Parameter: %s - Error reading argument %i!\n", file.words[0],j);
     }
 
      break;
     }
    if (index[i].type==0) //not match, got to end
-    printlog(0, "ERROR: Parameter: %s - No index name match!\n", word[0]);
-
-   free_word_list(word);
+    printlog(0, "ERROR: Parameter: %s - No index name match!\n", file.words[0]);
 
   }
-  fclose (fp);
   printlog(2, "\n");
   return 0;
  }

@@ -17,8 +17,8 @@ shared.o: shared/shared.c shared/shared.hpp shared/camera.c
 events.o: events/events.c events/events.h shared/shared.hpp
 	g++ -c -o events.o events/events.c $(ARGS)
 
-loaders.o: loaders/loaders.c loaders/loaders.h loaders/text_file.hpp loaders/text_file.cpp shared/shared.hpp
-	g++ -c -o loaders.o loaders/loaders.c $(ARGS)
+loaders.o: loaders/loaders.cpp loaders/loaders.h loaders/text_file.hpp loaders/text_file.cpp shared/shared.hpp
+	g++ -c -o loaders.o loaders/loaders.cpp $(ARGS)
 
 graphics.o: graphics/graphics.c graphics/graphics.h graphics/camera.c shared/shared.hpp
 	g++ -c -o graphics.o graphics/graphics.c $(ARGS)

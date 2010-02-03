@@ -20,8 +20,8 @@ shared.o: shared/shared.c shared/shared.h shared/camera.c
 events.o: events/events.c events/events.h shared/shared.h
 	g++ -c -o events.o events/events.c $(ARGS)
 
-loaders.o: loaders/loaders.c loaders/loaders.h shared/shared.h
-	g++ -c -o loaders.o loaders/loaders.c $(ARGS)
+loaders.o: loaders/loaders.cpp loaders/loaders.h shared/shared.h
+	g++ -c -o loaders.o loaders/loaders.cpp $(ARGS)
 
 graphics.o: graphics/graphics.c graphics/graphics.h graphics/camera.c shared/shared.h
 	g++ -c -o graphics.o graphics/graphics.c $(ARGS)
