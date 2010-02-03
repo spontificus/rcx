@@ -946,25 +946,13 @@ int load_track (char *path)
 				}
 
 				//translate words to values
-				int x,y,z;
+				float x,y,z;
 
-				//indicates error if not changed
-				x=FP_NAN;
-				y=FP_NAN;
-				z=FP_NAN;
-
+				//assume conversion is succesfully (not reliable, but it shouldn't be a problem)
 				x = atof(file.words[0]);
 				y = atof(file.words[1]);
 				z = atof(file.words[2]);
 
-				//in case loading fails
-				if (isnan(x) || isnan(y) || isnan(z))
-				{
-					printlog(0, "ERROR: couldn't read position value!\n");
-					break;
-				}
-
-				//ok
 				spawn_object(obj, x, y, z);
 			}
 			else
