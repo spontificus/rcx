@@ -164,7 +164,7 @@ bool Text_File::Buffer_To_Words()
 			while (sub)
 			{
 				if (sub[0] == '#') //comment starting
-					break;
+					return true; //stop reading, assume we got wanted words (we have)
 
 				Append_Word(sub);
 
@@ -178,6 +178,7 @@ bool Text_File::Buffer_To_Words()
 		//get next
 		sup = strtok_r(NULL, "\"\n", &saveptr1);
 	}
+	
 
 	return true;
 }
