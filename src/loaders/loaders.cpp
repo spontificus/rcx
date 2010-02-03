@@ -150,9 +150,9 @@ int load_conf (char *name, char *memory, const struct data_index index[])
 		return -1;
 
 
-	int i,j;
-	const char *argscan;
-	size_t argsize;
+	int i;
+	int argnr;
+	char *str_left; //text left in word if not completely converted
 	while (file.Read_Line())
 	{
 		printlog(2, " * Parameter: %s\n", file.words[0]);
@@ -169,36 +169,6 @@ int load_conf (char *name, char *memory, const struct data_index index[])
 		//else, we have a match
 		printlog(2, " * match found!, %i, %c, %i\n",i,index[i].type,index[i].length);
 
-		//arguments (first:what kind?)
-		switch (index[i].type)
-		{
-			case 'f':
-				argscan="%f";
-				argsize=sizeof(float);
-			break;
-
-			case 'd':
-				argscan="%lf";
-				argsize=sizeof(double);
-			break;
-
-			case 'b':
-				argscan="%b";
-				argsize=sizeof(bool);
-			break;
-
-			case 'i':
-				argscan="%i";
-				argsize=sizeof(int);
-			break;
-
-			default:
-				printlog(0, "ERROR: Parameter: %s - unknown type(%c)!\n", file.words[0], index[i].type);
-				argscan="";
-				argsize=0;
-			break;
-		}
-
 		//see if ammount of args is correct
 		//argument name+values == words
 		if (index[i].length+1 != file.word_count)
@@ -207,21 +177,50 @@ int load_conf (char *name, char *memory, const struct data_index index[])
 			break;
 		}
 
-		for (j=0;j<index[i].length;++j)
+		//loop through arguments
+		for (argnr=0;argnr<index[i].length;++argnr)
 		{
-			if (argscan[1]=='b')
-				if(strcmp(file.words[j+1],"true") == 0)
-					*(bool*)(memory+index[i].offset+j*argsize) = true;
-				else
-					*(bool*)(memory+index[i].offset+j*argsize) = false;
+			//what type
+			switch (index[i].type)
+			{
+				//float
+				case 'f':
+					*( ((float*)(memory+index[i].offset))+argnr ) = strtof(file.words[argnr+1], &str_left);
+				break;
 
-#ifdef windows //windows (MinGW?) sscanf can't process "inf" for infinite float
-			else if (argscan[1]=='f'&&strcmp(file.words[j+1],"inf") == 0)
-				*(float*)(memory+index[i].offset+j*argsize) = 1.0f/0.0f;
-#endif
-			else
-				if(sscanf(file.words[j+1],argscan,(memory+index[i].offset+j*argsize)) != 1)
-							   printlog(0, "ERROR: Parameter: %s - Error reading argument %i!\n", file.words[0],j);
+				//double
+				case 'd':
+					*( ((double*)(memory+index[i].offset))+argnr ) = strtod(file.words[argnr+1], &str_left);
+				break;
+
+				//bool
+				case 'b':
+					if ( (!strcasecmp(file.words[argnr+1], "true")) || (!strcmp(file.words[argnr+1], "1")) )
+						*(((bool*)(memory+index[i].offset))+argnr) = true;
+					else //false
+						*(((bool*)(memory+index[i].offset))+argnr) = false;
+
+					str_left = NULL; //assume always working
+				break;
+
+				//integer
+				case 'i':
+					*( ((int*)(memory+index[i].offset))+argnr ) = strtol (file.words[argnr+1], &str_left, 0);
+				break;
+
+				//unknown
+				default:
+					printlog(0, "ERROR: Parameter: %s - unknown type(%c)!\n", file.words[0], index[i].type);
+				break;
+			}
+
+			//if the word wasn't processed
+			if (str_left == file.words[argnr+1])
+			{
+				printlog(0, "ERROR: Could not translate word \"%s\" to type \"%c\"\n", file.words[argnr+1], index[i].type);
+				//this is potentially dangerous (since the variable might not have a default value)
+				//return -1; //currently assuming it has a safe default anyway (not guaranteed)
+			}
 		}
 
 	}
