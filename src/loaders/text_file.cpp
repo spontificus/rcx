@@ -141,56 +141,6 @@ bool Text_File::Buffer_To_Words()
 		return false;
 	
 	return true;
-
-	/*char *saveptr1, *saveptr2;
-	//two loops: first one to handle quotations
-	char *sup, *sub;
-	//each second token is a quotation
-	bool quoted = false;
-
-	sup = strtok_r(buffer, "\"\n", &saveptr1); //divide with quote (+remove newline)
-
-	//this should not happen anyway
-	if (!sup)
-		return false;
-
-	while (sup)
-	{
-		if (quoted) //this is quoted
-		{
-			Append_Word(sup);
-
-			quoted = false; //next time is normal
-		}
-		else //normal list of words
-		{
-			//divide sup with spaces
-			sub = strtok_r(sup, " \f\n\r\t\v", &saveptr2);
-
-			//this should not happen
-			if (!sub)
-				return false;
-
-			while (sub)
-			{
-				if (sub[0] == '#') //comment starting
-					return true; //stop reading, assume we got wanted words (we have)
-
-				Append_Word(sub);
-
-				//get next
-				sub = strtok_r(NULL, " \f\n\r\t\v", &saveptr2);
-			}
-
-			quoted = true; //next time is quote
-		}
-
-		//get next
-		sup = strtok_r(NULL, "\"\n", &saveptr1);
-	}
-	
-
-	return true;*/
 }
 
 bool Text_File::Throw_Line ()
@@ -208,46 +158,46 @@ bool Text_File::Throw_Line ()
 
 char *Text_File::Word_From_Buffer()
 {
-	//seek for char not space (or end of buffer)
-
 	//is at end?
 	if (*buffer_ptr == '\0')
 		return NULL;
 
+	//seek for char not space (or end of buffer)
 	while (isspace(*buffer_ptr))
 	{
 		++buffer_ptr;
 
 		//reached end
-		if (buffer_ptr == '\0')
+		if (*buffer_ptr == '\0')
 			return NULL;
 	}
 
-
-	//first char of new word
-	char *word_start = buffer_ptr;
-
-	if (*word_start == '#') //commented: end of line
+	//maybe this is a comment (then end of line)
+	if (*buffer_ptr == '#')
 		return NULL;
 
+	//pointer to first char of new word
+	char *word_start;
 
-	//seek to end of word
-
-	//printf("%c\n", *word_start);
-	//if quotation, end is " or \0
-	if (*word_start == '\"')
+	//there a two ways of locating the word
+	if (*buffer_ptr == '\"') //quotation: "word" begins after " and ends at " (or \0)
 	{
-		do
+		//go one step more (don't want " in word)
+		++buffer_ptr;
+		word_start = buffer_ptr;
+
+		//find next " or end of line
+		while (*buffer_ptr!='\"' && *buffer_ptr!='\0')
 		{
 			++buffer_ptr;
-		//printf("quoted %c\n", *buffer_ptr);
 		}
-		while (*buffer_ptr!='\"' && *buffer_ptr!='\0');
-		if (*buffer_ptr!='\0')
-			++buffer_ptr;
+
+		if (*buffer_ptr=='\0') //end of line before end of quote
+			printlog(0, "WARNING: Text_File reached end of line before end of quote...\n");
 	}
-	else //normal: space or \0
+	else //normal: word begins after space and ends at space (or \0)
 	{
+		word_start = buffer_ptr;
 		do
 		{
 			++buffer_ptr;
@@ -262,7 +212,6 @@ char *Text_File::Word_From_Buffer()
 	{
 		*buffer_ptr='\0';
 		++buffer_ptr;
-		//printf("> \"%c\"\n", *buffer_ptr);
 	}
 
 	return word_start;
