@@ -4,7 +4,7 @@
 Text_File::Text_File (const char *name)
 {
 	open = false; //default until attempting opening
-	word_count = 0; //npo words read yet
+	word_count = 0; //no words read yet
 
 	Open (name);
 	//allocate buffer anyway, if reopening
@@ -109,7 +109,7 @@ bool Text_File::Seek_First()
 bool Text_File::Line_To_Buffer()
 {
 	//make sure to realloc buffer if too small
-	int text_read=0; //how much text already read
+	int text_read=0; //no text already read
 
 	while (true)
 	{
@@ -132,7 +132,17 @@ bool Text_File::Line_To_Buffer()
 
 bool Text_File::Buffer_To_Words()
 {
-	char *saveptr1, *saveptr2;
+	buffer_ptr = buffer; //position buffer pointer to start of buffer
+	char *word;
+	while ((word=Word_From_Buffer()))
+		Append_Word(word);
+
+	if (word_count==0)
+		return false;
+	
+	return true;
+
+	/*char *saveptr1, *saveptr2;
 	//two loops: first one to handle quotations
 	char *sup, *sub;
 	//each second token is a quotation
@@ -180,7 +190,7 @@ bool Text_File::Buffer_To_Words()
 	}
 	
 
-	return true;
+	return true;*/
 }
 
 bool Text_File::Throw_Line ()
@@ -195,6 +205,69 @@ bool Text_File::Throw_Line ()
 			return true;
 	}
 }
+
+char *Text_File::Word_From_Buffer()
+{
+	//seek for char not space (or end of buffer)
+
+	//is at end?
+	if (*buffer_ptr == '\0')
+		return NULL;
+
+	while (isspace(*buffer_ptr))
+	{
+		++buffer_ptr;
+
+		//reached end
+		if (buffer_ptr == '\0')
+			return NULL;
+	}
+
+
+	//first char of new word
+	char *word_start = buffer_ptr;
+
+	if (*word_start == '#') //commented: end of line
+		return NULL;
+
+
+	//seek to end of word
+
+	//printf("%c\n", *word_start);
+	//if quotation, end is " or \0
+	if (*word_start == '\"')
+	{
+		do
+		{
+			++buffer_ptr;
+		//printf("quoted %c\n", *buffer_ptr);
+		}
+		while (*buffer_ptr!='\"' && *buffer_ptr!='\0');
+		if (*buffer_ptr!='\0')
+			++buffer_ptr;
+	}
+	else //normal: space or \0
+	{
+		do
+		{
+			++buffer_ptr;
+		}
+		while (!isspace(*buffer_ptr) && *buffer_ptr!='\0');
+	}
+
+	//if reading ended by end of buffer, do nothing more
+	//if reading ended by space, modify space to be \0 and jump over it
+	//(this will mark the end of word when processed by Append_Word() )
+	if (*buffer_ptr!='\0')
+	{
+		*buffer_ptr='\0';
+		++buffer_ptr;
+		//printf("> \"%c\"\n", *buffer_ptr);
+	}
+
+	return word_start;
+}
+
 
 void Text_File::Append_Word(char *word)
 {

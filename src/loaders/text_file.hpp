@@ -36,6 +36,8 @@ class Text_File
 		char *buffer;
 		size_t buffer_size;
 
+		char *buffer_ptr; //keeps track of position in buffer
+
 		//how many words can be stored in "words"
 		int list_size;
 
@@ -45,10 +47,11 @@ class Text_File
 		bool Seek_First();
 		//copy the line to buffer
 		bool Line_To_Buffer();
+		//get one word from buffer
+		char *Word_From_Buffer();
 		//split buffer to list of words
 		bool Buffer_To_Words();
-
-		//opcy word to list
+		//copy word to list
 		void Append_Word(char * word);
 		//free up the word list
 		void Free_Words();

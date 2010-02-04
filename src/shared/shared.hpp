@@ -45,7 +45,7 @@ const char ISSUE[] =
       * \"Spontificus\"	Testing, hacks, github registion and various fixes\n\n\
     = Other Projects that made RCX possible =\n\
       * \"Simple DirectMedia Layer\"	OS/hardware abstractions\n\
-      * \"Open Dynamics Engine\"	Rigid body dynamics and collision detection\n\
+      * \"Open Dynamics Engine\"		Rigid body dynamics and collision detection\n\
       * \"The GNU Project\"		Its fight for computer freedom has changed the world\n\n\
     - See README for more info -\n\n";
  
