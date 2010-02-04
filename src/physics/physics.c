@@ -263,7 +263,8 @@ void car_physics_step(void)
 					rotation = -rotation;
 
 				//in case wheel is already rotating so fast we get simulation errors, no simulation
-				if (rotation > internal.max_wheel_rotation)
+				//only when wheel is in air
+				if ( !(carp->wheel_geom_data[i]->event) && rotation > internal.max_wheel_rotation)
 					torque[i] = 0.0;
 				else
 				{
@@ -271,6 +272,9 @@ void car_physics_step(void)
 					//motor torque is geared by stepless gearbox
 					torque[i]=carp->max_torque/(1+rotation*carp->motor_tweak);
 				}
+
+				//since we are using the wheel collision detection, reset it each time
+				carp->wheel_geom_data[i]->event = false; //reset
 			}
 
 			dJointAddHinge2Torques (carp->joint[0],0,torque[0]*carp->throttle*carp->dir*carp->fmotor);

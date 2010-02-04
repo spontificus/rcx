@@ -915,6 +915,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 		
 		//(we need easy access to wheel body ids if using finite rotation)
 		target->wheel_body[i] = wheel_body[i];
+		target->wheel_geom_data[i] = wheel_data[i];
 	}
 
 	//place and rotate wheels

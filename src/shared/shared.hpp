@@ -323,8 +323,10 @@ typedef struct car_struct {
 	object_struct *object; //one object to store car components
 
 //	dGeomID body_geom; //for focusing
-	dBodyID bodyid,wheel_body[4]; //for "Finite Rotation" arror reduction
-	dJointID joint[4]; //for applying forces on wheels
+	dBodyID bodyid,wheel_body[4];
+	dJointID joint[4];
+
+	geom_data *wheel_geom_data[4];
 
 	//flipover sensors
 	geom_data *sensor1, *sensor2;
