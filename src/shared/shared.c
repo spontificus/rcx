@@ -160,7 +160,7 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 
 	//now lets set some default values...
 	//event processing (triggering):
-	geom_data_head->event = false; //no collision event yet
+	geom_data_head->colliding = false; //no collision event yet
 	geom_data_head->script = NULL; //nothing to run on collision (yet)
 	
 	geom_data_head->file_3d = NULL; //default, isn't rendered

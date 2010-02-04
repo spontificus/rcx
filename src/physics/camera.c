@@ -33,7 +33,7 @@ void camera_physics_step()
 
 		if (settings->in_air) //in air enabled
 		{
-			if (!(car->sensor1->event) && !(car->sensor2->event)) //in air
+			if (!(car->sensor1->colliding) && !(car->sensor2->colliding)) //in air
 			{
 				if (camera.in_air) //in ground mode
 				{

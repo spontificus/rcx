@@ -174,12 +174,12 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 	//with physical contact or not, might respond to collision events
 	if (geom1->collide)
 	{
-		geom2->event = true;
+		geom2->colliding = true;
 	}
 
 	if (geom2->collide)
 	{
-		geom1->event = true;
+		geom1->colliding = true;
 	}
 }
 
@@ -199,16 +199,16 @@ void car_physics_step(void)
 		//first flipover detection (+ antigrav forces)
 
 		//both sensors are triggered, not flipping, only antigrav
-		if (carp->sensor1->event && carp->sensor2->event)
+		if (carp->sensor1->colliding && carp->sensor2->colliding)
 			antigrav = true;
 		//only one sensor, flipping+antigrav
-		else if (carp->sensor1->event)
+		else if (carp->sensor1->colliding)
 		{
 			antigrav = true;
 			carp->dir = 1.0;
 		}
 		//same
-		else if (carp->sensor2->event)
+		else if (carp->sensor2->colliding)
 		{
 			antigrav = true;
 			carp->dir = -1.0;
@@ -218,8 +218,8 @@ void car_physics_step(void)
 			antigrav = false;
 
 		//sensors have been read, reset them
-		carp->sensor1->event = false;
-		carp->sensor2->event = false;
+		carp->sensor1->colliding = false;
+		carp->sensor2->colliding = false;
 
 		if (antigrav) //TODO
 		{
@@ -264,7 +264,7 @@ void car_physics_step(void)
 
 				//in case wheel is already rotating so fast we get simulation errors, no simulation
 				//only when wheel is in air
-				if ( !(carp->wheel_geom_data[i]->event) && rotation > internal.max_wheel_rotation)
+				if ( !(carp->wheel_geom_data[i]->colliding) && rotation > internal.max_wheel_rotation)
 					torque[i] = 0.0;
 				else
 				{
@@ -274,7 +274,7 @@ void car_physics_step(void)
 				}
 
 				//since we are using the wheel collision detection, reset it each time
-				carp->wheel_geom_data[i]->event = false; //reset
+				carp->wheel_geom_data[i]->colliding = false; //reset
 			}
 
 			dJointAddHinge2Torques (carp->joint[0],0,torque[0]*carp->throttle*carp->dir*carp->fmotor);

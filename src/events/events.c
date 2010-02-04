@@ -19,14 +19,14 @@ void event_step(Uint32 step)
 	{
 		if (geom->flipper_geom)
 		{
-			if (geom->event)
+			if (geom->colliding)
 			{
 				const dReal *pos;
 				pos = dGeomGetPosition(geom->flipper_geom);
 				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
 						pos[2]+step*0.02);
 				if (++geom->flipper_counter > 10)
-					geom->event=false;
+					geom->colliding=false;
 			}
 			else if (geom->flipper_counter)
 			{

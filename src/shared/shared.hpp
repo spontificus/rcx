@@ -221,7 +221,7 @@ typedef struct geom_data_struct {
 	
 	bool collide; //create physical collision when touching other components
 
-	bool event; //set after each collision
+	bool colliding; //set after each collision
 	script_struct *script; //script to execute when colliding (NULL if not used)
 
 	//debug variables
