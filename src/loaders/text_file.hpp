@@ -48,11 +48,11 @@ class Text_File
 		//copy the line to buffer
 		bool Line_To_Buffer();
 		//get one word from buffer
-		char *Word_From_Buffer();
+		bool Word_From_Buffer();
 		//split buffer to list of words
 		bool Buffer_To_Words();
 		//copy word to list
-		void Append_Word(char * word);
+		void Append_Word(char * word, size_t count);
 		//free up the word list
 		void Free_Words();
 
