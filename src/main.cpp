@@ -17,10 +17,10 @@
   
 //local definitions:
 #include "shared/shared.hpp"
-#include "events/events.h"
-#include "graphics/graphics.h"
-#include "physics/physics.h"
-#include "loaders/loaders.h"
+#include "events/events.hpp"
+#include "graphics/graphics.hpp"
+#include "physics/physics.hpp"
+#include "loaders/loaders.hpp"
 
 //keep track of warnings
 unsigned int stepsize_warnings = 0;

@@ -5,7 +5,7 @@
 //See main.c for licensing
 
 #include "shared.hpp"
-#include "camera.c"
+#include "camera.cpp"
 
 
 //initiate global variables defined in shared.h

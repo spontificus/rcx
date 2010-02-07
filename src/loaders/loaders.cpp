@@ -5,7 +5,7 @@
 //See main.c for licensing info
 
 #include "../shared/shared.hpp"
-#include "loaders.h"
+#include "loaders.hpp"
 #include "text_file.cpp"
 #include "conf.cpp"
 #include "profile.cpp"
