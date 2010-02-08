@@ -5,14 +5,11 @@
 //See main.c for licensing
 
 #include "shared.hpp"
-#include "camera.cpp"
+//#include "camera.hpp"
 
 
 //initiate global variables defined in shared.h
 runlevel_type runlevel = done;
-camera_struct camera = {NULL, NULL, //settings, car
-		       {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, //pos, vel, up
-			0,0,false,false}; //timer, scale, reverse, air
 struct internal_struct internal;
 struct track_struct track;
 file_3d_struct *file_3d_head = NULL;

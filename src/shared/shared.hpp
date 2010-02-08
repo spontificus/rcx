@@ -20,6 +20,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+
+
 //general info
 #define VERSION "0.06 (NOT DONE)" //supports alphanumeric versioning
 
@@ -124,19 +126,7 @@ const struct data_index internal_index[] = {
 	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen)},
 	{"",0,0}};
 
-
-//file_3d_struct: when a 3d file is loaded, we need a way to keep track of all
-//rendering lists, so as to prevent memory leaks when unloading data
-//typedef struct graphics_list_struct {
-typedef struct file_3d_struct {
-//	GLuint render_list;
-	GLuint list;
-	char *file; //filename (to prevent duplicated 3d loading)
-	struct file_3d_struct *next;
-} file_3d_struct;
-
-extern file_3d_struct *file_3d_head;
-
+#include "file_3d.hpp"
 
 //script: human readable (read: not _programming_) langue which will
 //describe what should be done when spawning an object (components, joints...),
@@ -293,195 +283,10 @@ typedef struct joint_data_struct {
 
 extern joint_data *joint_data_head;
 
-
-//car: pointer to object and extra data, adjusted for controlled cars. No
-//scripting - used to keep track of components and objects (like weapons)
-//bellonging to the player during the race
-//Allocated at start
-
-#define CAR_MAX_BOXES 20
-
-typedef struct car_struct {
-	//data loaded from file (to be implemented)
-	//(max_break is for non-locking breaks, not drifting break (they are infinite))
-	char *name;
-	bool spawned; //don't assume loaded cars are participating in race (TODO: split struct into 2: loaded and spawned)
-
-
-	dReal max_torque, motor_tweak, max_break;
-	dReal body_mass, wheel_mass;
-	dReal suspension_erp, suspension_cfm;
-	dReal wheel_mu, rim_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
-	dReal body_mu, body_slip, body_erp, body_cfm;
-
-	dReal body_linear_drag[3], body_angular_drag, wheel_linear_drag, wheel_angular_drag;
-
-	file_3d_struct *wheel_graphics; //add right/left wheels
-	file_3d_struct *box_graphics[CAR_MAX_BOXES];
-
-	//just for keeping track
-	object_struct *object; //one object to store car components
-
-//	dGeomID body_geom; //for focusing
-	dBodyID bodyid,wheel_body[4];
-	dJointID joint[4];
-
-	geom_data *wheel_geom_data[4];
-
-	//flipover sensors
-	geom_data *sensor1, *sensor2;
-	dReal dir; //direction, 1 or -1
-
-	//controlling values
-	bool drift_breaks, breaks;
-	dReal throttle, steering; //-1.0 to +1.0
-	dReal velocity; //keep track of car velocity
-
-	dReal body[3];
-	dReal box[CAR_MAX_BOXES][6];
-
-	//values for moving steering/breaking/turning between front/rear wheels
-	int steer_ratio, motor_ratio, break_ratio;
-	dReal fsteer, rsteer, fmotor, rmotor, fbreak, rbreak;
-	
-	//debug sizes
-	dReal s[4],w[2],wp[2],jx;
-
-	struct car_struct *next;
-	struct car_struct *prev;
-} car_struct;
-
-extern car_struct *car_head;
-
-const struct data_index car_index[] = {
-	{"max_torque",		'f',1, offsetof(struct car_struct, max_torque)},
-	{"motor_tweak",		'f',1, offsetof(struct car_struct, motor_tweak)},
-	{"max_break",		'f',1, offsetof(struct car_struct, max_break)},
-	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass)},
-	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass)},
-
-	{"front/rear_steer",	'i',1, offsetof(struct car_struct, steer_ratio)},
-	{"front/rear_motor",	'i',1, offsetof(struct car_struct, motor_ratio)},
-	{"front/rear_break",	'i',1, offsetof(struct car_struct, break_ratio)},
-
-	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp)},
-	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm)},
-	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu)},
-	{"rim_mu",		'f',1, offsetof(struct car_struct, rim_mu)},
-	{"wheel_slip",		'f',1, offsetof(struct car_struct, wheel_slip)},
-	{"wheel_erp",		'f',1, offsetof(struct car_struct, wheel_erp)},
-	{"wheel_cfm",		'f',1, offsetof(struct car_struct, wheel_cfm)},
-	{"wheel_bounce",		'f',1, offsetof(struct car_struct, wheel_bounce)},
-	{"body_mu",		'f',1, offsetof(struct car_struct, body_mu)},
-	{"body_slip",		'f',1, offsetof(struct car_struct, body_slip)},
-	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp)},
-	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm)},
-
-	{"body_linear_drag",	'f',3, offsetof(struct car_struct, body_linear_drag)},
-	{"body_angular_drag",	'f',1, offsetof(struct car_struct, body_angular_drag)},
-	{"wheel_linear_drag",	'f',1, offsetof(struct car_struct, wheel_linear_drag)},
-	{"wheel_angular_drag",	'f',1, offsetof(struct car_struct, wheel_angular_drag)},
-
-	//body and geom (box) sizes:
-	{"body",	'f',	3,	offsetof(struct car_struct, body[0])}, //not a geom
-	//MUST BE THE SAME AMMOUNT AS CAR_MAX_BOXES
-	{"box1",	'f',	6,	offsetof(struct car_struct, box[0][0])},
-	{"box2",	'f',	6,	offsetof(struct car_struct, box[1][0])},
-	{"box3",	'f',	6,	offsetof(struct car_struct, box[2][0])},
-	{"box4",	'f',	6,	offsetof(struct car_struct, box[3][0])},
-	{"box5",	'f',	6,	offsetof(struct car_struct, box[4][0])},
-	{"box6",	'f',	6,	offsetof(struct car_struct, box[5][0])},
-	{"box7",	'f',	6,	offsetof(struct car_struct, box[6][0])},
-	{"box8",	'f',	6,	offsetof(struct car_struct, box[7][0])},
-	{"box9",	'f',	6,	offsetof(struct car_struct, box[8][0])},
-	{"box10",'f',	6,	offsetof(struct car_struct, box[9][0])},
-	{"box11",'f',	6,	offsetof(struct car_struct, box[10][0])},
-	{"box12",'f',	6,	offsetof(struct car_struct, box[11][0])},
-	{"box13",'f',	6,	offsetof(struct car_struct, box[12][0])},
-	{"box14",'f',	6,	offsetof(struct car_struct, box[13][0])},
-	{"box15",'f',	6,	offsetof(struct car_struct, box[14][0])},
-	{"box16",'f',	6,	offsetof(struct car_struct, box[15][0])},
-	{"box17",'f',	6,	offsetof(struct car_struct, box[16][0])},
-	{"box18",'f',	6,	offsetof(struct car_struct, box[17][0])},
-	{"box19",'f',	6,	offsetof(struct car_struct, box[18][0])},
-	{"box20",'f',	6,	offsetof(struct car_struct, box[19][0])},
-	
-	//the following is for sizes not yet determined
-	{"s",	'f',	4,	offsetof(struct car_struct, s[0])}, //flipover
-	{"w",	'f',	2,	offsetof(struct car_struct, w[0])}, //wheel
-	{"wp",	'f',	2,	offsetof(struct car_struct, wp[0])}, //wheel pos
-	{"jx",	'f',	1,	offsetof(struct car_struct, jx)}, //joint x position
-	{"",0,0}};//end
-
-
-
-#define UNUSED_KEY SDLK_QUESTION //key that's not used during race ("safe" default)
-typedef struct {
-	dReal target[3];
-	dReal anchor[3], distance[3];
-	dReal radius;
-	dReal linear_stiffness;
-	dReal angular_stiffness;
-	dReal damping;
-	bool relative_damping;
-	dReal rotation_tightness;
-	dReal target_tightness;
-	bool reverse, in_air;
-	dReal air_time, ground_time;
-	dReal offset_scale_speed;
-} camera_settings;
-
-typedef struct {
-	camera_settings *settings;
-	car_struct *car;
-	dReal pos[3];
-	dReal t_pos[3];
-	dReal vel[3];
-	dReal up[3];
-	dReal air_timer;
-	dReal offset_scale; //0-1   0 in air, 1 on ground
-	bool reverse;
-	bool in_air;
-} camera_struct;
-
-extern camera_struct camera;
-
-//profile: stores the user's settings (including key list)
-typedef struct profile_struct {
-	//the car the user is controlling
-	car_struct *car;
-	struct profile_struct *next;
-	struct profile_struct *prev;
-
-	//settings (loaded from conf)
-	dReal steer_speed;
-	dReal steer_max;
-	dReal throttle_speed;
-
-	//keys (loaded from keys.lst)
-	SDLKey up;
-	SDLKey down;
-	SDLKey right;
-	SDLKey left;
-	SDLKey soft_break;
-	SDLKey drift_break;
-
-	SDLKey cam_x_pos;
-	SDLKey cam_x_neg;
-	SDLKey cam_y_pos;
-	SDLKey cam_y_neg;
-	SDLKey cam_z_pos;
-	SDLKey cam_z_neg;
-
-	camera_settings cam[4];
-	int camera;
-	SDLKey cam1;
-	SDLKey cam2;
-	SDLKey cam3;
-	SDLKey cam4;
-} profile;
-
-extern profile *profile_head;
+#include "car.hpp"
+#include "camera.hpp"
+#include "profile.hpp"
+#include "drag.hpp"
 
 const struct data_index profile_index[] = {
 	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed)},
@@ -581,57 +386,7 @@ const struct {
 	{"",0}}; //end
 	
 
-//track: the main "world", contains simulation and rendering data for one
-//large 3D file for the rigid environment, and more simulation data (like
-//gravity) - crappy solution for now...
-//Allocated at start
-//(in contrary to the other structs, this is actually not allocated on runtime!)
-extern struct track_struct {
-	//placeholder for stuff like if it's raining/snowing and lightsources
-	GLfloat sky[3]; //RGB, alpha is always 1.0f
-
-	GLfloat ambient[4];
-	GLfloat diffuse[4];
-	GLfloat specular[4];
-	GLfloat position[4]; //light position
-	
-	dReal gravity;
-	dReal mu; //friction (normal)
-	dReal slip; //for wheel friction
-	dReal erp;
-	dReal cfm;
-
-	dReal density; //for air drag (friction)
-	dReal wind[3];
-
-	dReal start[3];
-	GLdouble cam_start[3];
-	GLdouble target_start[3];
-
-	file_3d_struct *file_3d;
-	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
-	object_struct *object;
-} track;
-//index:
-
-const struct data_index track_index[] = {
-	{"sky",		'f',3,	offsetof(struct track_struct, sky[0])},
-	{"ambient",	'f',3,	offsetof(struct track_struct, ambient[0])},
-	{"diffuse",	'f',3,	offsetof(struct track_struct, diffuse[0])},
-	{"specular",	'f',3,	offsetof(struct track_struct, specular[0])},
-	{"position",	'f',3,	offsetof(struct track_struct, position[0])},
-	{"gravity",	'f',1,	offsetof(struct track_struct, gravity)},
-	{"mu",		'f',1,	offsetof(struct track_struct, mu)},
-	{"slip",		'f',1,	offsetof(struct track_struct, slip)},
-	{"erp",		'f',1,	offsetof(struct track_struct, erp)},
-	{"cfm",		'f',1,	offsetof(struct track_struct, cfm)},
-	{"density",	'f',1,	offsetof(struct track_struct, density)},
-	{"wind",	'f',3,	offsetof(struct track_struct, wind)},
-	{"start",	'f',3,	offsetof(struct track_struct, start)},
-	{"cam_start",	'd',3,	offsetof(struct track_struct, cam_start)},
-	{"target_start",'d',3,	offsetof(struct track_struct, target_start)},
-	{"",0,0}};//end
-
+#include "track.hpp"
 
 //TODO: weapons
 
@@ -640,9 +395,6 @@ const struct data_index track_index[] = {
 void printlog (int, const char*, ...);
 void free_joint_data (joint_data *target);
 void free_all (void);
-void Body_Data_Set_Linear_Drag (body_data *body, dReal drag);
-void Body_Data_Set_Advanced_Linear_Drag (body_data *body, dReal drag_x, dReal drag_y, dReal drag_z);
-void Body_Data_Set_Angular_Drag (body_data *body, dReal drag);
 void set_camera_settings (camera_settings *settings);
 
 //prototypes specific for shared data
@@ -653,14 +405,14 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj);
 body_data *allocate_body_data (dBodyID body, object_struct *obj);
 joint_data *allocate_joint_data (dJointID joint, object_struct *obj, bool feedback);
 profile *allocate_profile(void);
-void free_profile (profile *target);
-car_struct *allocate_car(void);
-file_3d_struct *allocate_file_3d (void);
+//void free_profile (profile *target);
+//car_struct *allocate_car(void);
+//file_3d_struct *allocate_file_3d (void);
 void free_object(object_struct *target);
 void free_geom_data(geom_data *target);
 void free_body_data (body_data *target);
 void free_joint_data (joint_data *target);
-void free_car (car_struct *target);
+//void free_car (car_struct *target);
 void free_all (void);
 
 //global variables
@@ -668,7 +420,7 @@ extern dWorldID world;
 extern dSpaceID space;
 extern dJointGroupID contactgroup;
 
-extern car_struct *venom;
+//extern car_struct *venom;
 extern script_struct *box; //keep track of our loaded debug box
 extern script_struct *sphere;
 

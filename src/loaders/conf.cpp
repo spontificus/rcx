@@ -1,3 +1,6 @@
+#include "../shared/shared.hpp"
+#include "loaders.hpp"
+
 //loads configuration file to memory (using index)
 int load_conf (char *name, char *memory, const struct data_index index[])
 {

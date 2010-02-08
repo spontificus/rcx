@@ -1,3 +1,6 @@
+#include "../shared/shared.hpp"
+#include "loaders.hpp"
+
 //NOTE: it might seem strange to use C text processing in C++ code,
 //but it is simply more suitable in this case
 

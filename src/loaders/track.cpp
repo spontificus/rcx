@@ -1,3 +1,5 @@
+#include "../shared/shared.hpp"
+#include "loaders.hpp"
 
 int load_track (char *path)
 {

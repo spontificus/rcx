@@ -6,27 +6,12 @@
 
 #include "../shared/shared.hpp"
 #include "loaders.hpp"
-#include "text_file.cpp"
-#include "conf.cpp"
-#include "profile.cpp"
-
-
-//the following a some basic color definitions (used for lights and materials)
-GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
-GLfloat dgray[]     = {0.2f, 0.2f, 0.2f, 1.0f};
-GLfloat gray[]      = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lgray[]     = {0.8f, 0.8f, 0.8f, 1.0f};
-GLfloat white[]     = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat red[]       = {1.0f, 0.0f, 0.0f, 1.0f};
-GLfloat green[]     = {0.0f, 1.0f, 0.0f, 1.0f};
-GLfloat lgreen[]    = {0.4f, 1.0f, 0.4f, 1.0f};
-GLfloat blue[]      = {0.0f, 0.0f, 1.0f, 1.0f};
-GLfloat lblue[]     = {0.6f, 0.6f, 1.0f, 1.0f};
-GLfloat yellow[]    = {1.0f, 1.0f, 0.0f, 1.0f};
+#include "conf.hpp"
+#include "../physics/physics.hpp"
 
 
 void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
-		GLfloat colour[], GLfloat specular[], GLint shininess)
+		const GLfloat colour[], const GLfloat specular[], const GLint shininess)
 {
 	printlog(2, " > Creating rendering list for debug box\n");
 
@@ -97,8 +82,8 @@ void debug_draw_sphere_part(GLfloat x, GLfloat y, GLfloat z)
 	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
 }
 
-void debug_draw_sphere (GLuint list, GLfloat d, GLfloat colour[],
-		GLfloat specular[], GLint shininess)
+void debug_draw_sphere (GLuint list, GLfloat d, const GLfloat colour[],
+		const GLfloat specular[], const GLint shininess)
 {
 	printlog(2, " > Creating rendering list for debug sphere\n");
 	GLfloat radius = d/2;
@@ -670,7 +655,6 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 }
 
-#include "track.cpp"
 
 car_struct *load_car (char *path)
 {

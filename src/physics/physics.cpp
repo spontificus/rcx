@@ -4,8 +4,7 @@
 //
 
 #include "../shared/shared.hpp"
-#include "camera.cpp"
-#include "drag.cpp"
+#include "physics.hpp"
 
 int physics_init(void)
 {

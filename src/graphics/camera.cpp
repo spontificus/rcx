@@ -1,3 +1,4 @@
+#include "../shared/shared.hpp"
 //set camera view before rendering
 void camera_graphics_step()
 {

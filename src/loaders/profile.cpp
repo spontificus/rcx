@@ -1,3 +1,6 @@
+#include "../shared/shared.hpp"
+#include "loaders.hpp"
+
 #ifdef __cplusplus
 // required to iterate through an enum in C++
 template <class Enum>
