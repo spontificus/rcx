@@ -5,27 +5,21 @@ LIBS	= `pkg-config --libs $(LIBLST)`
 FLAGS	= `pkg-config --cflags $(LIBLST)`
 ARGS	= -O2 -pipe -Wall -march=native -mtune=native -lm $(FLAGS)
 
+#final normal target
 rcx: builddirs $(OBJS)
 	g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
 
-build/main.o: main.cpp shared/shared.hpp loaders/conf.cpp
-	g++ -c -o $@ main.cpp $(ARGS)
+#prerequisites
+build/main.o: build/shared/shared.o loaders/conf.cpp
+build/shared/shared.o: shared/shared.hpp shared/camera.cpp
+build/events/events.o: events/events.hpp shared/shared.hpp
+build/loaders/loaders.o: loaders/loaders.hpp loaders/text_file.hpp loaders/text_file.cpp loaders/profile.cpp loaders/track.cpp shared/shared.hpp
+build/graphics/graphics.o: graphics/graphics.hpp graphics/camera.cpp shared/shared.hpp
+build/physocs/physics.o: physics/physics.hpp physics/camera.cpp physics/drag.cpp shared/shared.hpp
 
-build/shared/shared.o: shared/shared.cpp shared/shared.hpp shared/camera.cpp
-	g++ -c -o $@ shared/shared.cpp $(ARGS)
-
-build/events/events.o: events/events.cpp events/events.hpp shared/shared.hpp
-	g++ -c -o $@ events/events.cpp $(ARGS)
-
-build/loaders/loaders.o: loaders/loaders.cpp loaders/loaders.hpp loaders/text_file.hpp loaders/text_file.cpp loaders/profile.cpp loaders/track.cpp shared/shared.hpp
-	g++ -c -o $@ loaders/loaders.cpp $(ARGS)
-
-build/graphics/graphics.o: graphics/graphics.cpp graphics/graphics.hpp graphics/camera.cpp shared/shared.hpp
-	g++ -c -o $@ graphics/graphics.cpp $(ARGS)
-
-build/physics/physics.o: physics/physics.cpp physics/physics.hpp physics/camera.cpp physics/drag.cpp shared/shared.hpp
-	g++ -c -o $@ physics/physics.cpp $(ARGS)
-
+#universal build rule
+$(OBJS): build/%.o:%.cpp
+	g++ -c -o $@ $< $(ARGS)
 
 .PHONY: builddirs clean
 

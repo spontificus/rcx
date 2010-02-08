@@ -11,24 +11,17 @@ ARGS	= -O2 -pipe -Wall -march=i686 -mtune=i686 $(FLAGS) -Dwindows
 rcx: builddirs $(OBJS)
 	g++ -o ../rcx.exe $(OBJS) $(ARGS) $(LIBS)
 
-build/main.o: main.c shared/shared.hpp loaders/conf.cpp
-	g++ -c -o $@ main.c $(ARGS)
+#prerequisites
+build/main.o: build/shared/shared.o loaders/conf.cpp
+build/shared/shared.o: shared/shared.hpp shared/camera.cpp
+build/events/events.o: events/events.hpp shared/shared.hpp
+build/loaders/loaders.o: loaders/loaders.hpp loaders/text_file.hpp loaders/text_file.cpp loaders/profile.cpp loaders/track.cpp shared/shared.hpp
+build/graphics/graphics.o: graphics/graphics.hpp graphics/camera.cpp shared/shared.hpp
+build/physocs/physics.o: physics/physics.hpp physics/camera.cpp physics/drag.cpp shared/shared.hpp
 
-build/shared/shared.o: shared/shared.c shared/shared.hpp shared/camera.c
-	g++ -c -o $@ shared/shared.c $(ARGS)
-
-build/events/events.o: events/events.c events/events.h shared/shared.hpp
-	g++ -c -o $@ events/events.c $(ARGS)
-
-build/loaders/loaders.o: loaders/loaders.cpp loaders/loaders.h loaders/text_file.hpp loaders/text_file.cpp loaders/profile.cpp loaders/track.cpp shared/shared.hpp
-	g++ -c -o $@ loaders/loaders.cpp $(ARGS)
-
-build/graphics/graphics.o: graphics/graphics.c graphics/graphics.h graphics/camera.c shared/shared.hpp
-	g++ -c -o $@ graphics/graphics.c $(ARGS)
-
-build/physics/physics.o: physics/physics.c physics/physics.h physics/camera.c physics/drag.c shared/shared.hpp
-	g++ -c -o $@ physics/physics.c $(ARGS)
-
+#universal build rule
+$(OBJS): build/%.o:%.cpp
+	g++ -c -o $@ $< $(ARGS)
 
 .PHONY: builddirs clean
 
