@@ -1,5 +1,6 @@
 #ifndef _RCX_CONF_H
 #define _RCX_CONF_H
+#include "unistd.h"
 
 //to make the conf loader able to find variable names in structs, use indexes
 struct data_index {

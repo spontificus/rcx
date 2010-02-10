@@ -1,6 +1,8 @@
 #ifndef _RCX_GEOM_H
 #define _RCX_GEOM_H
 #include "object.hpp"
+#include "file_3d.hpp"
+#include "script.hpp"
 
 //geom_data: data for geometrical shape (for collision detection), for: 
 //contactpoint generation (friction and saftness/hardness). also contains

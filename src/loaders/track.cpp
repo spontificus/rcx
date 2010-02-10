@@ -1,4 +1,5 @@
 #include "../shared/shared.hpp"
+#include "../shared/printlog.hpp"
 #include "loaders.hpp"
 
 int load_track (char *path)

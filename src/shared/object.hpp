@@ -1,5 +1,6 @@
 #ifndef _RCX_OBJECT_H
 #define _RCX_OBJECT_H
+#include "ode/common.h"
 
 //object: one "thing" on the track, from a complex building to a tree, spawning
 //will be controlled by a custom scripting langue in future versions, the most

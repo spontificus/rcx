@@ -1,5 +1,9 @@
 #ifndef _RCX_JOINT_H
 #define _RCX_JOINT_H
+#include <ode/ode.h>
+#include "object.hpp"
+#include "script.hpp"
+#include "printlog.hpp"
 
 //joint_data: data for joint (connects bodies), is used for:
 //currently only for triggering event script (force threshold)

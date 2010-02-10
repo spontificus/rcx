@@ -1,5 +1,6 @@
 #ifndef _RCX_BODY_H
 #define _RCX_BODY_H
+#include <ode/ode.h>
 #include "script.hpp"
 #include "object.hpp"
 

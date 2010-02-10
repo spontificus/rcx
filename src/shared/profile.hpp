@@ -1,6 +1,12 @@
 #ifndef _RCX_PROFILE_H
 #define _RCX_PROFILE_H
+
+#include "SDL/SDL_keyboard.h"
 #define UNUSED_KEY SDLK_QUESTION //key that's not used during race ("safe" default)
+
+#include "car.hpp"
+#include "camera.hpp"
+#include "joint.hpp"
 
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
@@ -137,5 +143,6 @@ const struct {
 	{"",0}}; //end
 	
 profile *allocate_profile(void);
+void free_profile (profile *target);
 
 #endif

@@ -1,8 +1,18 @@
 #ifndef _RCX_TRACK_H
 #define _RCX_TRACK_H
+#include "../loaders/conf.hpp"
+#include "file_3d.hpp"
+#include "object.hpp"
+#include <GL/gl.h>
+#include <ode/ode.h>
 //track: the main "world", contains simulation and rendering data for one
 //large 3D file for the rigid environment, and more simulation data (like
 //gravity) - crappy solution for now...
+
+extern dWorldID world;
+extern dSpaceID space;
+extern dJointGroupID contactgroup;
+
 //Allocated at start
 //(in contrary to the other structs, this is actually not allocated on runtime!)
 extern struct track_struct {

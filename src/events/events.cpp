@@ -5,8 +5,11 @@
 //See main.c for licensing
 
 #include "../shared/shared.hpp" //shared (global defined) data
+#include <SDL/SDL.h>
 #include "../graphics/graphics.hpp" //for window resizing events
 #include "../loaders/loaders.hpp" //spawn/destroy events
+#include "../shared/runlevel.hpp"
+#include "../shared/printlog.hpp"
 
 SDL_Event event;
 Uint8 *keys;

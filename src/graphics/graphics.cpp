@@ -2,7 +2,11 @@
 //
 //See main.c for licensing
 
+#include <SDL/SDL.h>
+#include <GL/glu.h>
+
 #include "../shared/shared.hpp"
+#include "../shared/printlog.hpp"
 
 //Just in case it's not defined...
 #ifndef M_PI

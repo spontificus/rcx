@@ -1,5 +1,6 @@
-#include "../shared/shared.hpp"
+//#include "../shared/shared.hpp"
 #include "loaders.hpp"
+#include "../shared/printlog.hpp"
 
 //loads configuration file to memory (using index)
 int load_conf (char *name, char *memory, const struct data_index index[])

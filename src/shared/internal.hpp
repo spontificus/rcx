@@ -1,6 +1,8 @@
 #ifndef _RCX_INTERNAL_H
 #define _RCX_INTERNAL_H
 #include "../loaders/conf.hpp"
+#include <stddef.h>
+#include <ode/ode.h>
 
 //important system configuration variables
 extern struct internal_struct {

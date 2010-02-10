@@ -4,6 +4,7 @@
 //
 
 #include "../shared/shared.hpp"
+#include "../shared/printlog.hpp"
 #include "physics.hpp"
 #include "drag.hpp"
 

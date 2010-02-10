@@ -5,6 +5,7 @@
 //See main.c for licensing info
 
 #include "../shared/shared.hpp"
+#include "../shared/printlog.hpp"
 #include "loaders.hpp"
 #include "conf.hpp"
 #include "../physics/physics.hpp"

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
   
+#include <SDL/SDL.h>
 //local definitions:
 #include "shared/info.hpp"
 #include "shared/shared.hpp"
@@ -26,18 +27,6 @@
 //keep track of warnings
 unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
-
-//print log message - if it's below or equal to the current verbosity level
-void printlog (int level, const char *text, ...)
-{
-	if (level <= internal.verbosity)
-	{
-		va_list list;
-		va_start (list, text);
-		vprintf (text, list);
-		va_end (list);
-	}
-}
 
 //if something goes wrong (after initing physics and graphics)
 void emergency_quit (void)
@@ -89,7 +78,7 @@ int main (int argc, char *argv[])
 	if (!prof)
 		return -1;
 
-	venom = load_car((char *)"data/teams/Nemesis/cars/Venom");
+	car_struct *venom = load_car((char *)"data/teams/Nemesis/cars/Venom");
 	if (!venom)
 		emergency_quit();
 	prof->car = venom;

@@ -1,5 +1,10 @@
 #ifndef _RCX_LOADERS_H
 #define _RCX_LOADERS_H
+#include "GL/gl.h"
+#include "../shared/profile.hpp"
+#include "../shared/script.hpp"
+#include "../shared/car.hpp"
+#include "../shared/object.hpp"
 //the following a some basic color definitions (used for lights and materials)
 const GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
 const GLfloat dgray[]     = {0.2f, 0.2f, 0.2f, 1.0f};
