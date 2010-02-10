@@ -1,3 +1,5 @@
+#ifndef _RCX_LOADERS_H
+#define _RCX_LOADERS_H
 //the following a some basic color definitions (used for lights and materials)
 const GLfloat black[]     = {0.0f, 0.0f, 0.0f, 1.0f}; // = nothing for lights
 const GLfloat dgray[]     = {0.2f, 0.2f, 0.2f, 1.0f};
@@ -27,3 +29,4 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z);
 void remove_object(object_struct *target);
 void remove_car (car_struct* target);
 
+#endif

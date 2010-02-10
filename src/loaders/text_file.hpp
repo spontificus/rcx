@@ -1,3 +1,5 @@
+#ifndef _RCX_TEXT_FILE_H
+#define _RCX_TEXT_FILE_H
 //definition of class for easy text file processing
 //(provides a list of words for each line)
 
@@ -59,3 +61,4 @@ class Text_File
 		//function for closing fp and freeing word list
 		void Close();
 };
+#endif

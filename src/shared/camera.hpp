@@ -1,5 +1,9 @@
+#ifndef _RCX_CAMERA_H
+#define _RCX_CAMERA_H
 //TODO: make class
 //
+#include <ode/ode.h>
+#include "car.hpp"
 
 typedef struct {
 	dReal target[3];
@@ -33,3 +37,6 @@ extern camera_struct camera;
 
 void camera_graphics_step();
 void set_camera_settings (camera_settings *settings);
+void camera_physics_step();
+void camera_graphics_step();
+#endif

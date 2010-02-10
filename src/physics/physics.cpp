@@ -5,6 +5,7 @@
 
 #include "../shared/shared.hpp"
 #include "physics.hpp"
+#include "drag.hpp"
 
 int physics_init(void)
 {

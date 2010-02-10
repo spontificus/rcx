@@ -1,7 +1,13 @@
+#ifndef _RCX_CAR_H
+#define _RCX_CAR_H
 //car: pointer to object and extra data, adjusted for controlled cars. No
 //scripting - used to keep track of components and objects (like weapons)
 //bellonging to the player during the race
 //Allocated at start
+#include "file_3d.hpp"
+#include "body.hpp"
+#include "geom.hpp"
+#include "../loaders/conf.hpp"
 
 #define CAR_MAX_BOXES 20
 
@@ -117,7 +123,7 @@ const struct data_index car_index[] = {
 	{"jx",	'f',	1,	offsetof(struct car_struct, jx)}, //joint x position
 	{"",0,0}};//end
 
-
 car_struct *allocate_car(void);
 void free_car (car_struct *target);
 extern car_struct *venom;
+#endif

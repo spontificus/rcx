@@ -1,3 +1,5 @@
+#ifndef _RCX_PROFILE_H
+#define _RCX_PROFILE_H
 #define UNUSED_KEY SDLK_QUESTION //key that's not used during race ("safe" default)
 
 //profile: stores the user's settings (including key list)
@@ -37,3 +39,4 @@ typedef struct profile_struct {
 
 extern profile *profile_head;
 
+#endif

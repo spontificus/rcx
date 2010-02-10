@@ -1,3 +1,5 @@
+#ifndef _RCX_TRACK_H
+#define _RCX_TRACK_H
 //track: the main "world", contains simulation and rendering data for one
 //large 3D file for the rigid environment, and more simulation data (like
 //gravity) - crappy solution for now...
@@ -50,3 +52,4 @@ const struct data_index track_index[] = {
 	{"",0,0}};//end
 
 
+#endif

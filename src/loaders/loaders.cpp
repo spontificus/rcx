@@ -8,6 +8,7 @@
 #include "loaders.hpp"
 #include "conf.hpp"
 #include "../physics/physics.hpp"
+#include "../physics/drag.hpp"
 
 
 void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,

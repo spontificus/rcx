@@ -1,3 +1,5 @@
+#ifndef _RCX_SHARED_H
+#define _RCX_SHARED_H
 //Shared data structs and typedefs.
 //
 //See licensing info in main.c
@@ -59,14 +61,8 @@ const char ISSUE[] =
 typedef enum {running, done, paused, locked, error} runlevel_type;
 extern runlevel_type runlevel;
 
-
-//to make the conf loader able to find variable names in structs, use indexes
-struct data_index {
-	const char *name;
-	char type; //f for float, b for bool, i for int, 0 for end of list
-	int length; //normaly 1 (or else more)
-	size_t offset;
-};
+#include "../loaders/conf.hpp"
+#include "../physics/drag.hpp"
 
 //important system configuration variables
 extern struct internal_struct {
@@ -127,137 +123,10 @@ const struct data_index internal_index[] = {
 	{"",0,0}};
 
 #include "file_3d.hpp"
-
-//script: human readable (read: not _programming_) langue which will
-//describe what should be done when spawning an object (components, joints...),
-//and when an component is colliding ("sensor triggering", destroying and so on)
-//function arguments can point at 3d files and other scripts and so on...
-//
-//(currently not used)
-//
-//>Allocated at start
-typedef struct script_struct {
-	char *name; //usefull if to see if the same object is requested more times
-	//placeholder for script data, now just a single variable (what to render)
-	file_3d_struct *graphics_debug1;
-	file_3d_struct *graphics_debug2;
-	file_3d_struct *graphics_debug3;
-
-	//temporary solution
-	bool box;
-	bool flipper;
-	bool NH4;
-	bool building;
-	bool sphere;
-
-	struct script_struct *next;
-} script_struct;
-
-extern script_struct *script_head;
-
-//object: one "thing" on the track, from a complex building to a tree, spawning
-//will be controlled by a custom scripting langue in future versions, the most
-//important role of "object" is to store the ode space for the spawned object
-//(keeps track of the geoms in ode that describes the components) and joint
-//group (for cleaning up object)
-//
-//>Dynamically allocated
-typedef struct object_struct {
-	//things to keep track of when cleaning out object
-	//all geoms can be queried from space, all bodies from geoms and all
-	//joints from bodies
-	dJointGroupID jointgroup; //store all joints (if needed)
-	dSpaceID space; //store all geoms
-	bool collide_space; //if the internal geoms should collide with themselves
-
-	//keep track of owned things (to get fast way of auto-removing empty objs)
-	unsigned int geom_count;
-	unsigned int body_count;
-//	unsigned int joint_count;
-	//placeholder for more data
-	
-	//used to find next/prev object in dynamically allocated chain
-	//set next to null in last object in chain
-	struct object_struct *prev;
-	struct object_struct *next;
-} object_struct;
-
-extern object_struct *object_head;
-
-
-//geom_data: data for geometrical shape (for collision detection), for: 
-//contactpoint generation (friction and saftness/hardness). also contains
-//rendering data for geom
-//
-//(contains boolean variable indicating collision - for triggering event script)
-//
-//>Dynamically allocated
-typedef struct geom_data_struct {
-	//keep track of the "owning" object
-	object_struct * object_parent;
-	//geom data bellongs to
-	dGeomID geom_id;
-
-	file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
-
-	//Physics data:
-	//placeholder for more physics data
-	dReal mu, mu_rim, erp, cfm, slip, bounce;
-
-	bool wheel; //true if wheel side slip and connected to hinge2
-	dJointID hinge2;
-
-	//End of physics data
-	
-	bool collide; //create physical collision when touching other components
-
-	bool colliding; //set after each collision
-	script_struct *script; //script to execute when colliding (NULL if not used)
-
-	//debug variables
-	dGeomID flipper_geom;
-	int flipper_counter;
-
-	//used to find next/prev link in dynamically allocated chain
-	//set next to null in last link in chain (prev = NULL in first)
-	struct geom_data_struct *prev;
-	struct geom_data_struct *next;
-} geom_data;
-
-extern geom_data *geom_data_head; //points at the first component in chain
-
-//body_data: data for body (describes mass and mass positioning), used for:
-//currently only for triggering event script (force threshold and event variables)
-//as well as simple air/liquid drag simulations
-//
-//>Dynamically allocated
-typedef struct body_data_struct {
-	//keep track of the "owning" object
-	object_struct *object_parent;
-	//geom data bellongs to
-	dBodyID body_id;
-
-	//data for drag (air+water friction)
-	//values for enabled/disabled drag
-	bool use_linear_drag, use_advanced_linear_drag;
-	bool use_angular_drag;
-	//drag values (must be adjusted to the body mass)
-	dReal linear_drag, advanced_linear_drag[3];
-	dReal angular_drag;
-
-	dReal threshold; //if allocated forces exceeds, eat buffer
-	dReal buffer; //if buffer reaches zero, trigger event
-	bool event; //set after each buffer empty
-	script_struct *script; //execute on event
-
-	//used to find next/prev link in dynamically allocated chain
-	//set next to null in last link in chain (prev = NULL in first)
-	struct body_data_struct *prev;
-	struct body_data_struct *next;
-} body_data;
-
-extern body_data *body_data_head;
-
+#include "script.hpp"
+#include "object.hpp"
+#include "geom.hpp"
+#include "body.hpp"
 
 //joint_data: data for joint (connects bodies), is used for:
 //currently only for triggering event script (force threshold)
@@ -286,7 +155,7 @@ extern joint_data *joint_data_head;
 #include "car.hpp"
 #include "camera.hpp"
 #include "profile.hpp"
-#include "drag.hpp"
+//#include "drag.hpp"
 
 const struct data_index profile_index[] = {
 	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed)},
@@ -399,18 +268,13 @@ void set_camera_settings (camera_settings *settings);
 
 //prototypes specific for shared data
 void shared_init (void);
-script_struct *allocate_script(void);
 object_struct *allocate_object (bool adspace, bool adjointgroup);
-geom_data *allocate_geom_data (dGeomID geom, object_struct *obj);
-body_data *allocate_body_data (dBodyID body, object_struct *obj);
 joint_data *allocate_joint_data (dJointID joint, object_struct *obj, bool feedback);
 profile *allocate_profile(void);
 //void free_profile (profile *target);
 //car_struct *allocate_car(void);
 //file_3d_struct *allocate_file_3d (void);
 void free_object(object_struct *target);
-void free_geom_data(geom_data *target);
-void free_body_data (body_data *target);
 void free_joint_data (joint_data *target);
 //void free_car (car_struct *target);
 void free_all (void);
@@ -424,3 +288,4 @@ extern dJointGroupID contactgroup;
 extern script_struct *box; //keep track of our loaded debug box
 extern script_struct *sphere;
 
+#endif
