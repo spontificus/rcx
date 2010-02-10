@@ -31,4 +31,6 @@ typedef struct object_struct {
 extern object_struct *object_head;
 
 
+void free_object(object_struct *target);
+object_struct *allocate_object (bool adspace, bool adjointgroup);
 #endif

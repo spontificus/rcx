@@ -16,6 +16,7 @@
  */ 
   
 //local definitions:
+#include "shared/info.hpp"
 #include "shared/shared.hpp"
 #include "events/events.hpp"
 #include "graphics/graphics.hpp"
