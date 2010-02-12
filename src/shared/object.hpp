@@ -15,7 +15,6 @@ typedef struct object_struct {
 	//joints from bodies
 	dJointGroupID jointgroup; //store all joints (if needed)
 	dSpaceID space; //store all geoms
-	bool collide_space; //if the internal geoms should collide with themselves
 
 	//keep track of owned things (to get fast way of auto-removing empty objs)
 	unsigned int geom_count;

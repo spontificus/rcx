@@ -51,7 +51,6 @@ object_struct *allocate_object (bool adspace, bool adjointgroup)
 //	object_head->joint_count = 0;
 
 
-	object_head->collide_space = false; //objects components doesn't collide with each other
 
 	printlog (2, "\n");
 	return object_head;

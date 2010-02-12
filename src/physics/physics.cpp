@@ -368,17 +368,6 @@ void physics_step(void)
 
 	dSpaceCollide (space, 0, &CollisionCallback);
 
-	//se if any object "would like" to collide its components
-	object_struct *obj = object_head;
-	while (obj != NULL)
-	{
-		if (obj->collide_space)
-		{
-			dSpaceCollide (obj->space, 0, &CollisionCallback);
-		}
-		obj = obj->next;
-	}
-
 	dWorldQuickStep (world, internal.stepsize);
 	dJointGroupEmpty (contactgroup);
 
