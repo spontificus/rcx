@@ -9,8 +9,10 @@ Text_File::Text_File (const char *name)
 	open = false; //default until attempting opening
 	word_count = 0; //no words read yet
 
+	//open
 	Open (name);
-	//allocate buffer anyway, if reopening
+
+	//allocate buffer anyway (even if not open), if reopening
 	buffer_size = INITIAL_BUFFER_SIZE;
 	list_size = INITIAL_LIST_SIZE;
 	buffer = (char*) malloc (buffer_size);
@@ -63,21 +65,21 @@ void Text_File::Close()
 	{
 		printlog(2, " * Text_File: closing file\n");
 		fclose (fp);
-		Free_Words();
+		Clear_List();
 	}
 }
 
 bool Text_File::Read_Line ()
 {
 	//remove the old words
-	Free_Words();
+	Clear_List();
 
 	//the following actions goes false if end of file
 	if (!Seek_First())
 		return false;
 	if (!Line_To_Buffer())
 		return false;
-	if (!Buffer_To_Words())
+	if (!Buffer_To_List())
 		return false;
 
 	//ok
@@ -133,11 +135,71 @@ bool Text_File::Line_To_Buffer()
 	}
 }
 
-bool Text_File::Buffer_To_Words()
+bool Text_File::Buffer_To_List()
 {
-	buffer_ptr = buffer; //position buffer pointer to start of buffer
-	while (Word_From_Buffer());
+	char *buffer_ptr = buffer; //position buffer pointer to start of buffer
 
+	while (true)
+	{
+		//seek for char not space (if not end of buffer)
+		while (*buffer_ptr != '\0' && isspace(*buffer_ptr))
+			++buffer_ptr;
+
+		//reached end (end of buffer, comment or newline)
+		if (*buffer_ptr == '\0' || *buffer_ptr == '#' || *buffer_ptr == '\n')
+			break;
+
+		//
+		//ok got start of new word
+		//
+
+		//there are two kinds of "words"
+		if (*buffer_ptr == '\"') //quotation: "word" begins after " and ends at " (or \0)
+		{
+			//go one step more (don't want " in word)
+			++buffer_ptr;
+
+			//wery unusual error (line ends after quotation mark)
+			if (*buffer_ptr == '\0')
+			{
+				printlog(0, "WARNING: Text_File line ended just after quotation mark (not counted)...\n");
+				break;
+			}
+
+			//ok
+			Append_To_List(buffer_ptr);
+
+			//find next " or end of line
+			while (*buffer_ptr!='\"' && *buffer_ptr!='\0')
+				++buffer_ptr;
+
+			if (*buffer_ptr=='\0') //end of line before end of quote
+				printlog(0, "WARNING: Text_File reached end of line before end of quote...\n");
+			else
+			{
+				*buffer_ptr = '\0'; //make this end (instead of ")
+				++buffer_ptr; //jump over this "local" end
+			}
+		}
+		else //normal: word begins after space and ends at space (or \0)
+		{
+			Append_To_List(buffer_ptr);
+
+			//look for end of word (space or end of buffer)
+			++buffer_ptr;
+			while (*buffer_ptr != '\0' && !isspace(*buffer_ptr))
+				++buffer_ptr;
+
+			//if word ended by end of buffer, do nothing. else
+			if (*buffer_ptr != '\0')
+			{
+				*buffer_ptr = '\0'; //mark as end of word
+				++buffer_ptr; //jump over local end
+			}
+		}
+	}
+
+	//in case no words were read from buffer
 	if (word_count==0)
 		return false;
 	
@@ -157,70 +219,7 @@ bool Text_File::Throw_Line ()
 	}
 }
 
-bool Text_File::Word_From_Buffer()
-{
-	//is at end?
-	if (*buffer_ptr == '\0')
-		return false;
-
-	//seek for char not space (or end of buffer)
-	while (isspace(*buffer_ptr))
-	{
-		++buffer_ptr;
-
-		//reached end
-		if (*buffer_ptr == '\0')
-			return false;
-	}
-
-	//maybe this is a comment (then end of line)
-	if (*buffer_ptr == '#')
-		return false;
-
-	//pointer to first char of new word
-	char *word_start;
-	//count how many characters
-	size_t c_count=0;
-
-	//there a two ways of locating the word
-	if (*buffer_ptr == '\"') //quotation: "word" begins after " and ends at " (or \0)
-	{
-		//go one step more (don't want " in word)
-		++buffer_ptr;
-		word_start = buffer_ptr;
-
-		//find next " or end of line
-		while (*buffer_ptr!='\"' && *buffer_ptr!='\0')
-		{
-			++buffer_ptr;
-			++c_count;
-		}
-
-		if (*buffer_ptr=='\0') //end of line before end of quote
-			printlog(0, "WARNING: Text_File reached end of line before end of quote...\n");
-		else
-			++buffer_ptr; //so not to get " at nedt read
-	}
-	else //normal: word begins after space and ends at space (or \0)
-	{
-		word_start = buffer_ptr;
-		do
-		{
-			++buffer_ptr;
-			++c_count;
-		}
-		while (!isspace(*buffer_ptr) && *buffer_ptr!='\0');
-
-		++buffer_ptr; //make sure ignore what know to be space at next time
-	}
-
-	//ok
-	Append_Word(word_start, c_count);
-	return true;;
-}
-
-
-void Text_File::Append_Word(char *word, size_t count)
+void Text_File::Append_To_List(char *word)
 {
 	++word_count;
 
@@ -231,15 +230,15 @@ void Text_File::Append_Word(char *word, size_t count)
 		words = (char**) realloc(words, list_size*sizeof(char**));
 	}
 
-	words[word_count-1] = (char*) calloc(count+1, sizeof(char));
-	memcpy(words[word_count-1], word, sizeof(char)*count);
-	words[word_count-1][count]='\0';
+	words[word_count-1] = word; //point to word in buffer
 }
 
-void Text_File::Free_Words()
+void Text_File::Clear_List()
 {
+	//this isn't necessary (since word count is set to 0)
 	for (int i=0; i<word_count; ++i)
-		free (words[i]);
+		words[i]=NULL;
+	//
 
 	word_count = 0;
 }
