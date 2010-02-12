@@ -1,29 +1,13 @@
-//create and destroy objects, geoms and bodies
-//(should only be used by other abstraction functions (look in loader.c)
-//and not directly, except for free_all (to do quick full free)
-//
-//See main.c for licensing
+#include "cleanup.hpp"
 
-#include "shared.hpp"
-//#include "camera.hpp"
-
-
-//initiate global variables defined in shared.h
-//variables
-script_struct *box = NULL;
-script_struct *sphere = NULL;
-
+#include "car.hpp"
 #include "profile.hpp"
-
-
-/*#include "script.cpp"
-#include "object.cpp"
-#include "geom.cpp"
-#include "body.cpp"
-#include "joint.cpp"
-#include "profile.cpp"
-#include "car.cpp"
-#include "file_3d.cpp"*/
+#include "geom.hpp"
+#include "body.hpp"
+#include "joint.hpp"
+#include "object.hpp"
+#include "script.hpp"
+#include "file_3d.hpp"
 
 //free all things allocated (to simplify memory leak preventing)
 //simple dirty way of removing everything

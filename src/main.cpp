@@ -24,6 +24,10 @@
 #include "physics/physics.hpp"
 #include "loaders/loaders.hpp"
 
+//TMP: used by events for keeping track of objects spawning
+extern script_struct *box; //keep track of our loaded debug box
+extern script_struct *sphere;
+
 //keep track of warnings
 unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;

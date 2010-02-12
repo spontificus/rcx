@@ -38,16 +38,11 @@
 #include "camera.hpp"
 #include "profile.hpp"
 #include "track.hpp"
+#include "cleanup.hpp"
 
 //TODO: weapons
 
 
 
-//prototypes specific for shared data
-void free_all (void);
-
-
-extern script_struct *box; //keep track of our loaded debug box
-extern script_struct *sphere;
 
 #endif

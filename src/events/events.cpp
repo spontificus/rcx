@@ -14,6 +14,11 @@
 SDL_Event event;
 Uint8 *keys;
 
+
+//TMP: keep track of demo spawn stuff
+script_struct *box = NULL;
+script_struct *sphere = NULL;
+
 void event_step(Uint32 step)
 {
 	//loop geoms to see if any event
