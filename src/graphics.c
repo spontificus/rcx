@@ -200,6 +200,9 @@ int graphics_loop ()
 
 		if (internal.graphics_sleep)
 			SDL_Delay (internal.graphics_sleep);
+
+		//in case event thread can't pump SDL events (limit of some OSes)
+		SDL_PumpEvents();
 	}
 
 	return 0;
