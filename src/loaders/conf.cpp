@@ -1,6 +1,12 @@
 //#include "../shared/shared.hpp"
-#include "loaders.hpp"
+//#include "loaders.hpp"
+#include "conf.hpp"
+
+#include "text_file.hpp"
 #include "../shared/printlog.hpp"
+
+#include <string.h>
+#include <stdlib.h>
 
 //loads configuration file to memory (using index)
 int load_conf (char *name, char *memory, const struct data_index index[])

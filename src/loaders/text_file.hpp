@@ -2,6 +2,7 @@
 #define _RCX_TEXT_FILE_H
 //definition of class for easy text file processing
 //(provides a list of words for each line)
+#include <stdio.h>
 
 //initial values for holding data (automatically resized if needed)
 #define INITIAL_BUFFER_SIZE 150 //how manny characters

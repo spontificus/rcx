@@ -1,6 +1,8 @@
-#include "../shared/shared.hpp"
+//#include "../shared/shared.hpp"
+#include "../shared/profile.hpp"
 #include "../shared/printlog.hpp"
-#include "loaders.hpp"
+#include "text_file.hpp"
+//#include "loaders.hpp"
 
 #ifdef __cplusplus
 // required to iterate through an enum in C++

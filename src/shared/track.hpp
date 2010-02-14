@@ -61,5 +61,6 @@ const struct data_index track_index[] = {
 	{"target_start",'d',3,	offsetof(struct track_struct, target_start)},
 	{"",0,0}};//end
 
+int load_track (char *path);
 
 #endif

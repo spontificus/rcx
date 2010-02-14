@@ -1,5 +1,12 @@
-#include "../shared/shared.hpp"
-#include "loaders.hpp"
+//#include "../shared/shared.hpp"
+//#include "loaders.hpp"
+#include "text_file.hpp"
+#include "../shared/printlog.hpp"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 //NOTE: it might seem strange to use C text processing in C++ code,
 //but it is simply more suitable in this case

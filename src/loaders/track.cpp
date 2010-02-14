@@ -1,6 +1,15 @@
-#include "../shared/shared.hpp"
+//#include "../shared/shared.hpp"
+#include "../shared/track.hpp"
+
+#include "../shared/camera.hpp"
+#include "../shared/geom.hpp"
 #include "../shared/printlog.hpp"
-#include "loaders.hpp"
+#include "../shared/object.hpp"
+
+#include "colours.hpp"
+#include "text_file.hpp"
+#include "debug_draw.hpp"
+//#include "loaders.hpp"
 
 int load_track (char *path)
 {

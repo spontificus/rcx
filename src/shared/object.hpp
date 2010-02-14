@@ -1,6 +1,8 @@
 #ifndef _RCX_OBJECT_H
 #define _RCX_OBJECT_H
-#include "ode/common.h"
+#include <ode/common.h>
+
+#include "script.hpp"
 
 //object: one "thing" on the track, from a complex building to a tree, spawning
 //will be controlled by a custom scripting langue in future versions, the most
@@ -33,4 +35,7 @@ extern object_struct *object_head;
 
 void free_object(object_struct *target);
 object_struct *allocate_object (bool adspace, bool adjointgroup);
+
+script_struct *load_object(char *path);
+void spawn_object(script_struct *script, dReal x, dReal y, dReal z);
 #endif
