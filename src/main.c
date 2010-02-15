@@ -45,8 +45,9 @@ void printlog (int, const char*, ...); //prototype (for included functions
 unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
 
-//when multithreading, use semaphore for ode
-SDL_sem *ode_lock = NULL;
+//when multithreading, use semaphores
+SDL_sem *ode_lock = NULL; //only one thread for ode
+SDL_sem *sdl_event_lock = NULL; //only one thread for sdl event buffer
 //
 
 
@@ -89,6 +90,7 @@ void start_race(void)
 	{
 		printlog (0, "\n-> Starting Race (multithreaded)\n");
 		ode_lock = SDL_CreateSemaphore(1); //create semaphore for ode locking (1 thread)
+		sdl_event_lock = SDL_CreateSemaphore(1); //only pump/process sdl events in 1 thread
 		runlevel = running;
 
 		//launch threads
