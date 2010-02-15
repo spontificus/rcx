@@ -181,7 +181,7 @@ int load_conf (char *name, char *memory, struct data_index index[])
       break;
 
       case 'd':
-       argscan="%d";
+       argscan="%lf";
        argsize=sizeof(double);
       break;
 
@@ -288,6 +288,12 @@ profile *load_profile (char *path)
 		return NULL;
 
 	free (conf);
+
+	//set camera
+	if (prof->camera >0 && prof->camera <5)
+		set_camera_settings (&(prof->cam[prof->camera -1]));
+	else
+		printlog(0, "ERROR: default camera should be a value between 1 and 4!\n");
 
 	//load key list
 	char *list=(char *)calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
@@ -631,6 +637,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassAdjust (&m,400); //mass
 	dBodySetMass (body, &m);
 
+	allocate_body_data(body, NULL); //just for drag
+
 	dGeomSetBody (geom, body);
 
 	dBodySetPosition (body, x, y, z);
@@ -711,6 +719,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassAdjust (&m,60); //mass
 	dBodySetMass (body1, &m);
 
+	allocate_body_data(body1, NULL);
+
 	dGeomSetBody (geom, body1);
 
 	dBodySetPosition (body1, x, y, z);
@@ -741,6 +751,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassSetSphere (&m,1,0.5); //radius
 	dMassAdjust (&m,30); //mass
 	dBodySetMass (body, &m);
+
+	allocate_body_data(body, NULL);
 
 	dGeomSetBody (geom, body);
 
@@ -780,6 +792,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassSetSphere (&m,1,1); //radius
 	dMassAdjust (&m,60); //mass
 	dBodySetMass (body1, &m);
+
+	allocate_body_data(body1, NULL);
 
 	dGeomSetBody (geom, body1);
 
@@ -822,6 +836,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassSetBox (&m,1,4,0.4,2.7); //sides
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body1[i], &m);
+
+			allocate_body_data(body1[i], NULL);
 
 			data->file_3d = script->graphics_debug1;
 		}
@@ -878,6 +894,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassSetBox (&m,1,4,4,0.2); //sides
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body2[i], &m);
+
+			allocate_body_data(body2[i], NULL);
 
 			data->file_3d = script->graphics_debug2;
 		}
@@ -938,6 +956,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 			dMassAdjust (&m,400); //mass
 			dBodySetMass (body[i], &m);
 	
+			allocate_body_data(body[i], NULL);
+
 			dGeomSetBody (geom, body[i]);
 	
 			//friction
@@ -999,6 +1019,27 @@ int load_track (char *path)
 		return -1;
 
 	free (conf);
+
+	//set camera default values, some from track specs
+	camera.pos[0] = track.cam_start[0];
+	camera.pos[1] = track.cam_start[1];
+	camera.pos[2] = track.cam_start[2];
+
+	camera.t_pos[0] = track.target_start[0];
+	camera.t_pos[1] = track.target_start[1];
+	camera.t_pos[2] = track.target_start[2];
+
+	camera.vel[0] = 0;
+	camera.vel[1] = 0;
+	camera.vel[2] = 0;
+
+	camera.up[0] = 0;
+	camera.up[1] = 0;
+	camera.up[2] = 1;
+
+	camera.air_timer = 0;
+	camera.reverse = false;
+	camera.in_air = false;
 
 	//append forced data
 	track.position[3] = 0.0f; //directional
@@ -1248,6 +1289,22 @@ car_struct *load_car (char *path)
 
 	free (conf);
 
+	//set up values for front/rear driving ratios
+	if (target->steer_ratio>100 || target->steer_ratio<0 )
+		printlog(0, "ERROR: front/rear steering ratio should be set between 0 and 100!\n");
+	target->fsteer = (dReal) (target->steer_ratio/100.0);
+	target->rsteer = (dReal) (target->fsteer-1.0);
+	
+	if (target->motor_ratio>100 || target->motor_ratio<0 )
+		printlog(0, "ERROR: front/rear motor ratio should be set between 0 and 100!\n");
+	target->fmotor = (dReal) (target->motor_ratio/100.0);
+	target->rmotor = (dReal) (1.0-target->fmotor);
+
+	if (target->break_ratio>100 || target->break_ratio<0 )
+		printlog(0, "ERROR: front/rear breaking ratio should be set between 0 and 100!\n");
+	target->fbreak = (dReal) (target->break_ratio/100.0);
+	target->rbreak = (dReal) (1.0-target->fbreak);
+
 	//graphics models
 	float w_r = target->w[0];
 	float w_w = target->w[1];
@@ -1320,6 +1377,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	if (target->spawned)
 	{
 		printlog(0, "ERROR: trying to spawn already spawned car!\n");
+		//TODO: separate car into car_data and car_spawned to make one car spawnable for several players...
 		return;
 	}
 
@@ -1336,23 +1394,18 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dBodySetAutoDisableFlag (target->bodyid, 0); //never disable main body
 	
 
-	//set up air (and liquid) drag for body
-	body_data *odata;
-	odata = allocate_body_data (target->bodyid, target->object);
-	odata->use_drag = true;
-	odata->drag[0] = target->body_drag[0];
-	odata->drag[1] = target->body_drag[1];
-	odata->drag[2] = target->body_drag[2];
-
-	//rotational drag
-	odata->use_rotation_drag = true;
-	odata->rot_drag[0] = target->body_rotation_drag[0];
-	odata->rot_drag[1] = target->body_rotation_drag[1];
-	odata->rot_drag[2] = target->body_rotation_drag[2];
-
+	//set mass
 	dMassSetBox (&m,1,target->body[0], target->body[1], target->body[2]); //sides
 	dMassAdjust (&m,target->body_mass); //mass
 	dBodySetMass (target->bodyid, &m);
+
+	//set up air (and liquid) drag for body
+	body_data *odata;
+	odata = allocate_body_data (target->bodyid, target->object);
+	Body_Data_Set_Advanced_Linear_Drag (odata, target->body_linear_drag[0],
+			target->body_linear_drag[1], target->body_linear_drag[2]);
+	//rotational drag
+	Body_Data_Set_Angular_Drag ( odata, target->body_angular_drag);
 
 
 	dBodySetPosition (target->bodyid, x, y, z);
@@ -1427,6 +1480,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 		//friction
 		wheel_data[i]->mu = target->wheel_mu;
+		wheel_data[i]->mu_rim = target->rim_mu;
 		wheel_data[i]->wheel = true;
 		wheel_data[i]->slip = target->wheel_slip;
 		wheel_data[i]->bounce = target->wheel_bounce;
@@ -1438,16 +1492,9 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 		//drag
 		odata = allocate_body_data (wheel_body[i], target->object);
-		odata->use_drag = true;
-		odata->drag[0] = target->wheel_drag[0];
-		odata->drag[1] = target->wheel_drag[1];
-		odata->drag[2] = target->wheel_drag[2];
-
+		Body_Data_Set_Linear_Drag (odata, target->wheel_linear_drag);
 		//rotational drag
-		odata->use_rotation_drag = true;
-		odata->rot_drag[0] = target->wheel_rotation_drag[0];
-		odata->rot_drag[1] = target->wheel_rotation_drag[1];
-		odata->rot_drag[2] = target->wheel_rotation_drag[2];
+		Body_Data_Set_Angular_Drag (odata, target->wheel_angular_drag);
 
 		//graphics
 		wheel_data[i]->file_3d = target->wheel_graphics;
@@ -1471,11 +1518,11 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dBodySetRotation (wheel_body[3], rot);
 
 	//enable finite rotation on rear wheels
-	if (internal.finite_rotation)
+	/*if (internal.finite_rotation)
 	{
 		dBodySetFiniteRotationMode (wheel_body[1], 1);
 		dBodySetFiniteRotationMode (wheel_body[2], 1);
-	}
+	}*/
 
 	//create joints (hinge2) for wheels
 	for (i=0; i<4; ++i)

@@ -7,10 +7,12 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
-SDL_Surface *screen;
-GLdouble cpos[3] = {20,-25,20};
-Uint32 flags = SDL_OPENGL;
+#include "graphics/camera.c"
 
+SDL_Surface *screen;
+Uint32 flags = SDL_OPENGL | SDL_RESIZABLE;
+
+//count frames
 Uint32 frame_count = 0;
 
 //if multithreading, event thread will alert graphics thread about resizing events (to avoid stealing the context)
@@ -58,11 +60,6 @@ int graphics_init(void)
 {
 	printlog(0, "=> Initiating graphics\n");
 
-	//SDL (1.2) can't resize window on some systems (...windowz... OSX...)
-	//without destroying OGL context... only enable resizing if requested
-	if (internal.resize)
-		flags |= SDL_RESIZABLE;
-
 	SDL_Init(SDL_INIT_VIDEO);
 	screen = SDL_SetVideoMode (internal.res[0], internal.res[1], 0, flags);
 
@@ -101,8 +98,6 @@ int graphics_init(void)
 }
 
 
-
-dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
 {
@@ -129,14 +124,8 @@ void graphics_step (Uint32 step)
 
 	glPushMatrix();
 
-	const dReal *gpos;
-
-	if (!focused_car)
-		gpos = geom_pos_default; //not focused, use default
-	else
-		gpos = dBodyGetPosition(focused_car->bodyid);
-
-	gluLookAt (cpos[0],cpos[1],cpos[2], gpos[0],gpos[1],gpos[2], 0,0,1);
+	//move camera
+	camera_graphics_step();
 
 	//place sun
 	glLightfv (GL_LIGHT0, GL_POSITION, track.position);

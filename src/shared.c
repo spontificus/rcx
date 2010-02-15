@@ -4,6 +4,7 @@
 //
 //See main.c for licensing
 
+#include "shared/camera.c"
 
 //allocate new script storage, and add it to list
 //(not used yet, only for storing 3d list pointers...)
@@ -135,12 +136,14 @@ geom_data *allocate_geom_data (dGeomID geom, object_struct *obj)
 	geom_data_head->event = false; //no collision event yet
 	geom_data_head->script = NULL; //nothing to run on collision (yet)
 	
-	//collision contactpoint data
 	geom_data_head->file_3d = NULL; //default, isn't rendered
+	//collision contactpoint data
 	geom_data_head->mu = internal.mu;
+	geom_data_head->mu_rim = internal.mu;
 	geom_data_head->erp = internal.erp;
 	geom_data_head->cfm = internal.cfm;
-	geom_data_head->slip = internal.slip; //no FDS slip
+	geom_data_head->slip = internal.slip;
+
 	geom_data_head->wheel = false; //not a wheel
 	geom_data_head->bounce = 0.0; //no bouncyness
 
@@ -187,8 +190,8 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 	body_data_head->body_id = body;
 
 	//default values
-	body_data_head->use_drag = false;
-	body_data_head->use_rotation_drag = false;
+	Body_Data_Set_Linear_Drag(body_data_head, internal.linear_drag);
+	Body_Data_Set_Angular_Drag(body_data_head, internal.angular_drag);
 
 	body_data_head->threshold = 0; //no threshold (disables event testing)
 	body_data_head->buffer = 1; //almost empty buffer
@@ -337,10 +340,14 @@ car_struct *allocate_car(void)
 		car_head->box_graphics[i] = NULL;
 	car_head->wheel_graphics = NULL;
 
+	car_head->dir = 1; //initiate to 1 for default
+
 	car_head->drift_breaks = true; //if the user does nothing, lock wheels
 	car_head->breaks = false;
 	car_head->throttle = 0;
 	car_head->steering = 0;
+	
+	car_head->velocity = 0;
 
 	//default mass, friction, different stats... just to prevent segfaults
 	car_head->max_torque  = 8000;
@@ -557,6 +564,7 @@ void free_all (void)
 	printlog(2, ">>> TODO: optimize???\n");
 	//first thing to destroy: cars
 	printlog(2, ">>> TODO: change from free_car to destroy_car?\n\n");
+
 	while (car_head)
 		free_car(car_head);
 

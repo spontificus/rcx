@@ -4,10 +4,10 @@ up up
 down down
 right right
 left left
-soft_break "left alt"
-drift_break space
+soft_break space
+drift_break "left alt"
 
-#camera movement (bind to WASD and Q+E for height)
+#camera position offset movement (bind to WASD and Q+E for height)
 camera_x+ d
 camera_x- a
 camera_y+ w
@@ -15,3 +15,8 @@ camera_y- s
 camera_z+ q
 camera_z- e
 
+#camera change
+camera1 f1
+camera2 f2
+camera3 f3
+camera4 f4

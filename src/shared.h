@@ -28,9 +28,12 @@ struct internal_struct {
 	dReal stepsize;
 	int iterations;
 	int contact_points;
-	bool finite_rotation;
+	//bool finite_rotation;
 	dReal scale; //TODO
+	dReal max_wheel_rotation;
+	dReal rim_angle;
 	dReal mu,erp,cfm,slip;
+	dReal linear_drag, angular_drag;
 
 	dReal dis_linear, dis_angular, dis_time;
 	int dis_steps;
@@ -43,7 +46,6 @@ struct internal_struct {
 	bool force;
 	float angle;
 	bool fullscreen;
-	bool resize;
 } internal;
 
 struct data_index internal_index[] = {
@@ -54,14 +56,18 @@ struct data_index internal_index[] = {
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
 	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},
-	{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
+	//{"finite_rotation",	'b',1, offsetof(struct internal_struct, finite_rotation)},
 	//TODO: SCALE
+	{"max_wheel_rotation",	'f',1, offsetof(struct internal_struct, max_wheel_rotation)},
+	{"rim_angle",		'f',1, offsetof(struct internal_struct, rim_angle)},
 	{"default_mu",		'f',1, offsetof(struct internal_struct, mu)},
 	{"default_erp",		'f',1, offsetof(struct internal_struct, erp)},
 	{"default_cfm",		'f',1, offsetof(struct internal_struct, cfm)},
-	{"default_slip",		'f',1, offsetof(struct internal_struct, slip)},
+	{"default_slip",	'f',1, offsetof(struct internal_struct, slip)},
+	{"default_linear_drag",	'f',1, offsetof(struct internal_struct, linear_drag)},
+	{"default_angular_drag",'f',1, offsetof(struct internal_struct, angular_drag)},
 	{"auto_disable_linear",	'f',1, offsetof(struct internal_struct, dis_linear)},
-	{"auto_disable_angular",	'f',1, offsetof(struct internal_struct, dis_angular)},
+	{"auto_disable_angular",'f',1, offsetof(struct internal_struct, dis_angular)},
 	{"auto_disable_time",	'f',1, offsetof(struct internal_struct, dis_time)},
 	{"auto_disable_steps",	'i',1, offsetof(struct internal_struct, dis_steps)},
 	//graphics
@@ -71,7 +77,6 @@ struct data_index internal_index[] = {
 	{"force_angle",		'b',1, offsetof(struct internal_struct, force)},
 	{"view_angle",		'f',1, offsetof(struct internal_struct, angle)},
 	{"fullscreen",		'b',1, offsetof(struct internal_struct, fullscreen)},
-	{"resize",		'b',1, offsetof(struct internal_struct, resize)},
 	{"",0,0}};
 
 
@@ -163,7 +168,7 @@ typedef struct geom_data_struct {
 
 	//Physics data:
 	//placeholder for more physics data
-	dReal mu, erp, cfm, slip, bounce;
+	dReal mu, mu_rim, erp, cfm, slip, bounce;
 
 	bool wheel; //true if wheel side slip and connected to hinge2
 	dJointID hinge2;
@@ -199,10 +204,12 @@ typedef struct body_data_struct {
 	dBodyID body_id;
 
 	//data for drag (air+water friction)
-	bool use_drag;
-	bool use_rotation_drag;
-	dReal drag[3];
-	dReal rot_drag[3];
+	//values for enabled/disabled drag
+	bool use_linear_drag, use_advanced_linear_drag;
+	bool use_angular_drag;
+	//drag values (must be adjusted to the body mass)
+	dReal linear_drag, advanced_linear_drag[3];
+	dReal angular_drag;
 
 	dReal threshold; //if allocated forces exceeds, eat buffer
 	dReal buffer; //if buffer reaches zero, trigger event
@@ -254,16 +261,16 @@ typedef struct car_struct {
 	//data loaded from file (to be implemented)
 	//(max_break is for non-locking breaks, not drifting break (they are infinite))
 	char *name;
-	bool spawned; //don't assume loaded cars are participating in race
+	bool spawned; //don't assume loaded cars are participating in race (TODO: split struct into 2: loaded and spawned)
 
 
 	dReal max_torque, motor_tweak, max_break;
 	dReal body_mass, wheel_mass;
 	dReal suspension_erp, suspension_cfm;
-	dReal wheel_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
+	dReal wheel_mu, rim_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
 	dReal body_mu, body_slip, body_erp, body_cfm;
 
-	dReal body_drag[3], body_rotation_drag[3], wheel_drag[3], wheel_rotation_drag[3];
+	dReal body_linear_drag[3], body_angular_drag, wheel_linear_drag, wheel_angular_drag;
 
 	file_3d_struct *wheel_graphics; //add right/left wheels
 	file_3d_struct *box_graphics[CAR_MAX_BOXES];
@@ -282,9 +289,15 @@ typedef struct car_struct {
 	//controlling values
 	bool drift_breaks, breaks;
 	dReal throttle, steering; //-1.0 to +1.0
+	dReal velocity; //keep track of car velocity
 
 	dReal body[3];
 	dReal box[CAR_MAX_BOXES][6];
+
+	//values for moving steering/breaking/turning between front/rear wheels
+	int steer_ratio, motor_ratio, break_ratio;
+	dReal fsteer, rsteer, fmotor, rmotor, fbreak, rbreak;
+	
 	//debug sizes
 	dReal s[4],w[2],wp[2],jx;
 
@@ -300,9 +313,15 @@ struct data_index car_index[] = {
 	{"max_break",		'f',1, offsetof(struct car_struct, max_break)},
 	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass)},
 	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass)},
+
+	{"front/rear_steer",	'i',1, offsetof(struct car_struct, steer_ratio)},
+	{"front/rear_motor",	'i',1, offsetof(struct car_struct, motor_ratio)},
+	{"front/rear_break",	'i',1, offsetof(struct car_struct, break_ratio)},
+
 	{"suspension_erp",	'f',1, offsetof(struct car_struct, suspension_erp)},
 	{"suspension_cfm",	'f',1, offsetof(struct car_struct, suspension_cfm)},
 	{"wheel_mu",		'f',1, offsetof(struct car_struct, wheel_mu)},
+	{"rim_mu",		'f',1, offsetof(struct car_struct, rim_mu)},
 	{"wheel_slip",		'f',1, offsetof(struct car_struct, wheel_slip)},
 	{"wheel_erp",		'f',1, offsetof(struct car_struct, wheel_erp)},
 	{"wheel_cfm",		'f',1, offsetof(struct car_struct, wheel_cfm)},
@@ -312,10 +331,10 @@ struct data_index car_index[] = {
 	{"body_erp",		'f',1, offsetof(struct car_struct, body_erp)},
 	{"body_cfm",		'f',1, offsetof(struct car_struct, body_cfm)},
 
-	{"body_drag",		'f',3, offsetof(struct car_struct, body_drag)},
-	{"body_rotation_drag",	'f',3, offsetof(struct car_struct, body_rotation_drag)},
-	{"wheel_drag",		'f',3, offsetof(struct car_struct, wheel_drag)},
-	{"wheel_rotation_drag",	'f',3, offsetof(struct car_struct, wheel_rotation_drag)},
+	{"body_linear_drag",	'f',3, offsetof(struct car_struct, body_linear_drag)},
+	{"body_angular_drag",	'f',1, offsetof(struct car_struct, body_angular_drag)},
+	{"wheel_linear_drag",	'f',1, offsetof(struct car_struct, wheel_linear_drag)},
+	{"wheel_angular_drag",	'f',1, offsetof(struct car_struct, wheel_angular_drag)},
 
 	//body and geom (box) sizes:
 	{"body",	'f',	3,	offsetof(struct car_struct, body[0])}, //not a geom
@@ -351,6 +370,33 @@ struct data_index car_index[] = {
 
 
 #define UNUSED_KEY SDLK_QUESTION //key that's not used during race ("safe" default)
+typedef struct {
+	dReal target[3];
+	dReal anchor[3], distance[3];
+	dReal radius;
+	dReal linear_stiffness;
+	dReal angular_stiffness;
+	dReal damping;
+	bool relative_damping;
+	dReal rotation_tightness;
+	dReal target_tightness;
+	bool reverse, in_air;
+	dReal air_time, ground_time;
+	dReal offset_scale_speed;
+} camera_settings;
+
+struct {
+	camera_settings *settings;
+	car_struct *car;
+	dReal pos[3];
+	dReal t_pos[3];
+	dReal vel[3];
+	dReal up[3];
+	dReal air_timer;
+	dReal offset_scale; //0-1   0 in air, 1 on ground
+	bool reverse;
+	bool in_air;
+} camera = {NULL, NULL, {0,0,0}, {0,0,0}};
 
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
@@ -378,6 +424,13 @@ typedef struct profile_struct {
 	SDLKey cam_y_neg;
 	SDLKey cam_z_pos;
 	SDLKey cam_z_neg;
+
+	camera_settings cam[4];
+	int camera;
+	SDLKey cam1;
+	SDLKey cam2;
+	SDLKey cam3;
+	SDLKey cam4;
 } profile;
 
 profile *profile_head;
@@ -386,6 +439,72 @@ struct data_index profile_index[] = {
 	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed)},
 	{"steer_max",      'f' ,1 ,offsetof(struct profile_struct, steer_max)},
 	{"throttle_speed", 'f' ,1 ,offsetof(struct profile_struct, throttle_speed)},
+
+	{"camera_default",   	   	'i' ,1 ,offsetof(struct profile_struct, camera)},
+
+	{"camera1:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].target)},
+	{"camera1:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[0].anchor)},
+	{"camera1:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[0].distance)},
+	{"camera1:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[0].radius)},
+	{"camera1:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].linear_stiffness)},
+	{"camera1:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].angular_stiffness)},
+	{"camera1:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[0].damping)},
+	{"camera1:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[0].relative_damping)},
+	{"camera1:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].rotation_tightness)},
+	{"camera1:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[0].target_tightness)},
+	{"camera1:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[0].reverse)},
+	{"camera1:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[0].in_air)},
+	{"camera1:air_time",		'f', 1, offsetof(struct profile_struct, cam[0].air_time)},
+	{"camera1:ground_time",		'f', 1, offsetof(struct profile_struct, cam[0].ground_time)},
+	{"camera1:offset_scale_speed",	'f', 1, offsetof(struct profile_struct, cam[0].offset_scale_speed)},
+
+	{"camera2:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].target)},
+	{"camera2:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[1].anchor)},
+	{"camera2:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[1].distance)},
+	{"camera2:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[1].radius)},
+	{"camera2:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].linear_stiffness)},
+	{"camera2:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].angular_stiffness)},
+	{"camera2:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[1].damping)},
+	{"camera2:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[1].relative_damping)},
+	{"camera2:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].rotation_tightness)},
+	{"camera2:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[1].target_tightness)},
+	{"camera2:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[1].reverse)},
+	{"camera2:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[1].in_air)},
+	{"camera2:air_time",		'f', 1, offsetof(struct profile_struct, cam[1].air_time)},
+	{"camera2:ground_time",		'f', 1, offsetof(struct profile_struct, cam[1].ground_time)},
+	{"camera2:offset_scale_speed",	'f', 1, offsetof(struct profile_struct, cam[1].offset_scale_speed)},
+
+	{"camera3:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].target)},
+	{"camera3:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[2].anchor)},
+	{"camera3:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[2].distance)},
+	{"camera3:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[2].radius)},
+	{"camera3:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].linear_stiffness)},
+	{"camera3:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].angular_stiffness)},
+	{"camera3:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[2].damping)},
+	{"camera3:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[2].relative_damping)},
+	{"camera3:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].rotation_tightness)},
+	{"camera3:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[2].target_tightness)},
+	{"camera3:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[2].reverse)},
+	{"camera3:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[2].in_air)},
+	{"camera3:air_time",		'f', 1, offsetof(struct profile_struct, cam[2].air_time)},
+	{"camera3:ground_time",		'f', 1, offsetof(struct profile_struct, cam[2].ground_time)},
+	{"camera3:offset_scale_speed",	'f', 1, offsetof(struct profile_struct, cam[2].offset_scale_speed)},
+
+	{"camera4:target_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].target)},
+	{"camera4:anchor_offset",	'f' ,3 ,offsetof(struct profile_struct, cam[3].anchor)},
+	{"camera4:anchor_distance",	'f' ,3 ,offsetof(struct profile_struct, cam[3].distance)},
+	{"camera4:collision_radius",	'f' ,1 ,offsetof(struct profile_struct, cam[3].radius)},
+	{"camera4:linear_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].linear_stiffness)},
+	{"camera4:angular_stiffness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].angular_stiffness)},
+	{"camera4:damping",		'f' ,1 ,offsetof(struct profile_struct, cam[3].damping)},
+	{"camera4:relative_damping",	'b' ,1 ,offsetof(struct profile_struct, cam[3].relative_damping)},
+	{"camera4:rotation_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].rotation_tightness)},
+	{"camera4:target_tightness",	'f' ,1 ,offsetof(struct profile_struct, cam[3].target_tightness)},
+	{"camera4:enable_reverse",	'b' ,1 ,offsetof(struct profile_struct, cam[3].reverse)},
+	{"camera4:enable_in_air",	'b' ,1 ,offsetof(struct profile_struct, cam[3].in_air)},
+	{"camera4:air_time",		'f', 1, offsetof(struct profile_struct, cam[3].air_time)},
+	{"camera4:ground_time",		'f', 1, offsetof(struct profile_struct, cam[3].ground_time)},
+	{"camera4:offset_scale_speed",	'f', 1, offsetof(struct profile_struct, cam[3].offset_scale_speed)},
 	{"",0,0}}; //end
 
 //list of all buttons
@@ -406,6 +525,11 @@ const struct {
 	{"camera_y-",		offsetof(struct profile_struct, cam_y_neg)},
 	{"camera_z+",		offsetof(struct profile_struct, cam_z_pos)},
 	{"camera_z-",		offsetof(struct profile_struct, cam_z_neg)},
+
+	{"camera1",		offsetof(struct profile_struct, cam1)},
+	{"camera2",		offsetof(struct profile_struct, cam2)},
+	{"camera3",		offsetof(struct profile_struct, cam3)},
+	{"camera4",		offsetof(struct profile_struct, cam4)},
 	{"",0}}; //end
 	
 
@@ -430,8 +554,11 @@ struct track_struct {
 	dReal cfm;
 
 	dReal density; //for air drag (friction)
+	dReal wind[3];
 
 	dReal start[3];
+	GLdouble cam_start[3];
+	GLdouble target_start[3];
 
 	file_3d_struct *file_3d;
 	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
@@ -451,7 +578,10 @@ struct data_index track_index[] = {
 	{"erp",		'f',1,	offsetof(struct track_struct, erp)},
 	{"cfm",		'f',1,	offsetof(struct track_struct, cfm)},
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
+	{"wind",	'f',3,	offsetof(struct track_struct, wind)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
+	{"cam_start",	'd',3,	offsetof(struct track_struct, cam_start)},
+	{"target_start",'d',3,	offsetof(struct track_struct, target_start)},
 	{"",0,0}};//end
 
 
