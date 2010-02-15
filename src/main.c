@@ -82,6 +82,7 @@ void emergency_quit (void)
 void start_race(void)
 {
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
+	Uint32 start_time = simtime; //how long it took for race to start
 
 	//singlethread or multi?
 	if (internal.multithread)
@@ -142,10 +143,14 @@ void start_race(void)
 			}
 		}
 	}
+
+	simtime -= start_time;
 	printlog(0, "-> Race done!\n");
 	printlog(0, "\n<-- Some basic info: -->\n");
 	printlog(0, "(does not interest most people)\n");
+	printlog(0, "Startup time (ms):			%i\n", start_time);
 	printlog(0, "Race time (ms):				%i\n", simtime);
+	printlog(0, "Avarage FPS:				%i\n", (1000*frame_count)/simtime);
 	printlog(0, "Threading mode:				");
 	if (internal.multithread)
 	{

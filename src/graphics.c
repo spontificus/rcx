@@ -11,6 +11,8 @@ SDL_Surface *screen;
 GLdouble cpos[3] = {20,-25,20};
 Uint32 flags = SDL_OPENGL;
 
+Uint32 frame_count = 0;
+
 //if multithreading, event thread will alert graphics thread about resizing events (to avoid stealing the context)
 bool graphics_event_resize = false;
 int graphics_event_resize_w, graphics_event_resize_h;
@@ -104,6 +106,9 @@ dReal geom_pos_default[] = {0,-20,5};
 //render lists, position "camera" (time step not used for now)
 void graphics_step (Uint32 step)
 {
+	//keep track of how many rendered frames
+	++frame_count;
+
 	//see if we need to resize
 	if (graphics_event_resize)
 	{
