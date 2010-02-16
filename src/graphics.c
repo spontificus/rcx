@@ -107,7 +107,16 @@ void graphics_step (Uint32 step)
 	//see if we need to resize
 	if (graphics_event_resize)
 	{
-		screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
+		//if in a thread, make sure sdl request doesn't collide with other thread
+		if (internal.multithread)
+		{
+			SDL_SemWait(sdl_lock);
+			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
+			SDL_SemPost(sdl_lock);
+		}
+		else
+			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
+
 		if (screen)
 		{
 			graphics_resize (screen->w, screen->h);
@@ -196,9 +205,9 @@ int graphics_loop ()
 			SDL_Delay (internal.graphics_sleep);
 
 		//in case event thread can't pump SDL events (limit of some OSes)
-		SDL_SemWait(sdl_event_lock);
+		SDL_SemWait(sdl_lock);
 		SDL_PumpEvents();
-		SDL_SemPost(sdl_event_lock);
+		SDL_SemPost(sdl_lock);
 	}
 
 	return 0;

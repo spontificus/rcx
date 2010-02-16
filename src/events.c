@@ -50,6 +50,9 @@ void event_step(Uint32 step)
 	}
 
 	//get SDL events
+	if (internal.multithread) //make sure not colliding if threading
+		SDL_SemWait(sdl_lock);
+
 	while (SDL_PollEvent (&event))
 	{
 		switch (event.type)
@@ -209,6 +212,10 @@ void event_step(Uint32 step)
 			}
 		}
 	}
+
+	//if we locked, unlock
+	if (internal.multithread)
+		SDL_SemPost(sdl_lock);
 }
 
 int events_loop (void *d)
@@ -220,14 +227,11 @@ int events_loop (void *d)
 	while (runlevel == running)
 	{
 		//wait for permission for ode (in case some event causes ode manipulation)
-		//also wait for sdl event buffer to be free for modification (only needed for key reading)
 		SDL_SemWait(ode_lock);
-		SDL_SemWait(sdl_event_lock);
 
 		time = SDL_GetTicks();
 		event_step(time-time_old);
 
-		SDL_SemPost(sdl_event_lock);
 		SDL_SemPost(ode_lock);
 
 		time_old = time;
