@@ -198,7 +198,11 @@ int graphics_loop ()
 	while (runlevel == running)
 	{
 		time = SDL_GetTicks();
+
+		SDL_SemWait(ode_lock); //make sure physics is completely simulated before rendering
 		graphics_step(time-time_old);
+		SDL_SemPost(ode_lock);
+
 		time_old = time;
 
 		if (internal.graphics_sleep)
