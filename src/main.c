@@ -103,6 +103,7 @@ void start_race(void)
 		SDL_WaitThread (physics, NULL);
 
 		SDL_DestroySemaphore(ode_lock);
+		SDL_DestroySemaphore(sdl_lock);
 		//done!
 
 		simtime = SDL_GetTicks(); //set time (for info output)
