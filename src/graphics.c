@@ -199,9 +199,9 @@ int graphics_loop ()
 	{
 		time = SDL_GetTicks();
 
-		SDL_SemWait(ode_lock); //make sure physics is completely simulated before rendering
+		//SDL_SemWait(ode_lock); //make sure physics is completely simulated before rendering
 		graphics_step(time-time_old);
-		SDL_SemPost(ode_lock);
+		//SDL_SemPost(ode_lock);
 
 		time_old = time;
 
