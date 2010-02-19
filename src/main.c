@@ -45,9 +45,9 @@ void printlog (int, const char*, ...); //prototype (for included functions
 unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
 
-//when multithreading, use semaphores
-SDL_sem *ode_lock = NULL; //only one thread for ode
-SDL_sem *sdl_lock = NULL; //only one thread for sdl
+//when multithreading, use mutexes
+SDL_mutex *ode_lock = NULL; //only one thread for ode
+SDL_mutex *sdl_lock = NULL; //only one thread for sdl
 //
 
 
@@ -89,8 +89,8 @@ void start_race(void)
 	if (internal.multithread)
 	{
 		printlog (0, "\n-> Starting Race (multithreaded)\n");
-		ode_lock = SDL_CreateSemaphore(1); //create semaphore for ode locking (1 thread)
-		sdl_lock = SDL_CreateSemaphore(1); //only use sdl in 1 thread
+		ode_lock = SDL_CreateMutex(); //create mutex for ode locking
+		sdl_lock = SDL_CreateMutex(); //only use sdl in 1 thread
 		runlevel = running;
 
 		//launch threads
@@ -102,8 +102,8 @@ void start_race(void)
 		SDL_WaitThread (events, NULL);
 		SDL_WaitThread (physics, NULL);
 
-		SDL_DestroySemaphore(ode_lock);
-		SDL_DestroySemaphore(sdl_lock);
+		SDL_DestroyMutex(ode_lock);
+		SDL_DestroyMutex(sdl_lock);
 		//done!
 
 		simtime = SDL_GetTicks(); //set time (for info output)

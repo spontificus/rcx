@@ -110,9 +110,9 @@ void graphics_step (Uint32 step)
 		//if in a thread, make sure sdl request doesn't collide with other thread
 		if (internal.multithread)
 		{
-			SDL_SemWait(sdl_lock);
+			SDL_mutexP(sdl_lock);
 			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
-			SDL_SemPost(sdl_lock);
+			SDL_mutexV(sdl_lock);
 		}
 		else
 			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
@@ -209,9 +209,9 @@ int graphics_loop ()
 			SDL_Delay (internal.graphics_sleep);
 
 		//in case event thread can't pump SDL events (limit of some OSes)
-		SDL_SemWait(sdl_lock);
+		SDL_mutexP(sdl_lock);
 		SDL_PumpEvents();
-		SDL_SemPost(sdl_lock);
+		SDL_mutexV(sdl_lock);
 	}
 
 	return 0;
