@@ -394,9 +394,14 @@ int physics_loop (void *d)
 	while (runlevel == running)
 	{
 		//technically, collision detection doesn't need this, but since it's already in step function, this is easier
-		SDL_mutexP(ode_lock);
+		SDL_mutexP(ode_mutex);
 		physics_step();
-		SDL_mutexV(ode_lock);
+
+		//broadcast to let graphics start render
+		SDL_CondBroadcast (ode_cond);
+
+		//one with ode
+		SDL_mutexV(ode_mutex);
 		
 
 		simtime += stepsize_ms;

@@ -19,10 +19,11 @@ struct data_index {
 //important system configuration variables
 struct internal_struct {
 	int verbosity;
-	bool multithread;
 
-	int graphics_sleep; //for multithread
-	int events_sleep; //for multithread
+	//for multithreading
+	bool multithread;
+	bool limit_fps;
+	int events_sleep;
 
 	//physics
 	dReal stepsize;
@@ -51,7 +52,7 @@ struct internal_struct {
 struct data_index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
 	{"multithread",		'b',1, offsetof(struct internal_struct, multithread)},
-	{"graphics_sleep",	'i',1, offsetof(struct internal_struct, graphics_sleep)},
+	{"limit_fps",		'b',1, offsetof(struct internal_struct, limit_fps)},
 	{"events_sleep",	'i',1, offsetof(struct internal_struct, events_sleep)},
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
 	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},

@@ -110,9 +110,9 @@ void graphics_step (Uint32 step)
 		//if in a thread, make sure sdl request doesn't collide with other thread
 		if (internal.multithread)
 		{
-			SDL_mutexP(sdl_lock);
+			SDL_mutexP(sdl_mutex);
 			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
-			SDL_mutexV(sdl_lock);
+			SDL_mutexV(sdl_mutex);
 		}
 		else
 			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
@@ -197,21 +197,25 @@ int graphics_loop ()
 
 	while (runlevel == running)
 	{
+		//make sure only render frame after it's been simulated
+		//quckly lock mutex in order to listen to physics broadcasts
+		if (internal.limit_fps)
+		{
+			SDL_mutexP(ode_mutex);
+			SDL_CondWaitTimeout (ode_cond, ode_mutex, 500); //if no signal in half a second, stop waiting
+			SDL_mutexV(ode_mutex);
+		}
+
 		time = SDL_GetTicks();
 
-		//SDL_SemWait(ode_lock); //make sure physics is completely simulated before rendering
 		graphics_step(time-time_old);
-		//SDL_SemPost(ode_lock);
 
 		time_old = time;
 
-		if (internal.graphics_sleep)
-			SDL_Delay (internal.graphics_sleep);
-
 		//in case event thread can't pump SDL events (limit of some OSes)
-		SDL_mutexP(sdl_lock);
+		SDL_mutexP(sdl_mutex);
 		SDL_PumpEvents();
-		SDL_mutexV(sdl_lock);
+		SDL_mutexV(sdl_mutex);
 	}
 
 	return 0;

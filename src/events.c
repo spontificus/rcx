@@ -51,7 +51,7 @@ void event_step(Uint32 step)
 
 	//get SDL events
 	if (internal.multithread) //make sure not colliding if threading
-		SDL_mutexP(sdl_lock);
+		SDL_mutexP(sdl_mutex);
 
 	while (SDL_PollEvent (&event))
 	{
@@ -215,7 +215,7 @@ void event_step(Uint32 step)
 
 	//if we locked, unlock
 	if (internal.multithread)
-		SDL_mutexV(sdl_lock);
+		SDL_mutexV(sdl_mutex);
 }
 
 int events_loop (void *d)
@@ -227,12 +227,12 @@ int events_loop (void *d)
 	while (runlevel == running)
 	{
 		//wait for permission for ode (in case some event causes ode manipulation)
-		SDL_mutexP(ode_lock);
+		SDL_mutexP(ode_mutex);
 
 		time = SDL_GetTicks();
 		event_step(time-time_old);
 
-		SDL_mutexV(ode_lock);
+		SDL_mutexV(ode_mutex);
 
 		time_old = time;
 		

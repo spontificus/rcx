@@ -46,8 +46,9 @@ unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
 
 //when multithreading, use mutexes
-SDL_mutex *ode_lock = NULL; //only one thread for ode
-SDL_mutex *sdl_lock = NULL; //only one thread for sdl
+SDL_mutex *ode_mutex = NULL; //only one thread for ode
+SDL_cond  *ode_cond  = NULL; //physics thread can signal
+SDL_mutex *sdl_mutex = NULL; //only one thread for sdl
 //
 
 
@@ -89,9 +90,10 @@ void start_race(void)
 	if (internal.multithread)
 	{
 		printlog (0, "\n-> Starting Race (multithreaded)\n");
-		ode_lock = SDL_CreateMutex(); //create mutex for ode locking
-		sdl_lock = SDL_CreateMutex(); //only use sdl in 1 thread
-		runlevel = running;
+		ode_mutex = SDL_CreateMutex(); //create mutex for ode locking
+		ode_cond  = SDL_CreateCond();  //create
+		sdl_mutex = SDL_CreateMutex(); //only use sdl in 1 thread
+		runlevel  = running;
 
 		//launch threads
 		SDL_Thread *physics = SDL_CreateThread (physics_loop, NULL);
@@ -102,8 +104,9 @@ void start_race(void)
 		SDL_WaitThread (events, NULL);
 		SDL_WaitThread (physics, NULL);
 
-		SDL_DestroyMutex(ode_lock);
-		SDL_DestroyMutex(sdl_lock);
+		SDL_DestroyMutex(ode_mutex);
+		SDL_DestroyCond(ode_cond);
+		SDL_DestroyMutex(sdl_mutex);
 		//done!
 
 		simtime = SDL_GetTicks(); //set time (for info output)
