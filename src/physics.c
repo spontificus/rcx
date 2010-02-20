@@ -389,7 +389,7 @@ int physics_loop (void *d)
 
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
 	Uint32 realtime; //real time (with possible delay since last update)
-	Uint32 stepsize_ms = internal.stepsize*1000;
+	Uint32 stepsize_ms = internal.stepsize*1000+0.0001;
 
 	while (runlevel == running)
 	{
