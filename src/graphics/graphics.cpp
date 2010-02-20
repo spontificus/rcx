@@ -2,12 +2,18 @@
 //
 //See main.c for licensing
 
+#include <SDL/SDL.h>
+#include <GL/glu.h>
+
+#include "../shared/shared.hpp"
+#include "../shared/printlog.hpp"
+
 //Just in case it's not defined...
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
 #endif
 
-#include "graphics/camera.c"
+#include "../shared/camera.hpp"
 
 SDL_Surface *screen;
 Uint32 flags = SDL_OPENGL | SDL_RESIZABLE;
@@ -20,8 +26,17 @@ bool graphics_event_resize = false;
 int graphics_event_resize_w, graphics_event_resize_h;
 //
 
-void graphics_resize (int w, int h)
+//mutex
+extern SDL_mutex *sdl_mutex;
+extern SDL_cond  *ode_cond;
+extern SDL_mutex *ode_mutex;
+
+void graphics_resize (int new_w, int new_h)
 {
+	screen = SDL_SetVideoMode (new_w, new_h, 0, flags);
+	int w=screen->w;
+	int h=screen->h;
+
 	glViewport (0,0,w,h);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity();

@@ -3,12 +3,22 @@
 //See main.c about licensing
 //
 
-dWorldID world;
-dSpaceID space;
-dJointGroupID contactgroup;//TODO: move to shared.h data? good for event thread?
+#include <SDL/SDL_timer.h>
+#include <SDL/SDL_mutex.h>
 
-#include "physics/camera.c"
-#include "physics/drag.c"
+#include "../shared/shared.hpp"
+#include "../shared/printlog.hpp"
+#include "physics.hpp"
+#include "drag.hpp"
+
+//external variables
+
+//mutex
+extern SDL_mutex *sdl_mutex;
+extern SDL_cond  *ode_cond;
+extern SDL_mutex *ode_mutex;
+
+extern unsigned int stepsize_warnings;
 
 int physics_init(void)
 {
@@ -177,12 +187,12 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 	//with physical contact or not, might respond to collision events
 	if (geom1->collide)
 	{
-		geom2->event = true;
+		geom2->colliding = true;
 	}
 
 	if (geom2->collide)
 	{
-		geom1->event = true;
+		geom1->colliding = true;
 	}
 }
 
@@ -202,16 +212,16 @@ void car_physics_step(void)
 		//first flipover detection (+ antigrav forces)
 
 		//both sensors are triggered, not flipping, only antigrav
-		if (carp->sensor1->event && carp->sensor2->event)
+		if (carp->sensor1->colliding && carp->sensor2->colliding)
 			antigrav = true;
 		//only one sensor, flipping+antigrav
-		else if (carp->sensor1->event)
+		else if (carp->sensor1->colliding)
 		{
 			antigrav = true;
 			carp->dir = 1.0;
 		}
 		//same
-		else if (carp->sensor2->event)
+		else if (carp->sensor2->colliding)
 		{
 			antigrav = true;
 			carp->dir = -1.0;
@@ -221,8 +231,8 @@ void car_physics_step(void)
 			antigrav = false;
 
 		//sensors have been read, reset them
-		carp->sensor1->event = false;
-		carp->sensor2->event = false;
+		carp->sensor1->colliding = false;
+		carp->sensor2->colliding = false;
 
 		if (antigrav) //TODO
 		{
@@ -266,7 +276,8 @@ void car_physics_step(void)
 					rotation = -rotation;
 
 				//in case wheel is already rotating so fast we get simulation errors, no simulation
-				if (rotation > internal.max_wheel_rotation)
+				//only when wheel is in air
+				if ( !(carp->wheel_geom_data[i]->colliding) && rotation > internal.max_wheel_rotation)
 					torque[i] = 0.0;
 				else
 				{
@@ -274,6 +285,9 @@ void car_physics_step(void)
 					//motor torque is geared by stepless gearbox
 					torque[i]=carp->max_torque/(1+rotation*carp->motor_tweak);
 				}
+
+				//since we are using the wheel collision detection, reset it each time
+				carp->wheel_geom_data[i]->colliding = false; //reset
 			}
 
 			dJointAddHinge2Torques (carp->joint[0],0,torque[0]*carp->throttle*carp->dir*carp->fmotor);
@@ -365,17 +379,6 @@ void physics_step(void)
 	body_physics_step(); //drag (air/liquid "friction")
 
 	dSpaceCollide (space, 0, &CollisionCallback);
-
-	//se if any object "would like" to collide its components
-	object_struct *obj = object_head;
-	while (obj != NULL)
-	{
-		if (obj->collide_space)
-		{
-			dSpaceCollide (obj->space, 0, &CollisionCallback);
-		}
-		obj = obj->next;
-	}
 
 	dWorldQuickStep (world, internal.stepsize);
 	dJointGroupEmpty (contactgroup);

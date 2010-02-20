@@ -1,5 +1,5 @@
 /* RollCageX (fanmade clone of the original RollCage games)
- * Copyright (C) 2009  "Soul Slinger" (on gorcx.net forum)
+ * Copyright (C) 2009-2010  "Slinger" (on gorcx.net forum)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,35 +15,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
 
-
-#define VERSION "0.05" //supports alphanumeric versioning
-
 //Required stuff:
 #include <SDL.h>
-#include <SDL_opengl.h>
-#include <ode/ode.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <unistd.h>
 
 //local stuff:
-#include "shared.h" //custom data definitions
+#include "shared/info.hpp"
+#include "shared/shared.hpp"
+#include "events/events.hpp"
+#include "graphics/graphics.hpp"
+#include "physics/physics.hpp"
+#include "loaders/loaders.hpp"
 
-//
-car_struct *venom;
-script_struct *box; //keep track of our loaded debug box
-script_struct *sphere;
-car_struct *focused_car = NULL;
 
-void printlog (int, const char*, ...); //prototype (for included functions
+//TMP: used by events for keeping track of objects spawning
+extern script_struct *box; //keep track of our loaded debug box
+extern script_struct *sphere;
+
 
 //keep track of warnings
 unsigned int stepsize_warnings = 0;
 unsigned int threshold_warnings = 0;
+
+//prototype for some variables
+extern Uint32 frame_count; //from graphics
 
 //when multithreading, use mutexes
 SDL_mutex *ode_mutex = NULL; //only one thread for ode
@@ -51,24 +45,6 @@ SDL_cond  *ode_cond  = NULL; //physics thread can signal
 SDL_mutex *sdl_mutex = NULL; //only one thread for sdl
 //
 
-
-#include "graphics.c"
-#include "physics.c"
-#include "shared.c" //functions for handling custom data
-#include "loaders.c" //loading functions for confs, tracks, cars, etc...
-#include "events.c"  //responds to events both OS- and game simulation related
-
-//print log message - if it's below or equal to the current verbosity level
-void printlog (int level, const char *text, ...)
-{
-	if (level <= internal.verbosity)
-	{
-		va_list list;
-		va_start (list, text);
-		vprintf (text, list);
-		va_end (list);
-	}
-}
 
 //if something goes wrong (after initing physics and graphics)
 void emergency_quit (void)
@@ -175,32 +151,8 @@ void start_race(void)
 int main (int argc, char *argv[])
 {
 	//issue
-	printf("\n    -=[ Hello, and welcome to RollCageX version %s ]=-\n\n", VERSION);
-	printf(" Copyright (C) 2009, This program comes with ABSOLUTELY NO WARRANTY; see\n \"license.txt\" for details\n\n");
-	printf(" This is free software, and you are welcome to redistribute it and/or modify\n it under the GNU General Public License as published by the Free Software\n Foundation, version 3 or (at your option) later\n\n");
-
-	printf("= Credits (nicknames refers to usernames on the gorcx.net forum):\n");
-	printf("    \"MaAkaJon\"\t\tproject creator\n");
-	printf("    \"Soul Slinger\"\tcoder (created this and the earlier versions)\n");
-	printf("    All of you on the planetrollcage.com and gorcx.net forums!\n\n");
-
-	printf("* Projects that made RCX possible:\n");
-	printf("    GNU\t\t\t\tdefines computer freedom itself... :-)\n");
-	printf("    Simple DirectMedia Layer\twindow handling, input/outputs\n");
-	printf("    Open Dynamics Engine\trigid body dynamics\n");
-	printf("= End of credits\n\n");
-
-	printf(" Default controls (can be changed in profile):\n");
-	printf("	>	Arrow keys:	Steering and throttling\n");
-	printf("	>	Spacebar:	Drifting break\n");
-	printf("	>	Left Alt:	Soft breaks\n");
-	printf("	>	Q and E:	change camera distance along Z axis\n");
-	printf("	>	A and D:	change camera distance along X axis\n");
-	printf("	>	W and S:	change camera distance along Y axis\n");
-	printf("	>	F1 to F4:	change camera settings\n");
-	printf("	>	F5:		spawn box\n");
-	printf("	>	F6:		spawn box (10s above ground)\n\n");
-	//end of issue
+	printf("\n     -=[ Hello, and welcome to RollCageX version %s ]=-\n\n%s\n", VERSION, ISSUE);
+	//end
 
 	if (argc != 1)
 		printf("(Passing arguments - not supported)\n\n");
@@ -233,7 +185,7 @@ int main (int argc, char *argv[])
 	if (!prof)
 		return -1;
 
-	venom = load_car((char *)"data/teams/Nemesis/cars/Venom");
+	car_struct *venom = load_car((char *)"data/teams/Nemesis/cars/Venom");
 	if (!venom)
 		emergency_quit();
 	prof->car = venom;
@@ -256,7 +208,6 @@ int main (int argc, char *argv[])
 		emergency_quit();
 
 	spawn_car (venom, track.start[0], track.start[1], track.start[2]);
-	focused_car = venom;
 
 	//start race
 	start_race();

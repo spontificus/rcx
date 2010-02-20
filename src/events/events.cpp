@@ -4,8 +4,28 @@
 //
 //See main.c for licensing
 
+#include "../shared/shared.hpp" //shared (global defined) data
+#include <SDL/SDL.h>
+#include "../graphics/graphics.hpp" //for window resizing events
+#include "../loaders/loaders.hpp" //spawn/destroy events
+#include "../shared/runlevel.hpp"
+#include "../shared/printlog.hpp"
+
 SDL_Event event;
 Uint8 *keys;
+
+
+//TMP: keep track of demo spawn stuff
+script_struct *box = NULL;
+script_struct *sphere = NULL;
+
+//prototypes for graphics control
+extern bool graphics_event_resize;
+extern int graphics_event_resize_w, graphics_event_resize_h;
+
+//mutex
+extern SDL_mutex *sdl_mutex;
+extern SDL_mutex *ode_mutex;
 
 void event_step(Uint32 step)
 {
@@ -15,14 +35,14 @@ void event_step(Uint32 step)
 	{
 		if (geom->flipper_geom)
 		{
-			if (geom->event)
+			if (geom->colliding)
 			{
 				const dReal *pos;
 				pos = dGeomGetPosition(geom->flipper_geom);
 				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
 						pos[2]+step*0.02);
 				if (++geom->flipper_counter > 10)
-					geom->event=false;
+					geom->colliding=false;
 			}
 			else if (geom->flipper_counter)
 			{

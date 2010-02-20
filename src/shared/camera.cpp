@@ -1,3 +1,9 @@
+#include "shared.hpp"
+
+camera_struct camera = {NULL, NULL, //settings, car
+		       {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, //pos, vel, up
+			0,0,false,false}; //timer, scale, reverse, air
+
 void set_camera_settings (camera_settings *settings)
 {
 	if (settings)

@@ -1,3 +1,5 @@
+#include <GL/glu.h>
+#include "../shared/camera.hpp"
 //set camera view before rendering
 void camera_graphics_step()
 {
