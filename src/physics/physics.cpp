@@ -15,8 +15,9 @@
 
 //mutex
 extern SDL_mutex *sdl_mutex;
-extern SDL_cond  *ode_cond;
 extern SDL_mutex *ode_mutex;
+extern SDL_mutex *sync_mutex;
+extern SDL_cond  *sync_cond;
 
 extern unsigned int stepsize_warnings;
 
@@ -400,12 +401,17 @@ int physics_loop (void *d)
 		SDL_mutexP(ode_mutex);
 		physics_step();
 
-		//broadcast to let graphics start render
-		SDL_CondBroadcast (ode_cond);
-
 		//one with ode
 		SDL_mutexV(ode_mutex);
 		
+
+		//broadcast to wake up sleeping threads
+		if (internal.sync_events || internal.sync_graphics)
+		{
+			SDL_mutexP(sync_mutex);
+			SDL_CondBroadcast (sync_cond);
+			SDL_mutexV(sync_mutex);
+		}
 
 		simtime += stepsize_ms;
 		realtime = SDL_GetTicks();

@@ -28,8 +28,9 @@ int graphics_event_resize_w, graphics_event_resize_h;
 
 //mutex
 extern SDL_mutex *sdl_mutex;
-extern SDL_cond  *ode_cond;
 extern SDL_mutex *ode_mutex;
+extern SDL_mutex *sync_mutex;
+extern SDL_cond  *sync_cond;
 
 void graphics_resize (int new_w, int new_h)
 {
@@ -214,11 +215,11 @@ int graphics_loop ()
 	{
 		//make sure only render frame after it's been simulated
 		//quckly lock mutex in order to listen to physics broadcasts
-		if (internal.limit_fps)
+		if (internal.sync_graphics)
 		{
-			SDL_mutexP(ode_mutex);
-			SDL_CondWaitTimeout (ode_cond, ode_mutex, 500); //if no signal in half a second, stop waiting
-			SDL_mutexV(ode_mutex);
+			SDL_mutexP(sync_mutex);
+			SDL_CondWaitTimeout (sync_cond, sync_mutex, 500); //if no signal in half a second, stop waiting
+			SDL_mutexV(sync_mutex);
 		}
 
 		time = SDL_GetTicks();

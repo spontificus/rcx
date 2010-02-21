@@ -10,8 +10,7 @@ extern struct internal_struct {
 
 	//for multithreading
 	bool multithread;
-	bool limit_fps;
-	int events_sleep;
+	bool sync_graphics, sync_events;
 
 	//physics
 	dReal stepsize;
@@ -40,8 +39,8 @@ extern struct internal_struct {
 const struct data_index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
 	{"multithread",		'b',1, offsetof(struct internal_struct, multithread)},
-	{"limit_fps",		'b',1, offsetof(struct internal_struct, limit_fps)},
-	{"events_sleep",	'i',1, offsetof(struct internal_struct, events_sleep)},
+	{"sync_graphics",	'b',1, offsetof(struct internal_struct, sync_graphics)},
+	{"sync_events",		'b',1, offsetof(struct internal_struct, sync_events)},
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
 	{"iterations",		'i',1, offsetof(struct internal_struct, iterations)},
 	{"contact_points",	'i',1, offsetof(struct internal_struct, contact_points)},

@@ -26,6 +26,8 @@ extern int graphics_event_resize_w, graphics_event_resize_h;
 //mutex
 extern SDL_mutex *sdl_mutex;
 extern SDL_mutex *ode_mutex;
+extern SDL_mutex *sync_mutex;
+extern SDL_cond  *sync_cond;
 
 void event_step(Uint32 step)
 {
@@ -246,6 +248,14 @@ int events_loop (void *d)
 	time_old = SDL_GetTicks();
 	while (runlevel == running)
 	{
+		//if syncing, sleep until physics signals
+		if (internal.sync_events)
+		{
+			SDL_mutexP(sync_mutex);
+			SDL_CondWaitTimeout (sync_cond, sync_mutex, 500); //if no signal in half a second, stop waiting
+			SDL_mutexV(sync_mutex);
+		}
+
 		//wait for permission for ode (in case some event causes ode manipulation)
 		SDL_mutexP(ode_mutex);
 
@@ -255,9 +265,6 @@ int events_loop (void *d)
 		SDL_mutexV(ode_mutex);
 
 		time_old = time;
-		
-		if (internal.events_sleep)
-			SDL_Delay (internal.events_sleep);
 	}
 	return 0;
 }

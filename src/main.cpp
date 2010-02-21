@@ -41,8 +41,10 @@ extern Uint32 frame_count; //from graphics
 
 //when multithreading, use mutexes
 SDL_mutex *ode_mutex = NULL; //only one thread for ode
-SDL_cond  *ode_cond  = NULL; //physics thread can signal
 SDL_mutex *sdl_mutex = NULL; //only one thread for sdl
+
+SDL_mutex *sync_mutex = NULL; //for using sync_cond
+SDL_cond  *sync_cond  = NULL; //threads can sleep until synced
 //
 
 
@@ -66,9 +68,13 @@ void start_race(void)
 	if (internal.multithread)
 	{
 		printlog (0, "\n-> Starting Race (multithreaded)\n");
+
 		ode_mutex = SDL_CreateMutex(); //create mutex for ode locking
-		ode_cond  = SDL_CreateCond();  //create
 		sdl_mutex = SDL_CreateMutex(); //only use sdl in 1 thread
+
+		sync_mutex = SDL_CreateMutex();
+		sync_cond = SDL_CreateCond();
+
 		runlevel  = running;
 
 		//launch threads
@@ -80,9 +86,11 @@ void start_race(void)
 		SDL_WaitThread (events, NULL);
 		SDL_WaitThread (physics, NULL);
 
+		//cleanup
 		SDL_DestroyMutex(ode_mutex);
-		SDL_DestroyCond(ode_cond);
 		SDL_DestroyMutex(sdl_mutex);
+		SDL_DestroyMutex(sync_mutex);
+		SDL_DestroyCond(sync_cond);
 		//done!
 
 		simtime = SDL_GetTicks(); //set time (for info output)
