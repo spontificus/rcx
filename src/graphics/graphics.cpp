@@ -123,15 +123,10 @@ void graphics_step (Uint32 step)
 	//see if we need to resize
 	if (graphics_event_resize)
 	{
-		//if in a thread, make sure sdl request doesn't collide with other thread
-		if (internal.multithread)
-		{
-			SDL_mutexP(sdl_mutex);
-			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
-			SDL_mutexV(sdl_mutex);
-		}
-		else
-			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
+		//make sure sdl request doesn't collide with other thread
+		SDL_mutexP(sdl_mutex);
+		screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
+		SDL_mutexV(sdl_mutex);
 
 		if (screen)
 		{

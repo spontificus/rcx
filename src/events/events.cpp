@@ -72,8 +72,7 @@ void event_step(Uint32 step)
 	}
 
 	//get SDL events
-	if (internal.multithread) //make sure not colliding if threading
-		SDL_mutexP(sdl_mutex);
+	SDL_mutexP(sdl_mutex); //make sure not colliding with other threads
 
 	while (SDL_PollEvent (&event))
 	{
@@ -235,9 +234,8 @@ void event_step(Uint32 step)
 		}
 	}
 
-	//if we locked, unlock
-	if (internal.multithread)
-		SDL_mutexV(sdl_mutex);
+	//unlock sdl access
+	SDL_mutexV(sdl_mutex);
 }
 
 int events_loop (void *d)

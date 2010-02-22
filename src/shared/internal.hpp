@@ -9,7 +9,6 @@ extern struct internal_struct {
 	int verbosity;
 
 	//for multithreading
-	bool multithread;
 	bool sync_graphics, sync_events;
 
 	//physics
@@ -28,7 +27,6 @@ extern struct internal_struct {
 
 
 	//graphics
-	int threshold;
 	int res[2]; //resolution
 	int dist;
 	bool force;
@@ -38,7 +36,6 @@ extern struct internal_struct {
 
 const struct data_index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
-	{"multithread",		'b',1, offsetof(struct internal_struct, multithread)},
 	{"sync_graphics",	'b',1, offsetof(struct internal_struct, sync_graphics)},
 	{"sync_events",		'b',1, offsetof(struct internal_struct, sync_events)},
 	{"stepsize",		'f',1, offsetof(struct internal_struct, stepsize)},
@@ -59,7 +56,6 @@ const struct data_index internal_index[] = {
 	{"auto_disable_time",	'f',1, offsetof(struct internal_struct, dis_time)},
 	{"auto_disable_steps",	'i',1, offsetof(struct internal_struct, dis_steps)},
 	//graphics
-	{"graphics_threshold",	'i',1, offsetof(struct internal_struct, threshold)},
 	{"resolution",		'i',2, offsetof(struct internal_struct, res)},
 	{"eye_distance",		'i',1, offsetof(struct internal_struct, dist)},
 	{"force_angle",		'b',1, offsetof(struct internal_struct, force)},

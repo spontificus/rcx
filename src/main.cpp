@@ -34,7 +34,6 @@ extern script_struct *sphere;
 
 //keep track of warnings
 unsigned int stepsize_warnings = 0;
-unsigned int threshold_warnings = 0;
 
 //prototype for some variables
 extern Uint32 frame_count; //from graphics
@@ -65,73 +64,32 @@ void start_race(void)
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
 	start_time = simtime; //how long it took for race to start
 
-	//singlethread or multi?
-	if (internal.multithread)
-	{
-		printlog (0, "\n-> Starting Race (multithreaded)\n");
+	//start
+	printlog (0, "\n-> Starting Race (multithreaded)\n");
 
-		ode_mutex = SDL_CreateMutex(); //create mutex for ode locking
-		sdl_mutex = SDL_CreateMutex(); //only use sdl in 1 thread
+	ode_mutex = SDL_CreateMutex(); //create mutex for ode locking
+	sdl_mutex = SDL_CreateMutex(); //only use sdl in 1 thread
 
-		sync_mutex = SDL_CreateMutex();
-		sync_cond = SDL_CreateCond();
+	sync_mutex = SDL_CreateMutex();
+	sync_cond = SDL_CreateCond();
 
-		runlevel  = running;
+	runlevel  = running;
 
-		//launch threads
-		SDL_Thread *physics = SDL_CreateThread (physics_loop, NULL);
-		SDL_Thread *events = SDL_CreateThread (events_loop, NULL);
-		graphics_loop(); //we already got opengl context in main thread
+	//launch threads
+	SDL_Thread *physics = SDL_CreateThread (physics_loop, NULL);
+	SDL_Thread *events = SDL_CreateThread (events_loop, NULL);
+	graphics_loop(); //we already got opengl context in main thread
 
-		//wait for threads
-		SDL_WaitThread (events, NULL);
-		SDL_WaitThread (physics, NULL);
+	//wait for threads
+	SDL_WaitThread (events, NULL);
+	SDL_WaitThread (physics, NULL);
 
-		//cleanup
-		SDL_DestroyMutex(ode_mutex);
-		SDL_DestroyMutex(sdl_mutex);
-		SDL_DestroyMutex(sync_mutex);
-		SDL_DestroyCond(sync_cond);
-		//done!
-	}
-	else
-	{
-		Uint32 realtime; //real time (with possible delay since last update)
-		Uint32 stepsize_ms = internal.stepsize*1000+0.0001; //calculate stepsize from s to ms (append  0.0001 for correct conversion)
-
-		printlog (0, "\n-> Starting Race (single thread)\n");
-		runlevel = running;
-		while (runlevel == running)
-		{
-			event_step(stepsize_ms); //always check for events
-
-			physics_step();
-
-			simtime += stepsize_ms;
-
-			//if realtime is larger than simtime (and graphics threshold)
-			if (SDL_GetTicks()+internal.threshold > simtime)
-			{
-				printlog(2, "\nWarning: simtime less than realtime (to low stepsize), dropping frame..\n\n");
-				++stepsize_warnings;
-			}
-			else //we got time left to draw frame on
-			{
-				graphics_step(stepsize_ms);
-
-				realtime = SDL_GetTicks();
-				if (simtime > realtime)
-				{
-					SDL_Delay (simtime - realtime);
-				}
-				else
-				{
-					printlog(2, "\nWarning: (not sleeping, realtime became to high (to low treshold?))\n");
-					++threshold_warnings;
-				}
-			}
-		}
-	}
+	//cleanup
+	SDL_DestroyMutex(ode_mutex);
+	SDL_DestroyMutex(sdl_mutex);
+	SDL_DestroyMutex(sync_mutex);
+	SDL_DestroyCond(sync_cond);
+	//done!
 }
 
 void print_info()
@@ -143,19 +101,9 @@ void print_info()
 	printlog(0, "(does not interest most people)\n");
 	printlog(0, "Startup time (ms):			%i\n", start_time);
 	printlog(0, "Race time (ms):				%i\n", uptime);
+	printlog(0, "Threading mode:				%i threads\n", 3);
 	printlog(0, "Avarage FPS:				%i\n", (1000*frame_count)/uptime);
-	printlog(0, "Threading mode:				");
-	if (internal.multithread)
-	{
-		printlog(0, "Multithreaded (3 threads)\n");
-		printlog(0, "Stepsize-too-low (slowdown) warnings:	%i\n", stepsize_warnings);
-	}
-	else
-	{
-		printlog(0, "Singlethreaded (1 thread)\n");
-		printlog(0, "Graphics-threshold-too-low warnings:	%i\n", threshold_warnings);
-		printlog(0, "Stepsize-too-low (framedrop) warnings:	%i\n", stepsize_warnings);
-	}
+	printlog(0, "Stepsize-too-low (slowdown) warnings:	%i\n", stepsize_warnings);
 }
 
 //simple demo:
