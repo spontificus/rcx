@@ -215,7 +215,7 @@ int graphics_loop ()
 	{
 		//make sure only render frame after it's been simulated
 		//quckly lock mutex in order to listen to physics broadcasts
-		if (internal.multithread&&internal.sync_graphics)
+		if (internal.sync_graphics)
 		{
 			SDL_mutexP(sync_mutex);
 			SDL_CondWaitTimeout (sync_cond, sync_mutex, 500); //if no signal in half a second, stop waiting

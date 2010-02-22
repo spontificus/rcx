@@ -249,7 +249,7 @@ int events_loop (void *d)
 	while (runlevel == running)
 	{
 		//if syncing, sleep until physics signals
-		if (internal.multithread&&internal.sync_events)
+		if (internal.sync_events)
 		{
 			SDL_mutexP(sync_mutex);
 			SDL_CondWaitTimeout (sync_cond, sync_mutex, 500); //if no signal in half a second, stop waiting

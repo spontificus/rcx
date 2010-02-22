@@ -59,10 +59,11 @@ void emergency_quit (void)
 	exit (-1);
 }
 
+Uint32 start_time = 0;
 void start_race(void)
 {
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
-	Uint32 start_time = simtime; //how long it took for race to start
+	start_time = simtime; //how long it took for race to start
 
 	//singlethread or multi?
 	if (internal.multithread)
@@ -92,8 +93,6 @@ void start_race(void)
 		SDL_DestroyMutex(sync_mutex);
 		SDL_DestroyCond(sync_cond);
 		//done!
-
-		simtime = SDL_GetTicks(); //set time (for info output)
 	}
 	else
 	{
@@ -133,14 +132,18 @@ void start_race(void)
 			}
 		}
 	}
+}
 
-	simtime -= start_time;
+void print_info()
+{
+	Uint32 uptime = SDL_GetTicks();
+	uptime -= start_time;
 	printlog(0, "-> Race done!\n");
 	printlog(0, "\n<-- Some basic info: -->\n");
 	printlog(0, "(does not interest most people)\n");
 	printlog(0, "Startup time (ms):			%i\n", start_time);
-	printlog(0, "Race time (ms):				%i\n", simtime);
-	printlog(0, "Avarage FPS:				%i\n", (1000*frame_count)/simtime);
+	printlog(0, "Race time (ms):				%i\n", uptime);
+	printlog(0, "Avarage FPS:				%i\n", (1000*frame_count)/uptime);
 	printlog(0, "Threading mode:				");
 	if (internal.multithread)
 	{
@@ -229,6 +232,9 @@ int main (int argc, char *argv[])
 	//menu done, quit selected, ending graphics and terminating program
 	graphics_quit();
 	
+	//some basic info
+	print_info();
+
 	printlog(0, "\nBye!\n\n");
 	return 0;
 }

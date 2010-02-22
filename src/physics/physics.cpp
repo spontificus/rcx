@@ -406,7 +406,7 @@ int physics_loop (void *d)
 		
 
 		//broadcast to wake up sleeping threads
-		if (internal.multithread&& (internal.sync_events || internal.sync_graphics))
+		if (internal.sync_events || internal.sync_graphics)
 		{
 			SDL_mutexP(sync_mutex);
 			SDL_CondBroadcast (sync_cond);
