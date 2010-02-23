@@ -123,6 +123,9 @@ const struct data_index car_index[] = {
 	{"jx",	'f',	1,	offsetof(struct car_struct, jx)}, //joint x position
 	{"",0,0}};//end
 
+car_struct *load_car(char *);
+void spawn_car(car_struct *target, dReal x, dReal y, dReal z);
+void remove_car (car_struct* target);
 car_struct *allocate_car(void);
 void free_car (car_struct *target);
 extern car_struct *venom;

@@ -38,4 +38,5 @@ object_struct *allocate_object (bool adspace, bool adjointgroup);
 
 script_struct *load_object(char *path);
 void spawn_object(script_struct *script, dReal x, dReal y, dReal z);
+void remove_object(object_struct *target);
 #endif

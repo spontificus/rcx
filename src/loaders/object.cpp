@@ -552,3 +552,41 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		printlog(0, "\nERROR: trying to spawn unidentified object?!\n");
 
 }
+
+//removes an object
+void remove_object(object_struct *target)
+{
+	//lets just hope the given pointer is ok...
+	printlog(1, " > remove object");
+
+	if (target->space)
+	{
+		printlog(1, " (space)");
+		printlog(1, " TODO: loop through space...");
+		dSpaceDestroy (target->space);
+	}
+
+	if (target->jointgroup)
+	{
+		printlog(1, " (joingroup)");
+		dJointGroupDestroy (target->jointgroup);
+	}
+
+	/*
+	if (target->cmp_count != 0)
+	{
+		printf("ERROR: got components, search&remove)\n");
+		component *cmp = component_head;
+		//loop through all components, see if any match
+		while (cmp)
+		{
+			//only free, if geoms, they are destroyed when destroying space (above)
+			if (cmp->object_parent == target)
+				free_component (cmp);
+			cmp=cmp->next;
+		}
+	}*/
+
+	free_object (target);
+	printlog(1, "\n");
+}
