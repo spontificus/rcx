@@ -12,9 +12,9 @@
 int load_conf (char *name, char *memory, const struct data_index index[])
 {
 	printlog(1, "-> loading conf file: %s\n", name);
-	Text_File file(name);
 
-	if (!file.open)
+	Text_File file;
+	if (!file.Open(name))
 		return -1;
 
 

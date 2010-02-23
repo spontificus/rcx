@@ -64,9 +64,9 @@ profile *load_profile (char *path)
 	strcat (list,"/keys.lst");
 
 	printlog(1, "-> loading key list: %s\n", list);
-	Text_File file(list);
+	Text_File file;
 
-	if (!file.open)
+	if (!file.Open(list))
 		return NULL;
 
 	while (file.Read_Line())

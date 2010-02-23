@@ -11,13 +11,10 @@
 //NOTE: it might seem strange to use C text processing in C++ code,
 //but it is simply more suitable in this case
 
-Text_File::Text_File (const char *name)
+Text_File::Text_File ()
 {
 	open = false; //default until attempting opening
 	word_count = 0; //no words read yet
-
-	//open
-	Open (name);
 
 	//allocate buffer anyway (even if not open), if reopening
 	buffer_size = INITIAL_BUFFER_SIZE;

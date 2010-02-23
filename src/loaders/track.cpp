@@ -163,13 +163,13 @@ int load_track (char *path)
 	strcat (list,"/objects.lst");
 
 	printlog(1, "-> Loading track object list: %s\n", path);
-	Text_File file(list);
+	Text_File file;
 
 	//each object is loaded/selected at a time (NULL if none loaded so far)
 	script_struct *obj = NULL;
 
 	//don't fail if can't find file, maybe there is no need for it anyway
-	if (file.open)
+	if (file.Open(list))
 	{
 		while (file.Read_Line())
 		{

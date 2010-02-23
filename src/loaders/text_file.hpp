@@ -15,13 +15,12 @@ class Text_File
 		bool open;
 
 		//vector of strings (each string is a word)
-		//std::vector<std::string> words;
-		//how many words read from line
 		char **words;
+		//how many words read from line
 		int word_count;
 
 		//Text_File(std::string name);
-		Text_File(const char *name);
+		Text_File();
 		~Text_File();
 
 		//read the next/current line
