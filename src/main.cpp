@@ -20,31 +20,13 @@
 
 //local stuff:
 #include "shared/info.hpp"
-#include "shared/shared.hpp"
-#include "events/events.hpp"
-#include "graphics/graphics.hpp"
-#include "physics/physics.hpp"
-#include "loaders/loaders.hpp"
-
-
-//TMP: used by events for keeping track of objects spawning
-extern script_struct *box; //keep track of our loaded debug box
-extern script_struct *sphere;
-
-
-//keep track of warnings
-unsigned int stepsize_warnings = 0;
-
-//prototype for some variables
-extern Uint32 frame_count; //from graphics
-
-//when multithreading, use mutexes
-SDL_mutex *ode_mutex = NULL; //only one thread for ode
-SDL_mutex *sdl_mutex = NULL; //only one thread for sdl
-
-SDL_mutex *sync_mutex = NULL; //for using sync_cond
-SDL_cond  *sync_cond  = NULL; //threads can sleep until synced
-//
+#include "shared/internal.hpp"
+#include "shared/threads.hpp"
+#include "shared/printlog.hpp"
+#include "shared/cleanup.hpp"
+#include "shared/runlevel.hpp"
+#include "shared/profile.hpp"
+#include "shared/track.hpp"
 
 
 //if something goes wrong (after initing physics and graphics)

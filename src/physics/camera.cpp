@@ -1,5 +1,7 @@
-//#include "../shared/camera.hpp"
-#include "../shared/shared.hpp"
+#include "../shared/camera.hpp"
+#include "../shared/internal.hpp"
+#include "../shared/track.hpp"
+//#include "../shared/shared.hpp"
 //length of vector
 #define v_length(x, y, z) (dSqrt( (x)*(x) + (y)*(y) + (z)*(z) ))
 

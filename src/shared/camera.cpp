@@ -1,4 +1,4 @@
-#include "shared.hpp"
+#include "camera.hpp"
 
 camera_struct camera = {NULL, NULL, //settings, car
 		       {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}, //pos, vel, up

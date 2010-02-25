@@ -30,5 +30,6 @@ typedef struct joint_data_struct {
 extern joint_data *joint_data_head;
 joint_data *allocate_joint_data (dJointID joint, object_struct *obj, bool feedback);
 void free_joint_data (joint_data *target);
+void joint_physics_step (void);
 
 #endif

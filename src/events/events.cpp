@@ -4,12 +4,16 @@
 //
 //See main.c for licensing
 
-#include "../shared/shared.hpp" //shared (global defined) data
 #include <SDL/SDL.h>
-#include "../graphics/graphics.hpp" //for window resizing events
-#include "../loaders/loaders.hpp" //spawn/destroy events
+#include <ode/ode.h>
+#include "../shared/threads.hpp"
+#include "../shared/internal.hpp"
 #include "../shared/runlevel.hpp"
 #include "../shared/printlog.hpp"
+#include "../shared/geom.hpp"
+#include "../shared/profile.hpp"
+#include "../shared/joint.hpp"
+#include "../shared/camera.hpp"
 
 SDL_Event event;
 Uint8 *keys;
@@ -19,15 +23,6 @@ Uint8 *keys;
 script_struct *box = NULL;
 script_struct *sphere = NULL;
 
-//prototypes for graphics control
-extern bool graphics_event_resize;
-extern int graphics_event_resize_w, graphics_event_resize_h;
-
-//mutex
-extern SDL_mutex *sdl_mutex;
-extern SDL_mutex *ode_mutex;
-extern SDL_mutex *sync_mutex;
-extern SDL_cond  *sync_cond;
 
 void event_step(Uint32 step)
 {

@@ -1,5 +1,7 @@
-#include "../shared/shared.hpp"
-
+#include "../shared/body.hpp"
+#include "../shared/printlog.hpp"
+#include "../shared/track.hpp"
+#include "../shared/internal.hpp"
 
 #define v_length(x, y, z) (dSqrt( (x)*(x) + (y)*(y) + (z)*(z) ))
 //functions for body drag
@@ -129,3 +131,23 @@ void Body_Data_Angular_Drag (body_data *body)
 	//set velocity with change
 	dBodySetAngularVel(body->body_id, vel[0]*remain, vel[1]*remain, vel[2]*remain);
 }
+
+//currently just simulates air drag
+//NOTE: ode provides linear/angular dampening, but this should be more realistic
+void body_physics_step (void)
+{
+	body_data *d = body_data_head;
+
+	while (d)
+	{
+		if (d->use_advanced_linear_drag)
+			Body_Data_Advanced_Linear_Drag (d);
+		else if (d->use_linear_drag) //might have simple drag instead
+			Body_Data_Linear_Drag (d);
+		if (d->use_angular_drag)
+			Body_Data_Angular_Drag (d);
+
+		d = d->next;
+	}
+}
+

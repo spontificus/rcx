@@ -38,5 +38,13 @@ extern body_data *body_data_head;
 body_data *allocate_body_data (dBodyID body, object_struct *obj);
 void free_body_data (body_data *target);
 
+//drag
+void Body_Data_Set_Linear_Drag (body_data *body, dReal drag);
+void Body_Data_Set_Advanced_Linear_Drag (body_data *body, dReal drag_x, dReal drag_y, dReal drag_z);
+void Body_Data_Set_Angular_Drag (body_data *body, dReal drag);
+void Body_Data_Linear_Drag (body_data *body);
+void Body_Data_Advanced_Linear_Drag (body_data *body);
+void Body_Data_Angular_Drag (body_data *body);
+void body_physics_step (void);
 
 #endif

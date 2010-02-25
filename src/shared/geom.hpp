@@ -46,5 +46,6 @@ typedef struct geom_data_struct {
 extern geom_data *geom_data_head; //points at the first component in chain
 geom_data *allocate_geom_data (dGeomID geom, object_struct *obj);
 void free_geom_data(geom_data *target);
+void geom_graphics_step();
 
 #endif

@@ -12,26 +12,26 @@ rcx: builddirs $(OBJS)
 	g++ -o ../rcx.exe $(OBJS) $(ARGS) $(LIBS)
 
 
-#
 #prerequisites
-build/main.o: ./shared/info.hpp ./shared/shared.hpp ./events/events.hpp ./graphics/graphics.hpp ./physics/physics.hpp ./loaders/loaders.hpp
-build/events/events.o: events/../shared/shared.hpp events/../graphics/graphics.hpp events/../loaders/loaders.hpp events/../shared/runlevel.hpp events/../shared/printlog.hpp
+build/main.o: ./shared/info.hpp ./shared/internal.hpp ./shared/threads.hpp ./shared/printlog.hpp ./shared/cleanup.hpp ./shared/runlevel.hpp ./shared/profile.hpp ./shared/track.hpp
+build/events/events.o: events/../shared/threads.hpp events/../shared/internal.hpp events/../shared/runlevel.hpp events/../shared/printlog.hpp events/../shared/geom.hpp events/../shared/profile.hpp events/../shared/joint.hpp events/../shared/camera.hpp
 build/graphics/camera.o: graphics/../shared/camera.hpp
-build/graphics/graphics.o: graphics/../shared/shared.hpp graphics/../shared/printlog.hpp graphics/../shared/camera.hpp
-build/loaders/car.o: loaders/../shared/car.hpp loaders/../shared/printlog.hpp loaders/../shared/track.hpp loaders/../physics/drag.hpp loaders/colours.hpp loaders/debug_draw.hpp
-build/loaders/conf.o: loaders/../shared/shared.hpp loaders/loaders.hpp loaders/conf.hpp loaders/text_file.hpp loaders/../shared/printlog.hpp
+build/graphics/geom.o: graphics/../shared/geom.hpp
+build/graphics/graphics.o: graphics/../shared/internal.hpp graphics/../shared/info.hpp graphics/../shared/track.hpp graphics/../shared/runlevel.hpp graphics/../shared/threads.hpp graphics/../shared/printlog.hpp graphics/../shared/camera.hpp
+build/loaders/car.o: loaders/../shared/car.hpp loaders/../shared/printlog.hpp loaders/../shared/track.hpp loaders/../shared/body.hpp loaders/colours.hpp loaders/debug_draw.hpp
+build/loaders/conf.o: loaders/conf.hpp loaders/text_file.hpp loaders/../shared/printlog.hpp
 build/loaders/debug_draw.o: loaders/debug_draw.hpp loaders/colours.hpp loaders/../shared/printlog.hpp
-build/loaders/object.o: loaders/../shared/object.hpp loaders/../shared/printlog.hpp loaders/colours.hpp loaders/../shared/track.hpp loaders/debug_draw.hpp loaders/../shared/joint.hpp 
-loaders/../shared/geom.hpp loaders/../shared/body.hpp
-build/loaders/profile.o: loaders/../shared/shared.hpp loaders/../shared/profile.hpp loaders/../shared/printlog.hpp loaders/text_file.hpp loaders/loaders.hpp
-build/loaders/text_file.o: loaders/../shared/shared.hpp loaders/loaders.hpp loaders/text_file.hpp loaders/../shared/printlog.hpp
-build/loaders/track.o: loaders/../shared/shared.hpp loaders/../shared/track.hpp loaders/../shared/camera.hpp loaders/../shared/geom.hpp loaders/../shared/printlog.hpp 
-loaders/../shared/object.hpp loaders/colours.hpp loaders/text_file.hpp loaders/debug_draw.hpp loaders/loaders.hpp
-build/physics/camera.o: physics/../shared/camera.hpp physics/../shared/shared.hpp
-build/physics/drag.o: physics/../shared/shared.hpp
-build/physics/physics.o: physics/../shared/shared.hpp physics/../shared/printlog.hpp physics/physics.hpp physics/drag.hpp
-build/shared/body.o: shared/internal.hpp shared/body.hpp shared/printlog.hpp shared/../physics/drag.hpp
-build/shared/camera.o: shared/shared.hpp
+build/loaders/object.o: loaders/../shared/object.hpp loaders/../shared/printlog.hpp loaders/colours.hpp loaders/../shared/track.hpp loaders/debug_draw.hpp loaders/../shared/joint.hpp loaders/../shared/geom.hpp loaders/../shared/body.hpp
+build/loaders/profile.o: loaders/../shared/profile.hpp loaders/../shared/printlog.hpp loaders/text_file.hpp
+build/loaders/text_file.o: loaders/text_file.hpp loaders/../shared/printlog.hpp
+build/loaders/track.o: loaders/../shared/track.hpp loaders/../shared/camera.hpp loaders/../shared/geom.hpp loaders/../shared/printlog.hpp loaders/../shared/object.hpp loaders/colours.hpp loaders/text_file.hpp loaders/debug_draw.hpp
+build/physics/body.o: physics/../shared/body.hpp physics/../shared/printlog.hpp physics/../shared/track.hpp physics/../shared/internal.hpp
+build/physics/camera.o: physics/../shared/camera.hpp physics/../shared/internal.hpp physics/../shared/track.hpp
+build/physics/car.o: physics/../shared/car.hpp physics/../shared/internal.hpp
+build/physics/joint.o: physics/../shared/joint.hpp physics/../shared/internal.hpp
+build/physics/physics.o: physics/../shared/threads.hpp physics/../shared/internal.hpp physics/../shared/runlevel.hpp physics/../shared/track.hpp physics/../shared/printlog.hpp physics/../shared/body.hpp physics/../shared/geom.hpp physics/../shared/camera.hpp physics/../shared/car.hpp physics/../shared/joint.hpp physics/../shared/body.hpp
+build/shared/body.o: shared/body.hpp shared/internal.hpp shared/body.hpp shared/printlog.hpp
+build/shared/camera.o: shared/camera.hpp
 build/shared/car.o: shared/car.hpp shared/printlog.hpp
 build/shared/cleanup.o: shared/cleanup.hpp shared/car.hpp shared/profile.hpp shared/geom.hpp shared/body.hpp shared/joint.hpp shared/object.hpp shared/script.hpp shared/file_3d.hpp
 build/shared/file_3d.o: shared/file_3d.hpp shared/printlog.hpp
@@ -43,6 +43,7 @@ build/shared/printlog.o: shared/internal.hpp shared/printlog.hpp
 build/shared/profile.o: shared/profile.hpp
 build/shared/runlevel.o: shared/runlevel.hpp
 build/shared/script.o: shared/script.hpp shared/printlog.hpp
+build/shared/threads.o: shared/threads.hpp
 build/shared/track.o: shared/track.hpp
 #
 

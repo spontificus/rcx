@@ -1,7 +1,7 @@
+#include "body.hpp"
 #include "internal.hpp"
 #include "body.hpp"
 #include "printlog.hpp"
-#include "../physics/drag.hpp"
 
 body_data *body_data_head = NULL;
 body_data *allocate_body_data (dBodyID body, object_struct *obj)
