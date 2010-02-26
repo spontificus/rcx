@@ -54,6 +54,9 @@ typedef struct car_struct {
 	//values for moving steering/breaking/turning between front/rear wheels
 	int steer_ratio, motor_ratio, break_ratio;
 	dReal fsteer, rsteer, fmotor, rmotor, fbreak, rbreak;
+
+	//wheel axis inertia tensor
+	dReal inertia_tensor;
 	
 	//debug sizes
 	dReal s[4],w[2],wp[2],jx;

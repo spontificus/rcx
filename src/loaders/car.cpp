@@ -37,7 +37,13 @@ car_struct *load_car (char *path)
 
 	free (conf);
 
-	//set up values for front/rear driving ratios
+
+
+	//helper datas:
+	//* inertia tensor for wheel axis (for translating motor torque to rotation speed cahnge)
+	target->inertia_tensor = (target->wheel_mass*target->w[0]*target->w[0])/2; //(m*r*r)/2
+
+	//* set up values for front/rear driving ratios
 	if (target->steer_ratio>100 || target->steer_ratio<0 )
 		printlog(0, "ERROR: front/rear steering ratio should be set between 0 and 100!\n");
 	target->fsteer = (dReal) (target->steer_ratio/100.0);
@@ -52,6 +58,9 @@ car_struct *load_car (char *path)
 		printlog(0, "ERROR: front/rear breaking ratio should be set between 0 and 100!\n");
 	target->fbreak = (dReal) (target->break_ratio/100.0);
 	target->rbreak = (dReal) (1.0-target->fbreak);
+
+
+
 
 	//graphics models
 	float w_r = target->w[0];
@@ -300,7 +309,6 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dJointSetHinge2Anchor (target->joint[1],x+target->jx,y-target->wp[1],z);
 	dJointSetHinge2Anchor (target->joint[2],x-target->jx,y-target->wp[1],z);
 	dJointSetHinge2Anchor (target->joint[3],x-target->jx,y+target->wp[1],z);
-
 }
 
 void remove_car (car_struct* target)

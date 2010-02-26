@@ -50,10 +50,8 @@ void car_physics_step(void)
 			if (carp->torque_compensator)
 			{
 				const dReal *r = dBodyGetAngularVel(carp->bodyid);
-				dBodySetAngularVel(carp->wheel_body[0], r[0], r[1], r[2]);
 				dBodySetAngularVel(carp->wheel_body[1], r[0], r[1], r[2]);
 				dBodySetAngularVel(carp->wheel_body[2], r[0], r[1], r[2]);
-				dBodySetAngularVel(carp->wheel_body[3], r[0], r[1], r[2]);
 			}
 			else
 			{
@@ -66,19 +64,54 @@ void car_physics_step(void)
 		else if (carp->breaks)
 		{
 			if (carp->torque_compensator)
-				printf("ERROR/FIXME: no torque compensator for soft breaks!\n");
-			dJointSetHinge2Param (carp->joint[1],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[1],dParamFMax2,carp->max_break*carp->rbreak);
-			dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[2],dParamFMax2,carp->max_break*carp->rbreak);
+			{
+				const dReal *r = dBodyGetAngularVel(carp->bodyid); //in case stopping wheel
+				dReal rotation, torque_needed;
+				dReal torque[4] = {0,0,0,0};
 
-			dJointSetHinge2Param (carp->joint[0],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[0],dParamFMax2,carp->max_break*carp->fbreak);
-			dJointSetHinge2Param (carp->joint[3],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[3],dParamFMax2,carp->max_break*carp->fbreak);
+				int i;
+				for (i=0; i<4; ++i)
+				{
+					rotation = dJointGetHinge2Angle2Rate (carp->joint[i]);
+					torque_needed = (carp->inertia_tensor*rotation/internal.stepsize); //T=I*a/t
 
-			//const dReal *torque = dBodyGetAngularVel(carp->wheel_body[0]);
-			//printf("%f %f %f\n", torque[0], torque[1], torque[2]);
+					//negative rotation, negative values...
+					if (torque_needed < 0)
+					{
+						//the usual situation: only enough torque to slow down the wheel
+						if (-torque_needed > carp->max_break)
+							torque[i] = +carp->max_break;
+						else //wheel will stop rotating
+							dBodySetAngularVel(carp->wheel_body[i], r[0],r[1],r[2]);
+					}
+					else //positive rotation, positive values
+					{
+						//the usual situation: only enough torque to slow down the wheel
+						if (torque_needed > carp->max_break)
+							torque[i] = -carp->max_break;
+						else //wheel will stop rotating
+							dBodySetAngularVel(carp->wheel_body[i], r[0],r[1],r[2]);
+					}
+				}
+
+				//add breaking torques (even if possibly 0)
+				dBodyAddRelTorque(carp->wheel_body[0], 0, 0, -torque[0]);
+				dBodyAddRelTorque(carp->wheel_body[1], 0, 0, -torque[1]);
+				dBodyAddRelTorque(carp->wheel_body[2], 0, 0, torque[2]);
+				dBodyAddRelTorque(carp->wheel_body[3], 0, 0, torque[3]);
+			}
+			else
+			{
+				dJointSetHinge2Param (carp->joint[1],dParamVel2,0);
+				dJointSetHinge2Param (carp->joint[1],dParamFMax2,carp->max_break*carp->rbreak);
+				dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
+				dJointSetHinge2Param (carp->joint[2],dParamFMax2,carp->max_break*carp->rbreak);
+
+				dJointSetHinge2Param (carp->joint[0],dParamVel2,0);
+				dJointSetHinge2Param (carp->joint[0],dParamFMax2,carp->max_break*carp->fbreak);
+				dJointSetHinge2Param (carp->joint[3],dParamVel2,0);
+				dJointSetHinge2Param (carp->joint[3],dParamFMax2,carp->max_break*carp->fbreak);
+			}
 		}
 		else
 		{
