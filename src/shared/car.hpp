@@ -19,6 +19,7 @@ typedef struct car_struct {
 
 
 	dReal max_torque, motor_tweak, max_break;
+	bool torque_compensator;
 	dReal body_mass, wheel_mass;
 	dReal suspension_erp, suspension_cfm;
 	dReal wheel_mu, rim_mu, wheel_slip, wheel_erp, wheel_cfm, wheel_bounce;
@@ -67,6 +68,7 @@ const struct data_index car_index[] = {
 	{"max_torque",		'f',1, offsetof(struct car_struct, max_torque)},
 	{"motor_tweak",		'f',1, offsetof(struct car_struct, motor_tweak)},
 	{"max_break",		'f',1, offsetof(struct car_struct, max_break)},
+	{"torque_compensator",	'b',1, offsetof(struct car_struct, torque_compensator)},
 	{"body_mass",		'f',1, offsetof(struct car_struct, body_mass)},
 	{"wheel_mass",		'f',1, offsetof(struct car_struct, wheel_mass)},
 

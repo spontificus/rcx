@@ -47,13 +47,26 @@ void car_physics_step(void)
 		//control
 		if (carp->drift_breaks)
 		{
-			dJointSetHinge2Param (carp->joint[1],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[1],dParamFMax2,dInfinity);
-			dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
-			dJointSetHinge2Param (carp->joint[2],dParamFMax2,dInfinity);
+			if (carp->torque_compensator)
+			{
+				const dReal *r = dBodyGetAngularVel(carp->bodyid);
+				dBodySetAngularVel(carp->wheel_body[0], r[0], r[1], r[2]);
+				dBodySetAngularVel(carp->wheel_body[1], r[0], r[1], r[2]);
+				dBodySetAngularVel(carp->wheel_body[2], r[0], r[1], r[2]);
+				dBodySetAngularVel(carp->wheel_body[3], r[0], r[1], r[2]);
+			}
+			else
+			{
+				dJointSetHinge2Param (carp->joint[1],dParamVel2,0);
+				dJointSetHinge2Param (carp->joint[1],dParamFMax2,dInfinity);
+				dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
+				dJointSetHinge2Param (carp->joint[2],dParamFMax2,dInfinity);
+			}
 		}
 		else if (carp->breaks)
 		{
+			if (carp->torque_compensator)
+				printf("ERROR/FIXME: no torque compensator for soft breaks!\n");
 			dJointSetHinge2Param (carp->joint[1],dParamVel2,0);
 			dJointSetHinge2Param (carp->joint[1],dParamFMax2,carp->max_break*carp->rbreak);
 			dJointSetHinge2Param (carp->joint[2],dParamVel2,0);
@@ -63,6 +76,9 @@ void car_physics_step(void)
 			dJointSetHinge2Param (carp->joint[0],dParamFMax2,carp->max_break*carp->fbreak);
 			dJointSetHinge2Param (carp->joint[3],dParamVel2,0);
 			dJointSetHinge2Param (carp->joint[3],dParamFMax2,carp->max_break*carp->fbreak);
+
+			//const dReal *torque = dBodyGetAngularVel(carp->wheel_body[0]);
+			//printf("%f %f %f\n", torque[0], torque[1], torque[2]);
 		}
 		else
 		{
@@ -95,12 +111,21 @@ void car_physics_step(void)
 				carp->wheel_geom_data[i]->colliding = false; //reset
 			}
 
-			dJointAddHinge2Torques (carp->joint[0],0,torque[0]*carp->throttle*carp->dir*carp->fmotor);
-			dJointAddHinge2Torques (carp->joint[1],0,torque[1]*carp->throttle*carp->dir*carp->rmotor);
-			dJointAddHinge2Torques (carp->joint[2],0,torque[2]*carp->throttle*carp->dir*carp->rmotor);
-			dJointAddHinge2Torques (carp->joint[3],0,torque[3]*carp->throttle*carp->dir*carp->fmotor);
+			if (carp->torque_compensator)
+			{
+				dBodyAddRelTorque(carp->wheel_body[0], 0, 0, -torque[0]*carp->throttle*carp->dir*carp->fmotor);
+				dBodyAddRelTorque(carp->wheel_body[1], 0, 0, -torque[1]*carp->throttle*carp->dir*carp->rmotor);
+				dBodyAddRelTorque(carp->wheel_body[2], 0, 0, torque[2]*carp->throttle*carp->dir*carp->rmotor);
+				dBodyAddRelTorque(carp->wheel_body[3], 0, 0, torque[3]*carp->throttle*carp->dir*carp->fmotor);
+			}
+			else
+			{
+				dJointAddHinge2Torques (carp->joint[0],0,torque[0]*carp->throttle*carp->dir*carp->fmotor);
+				dJointAddHinge2Torques (carp->joint[1],0,torque[1]*carp->throttle*carp->dir*carp->rmotor);
+				dJointAddHinge2Torques (carp->joint[2],0,torque[2]*carp->throttle*carp->dir*carp->rmotor);
+				dJointAddHinge2Torques (carp->joint[3],0,torque[3]*carp->throttle*carp->dir*carp->fmotor);
+			}
 		}
-
 		dJointSetHinge2Param (carp->joint[0],dParamLoStop,carp->steering*carp->dir *carp->fsteer);
 		dJointSetHinge2Param (carp->joint[0],dParamHiStop,carp->steering*carp->dir *carp->fsteer);
 		dJointSetHinge2Param (carp->joint[3],dParamLoStop,carp->steering*carp->dir *carp->fsteer);
