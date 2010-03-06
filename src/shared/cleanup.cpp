@@ -25,13 +25,12 @@ void free_all (void)
 		free_profile(profile_head);
 
 	//take care of object (without calling ode - not needed)
-	while (geom_data_head)
-		free_geom_data(geom_data_head);
 	while (body_data_head)
 		free_body_data(body_data_head);
 	while (joint_data_head)
 		free_joint_data(joint_data_head);
        	
+	//TODO: Object::Destroy_All()
 	while (object_head)
 		free_object(object_head);
 

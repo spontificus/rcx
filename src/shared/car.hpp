@@ -37,10 +37,10 @@ typedef struct car_struct {
 	dBodyID bodyid,wheel_body[4];
 	dJointID joint[4];
 
-	geom_data *wheel_geom_data[4];
+	Geom *wheel_geom_data[4];
 
 	//flipover sensors
-	geom_data *sensor1, *sensor2;
+	Geom *sensor1, *sensor2;
 	dReal dir; //direction, 1 or -1
 
 	//controlling values

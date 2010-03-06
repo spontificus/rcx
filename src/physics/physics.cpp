@@ -52,9 +52,9 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 	}
 
 	//both geoms are geoms, get component_data from geoms
-	geom_data *geom1, *geom2;
-	geom1 = (geom_data*) dGeomGetData (o1);
-	geom2 = (geom_data*) dGeomGetData (o2);
+	Geom *geom1, *geom2;
+	geom1 = (Geom*) dGeomGetData (o1);
+	geom2 = (Geom*) dGeomGetData (o2);
 
 	if (!geom1->collide&&!geom2->collide)
 		printlog(1, "not collideable, FIXME!: bitfield solution\n");
@@ -87,7 +87,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		}
 
 		//determine if _one_of the geoms is a wheel
-		geom_data *other, *wheel = NULL;
+		Geom *other, *wheel = NULL;
 		if (geom1->wheel&&!geom2->wheel)
 		{
 			wheel = geom1;
@@ -120,7 +120,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 
 			//when rim is colliding, no slip, different mu...
 			dReal mu_rim = (wheel->mu_rim)*(other->mu);
-			//note: there's gotta be another way instead of storing a mu_rim in every geom_data...
+			//note: there's gotta be another way instead of storing a mu_rim in every Geom...
 
 			for (i=0; i<count; ++i)
 			{

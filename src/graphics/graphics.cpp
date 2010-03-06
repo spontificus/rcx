@@ -154,7 +154,7 @@ void graphics_step (Uint32 step)
 		glCallList (track.file_3d->list);
 	glPopMatrix();
 
-	geom_graphics_step();
+	Geom::Graphics_Step();
 
 
 	glPopMatrix();

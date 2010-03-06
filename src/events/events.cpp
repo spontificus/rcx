@@ -27,31 +27,7 @@ script_struct *sphere = NULL;
 void event_step(Uint32 step)
 {
 	//loop geoms to see if any event
-	geom_data *geom = geom_data_head;
-	while (geom)
-	{
-		if (geom->flipper_geom)
-		{
-			if (geom->colliding)
-			{
-				const dReal *pos;
-				pos = dGeomGetPosition(geom->flipper_geom);
-				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
-						pos[2]+step*0.02);
-				if (++geom->flipper_counter > 10)
-					geom->colliding=false;
-			}
-			else if (geom->flipper_counter)
-			{
-				const dReal *pos;
-				pos = dGeomGetPosition(geom->flipper_geom);
-				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
-						pos[2]-step*0.02);
-				--geom->flipper_counter;
-			}
-		}
-		geom=geom->next;
-	}
+	Geom::TMP_Events_Step(step);
 
 	//loop joints
 	joint_data *joint = joint_data_head;

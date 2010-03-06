@@ -174,7 +174,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 
 	dGeomID geom  = dCreateBox (0, 1,1,1); //geom
-	geom_data *data = allocate_geom_data(geom, NULL);
+	Geom *data = new Geom(geom, NULL);
 	dBodyID body = dBodyCreate (world);
 
 	dMass m;
@@ -214,10 +214,10 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 
 	//flipper surface
-	object_struct *obj = allocate_object(true, true);
+	object_struct *obj = allocate_object();
 	
 	dGeomID geom  = dCreateBox (0, 8,8,0.5); //geom
-	geom_data *data = allocate_geom_data(geom, obj);
+	Geom *data = new Geom(geom, obj);
 	dGeomSetPosition (geom, x, y, z);
 
 	//use default
@@ -234,7 +234,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 	//flipper sensor
 	dGeomID geom2 = dCreateBox (0, 3,3,2);
-	data = allocate_geom_data(geom2, obj);
+	data = new Geom(geom2, obj);
 	data->collide = false;
 	dGeomSetPosition (geom2, x, y, z+0.76);
 
@@ -252,11 +252,11 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object(true, true);
+	object_struct *obj = allocate_object();
 
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
-	geom_data *data = allocate_geom_data(geom, obj);
+	Geom *data = new Geom(geom, obj);
 	dBodyID body1 = dBodyCreate (world);
 
 	dMass m;
@@ -290,7 +290,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	for (i=0; i<4; ++i) {
 	//connected spheres
 	geom  = dCreateSphere (0, 0.8); //geom
-	data = allocate_geom_data(geom, obj);
+	data = new Geom(geom, obj);
 	body = dBodyCreate (world);
 
 	dMassSetSphere (&m,1,0.5); //radius
@@ -311,7 +311,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 	//connect to main sphere
 	
-	joint = dJointCreateBall (world, obj->jointgroup);
+	joint = dJointCreateBall (world, 0);
 	dJointAttach (joint, body1, body);
 	dJointSetBallAnchor (joint, x+pos[i][0], y+pos[i][1], z+pos[i][2]);
 	}
@@ -326,11 +326,11 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object(true, true);
+	object_struct *obj = allocate_object();
 
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
-	geom_data *data = allocate_geom_data(geom, obj);
+	Geom *data = new Geom(geom, obj);
 	dBodyID body1 = dBodyCreate (world);
 
 	dMass m;
@@ -357,7 +357,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object(true, false); //no space (no geoms collide)
+	object_struct *obj = allocate_object(); //no space (no geoms collide)
 	dBodyID old_body[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 	dBodyID old_pillar[4] = {0,0,0,0};
 
@@ -371,7 +371,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		for (i=0; i<12; ++i)
 		{
 			dGeomID geom  = dCreateBox (0, 4,0.4,2.7); //geom
-			geom_data *data = allocate_geom_data(geom, obj);
+			Geom *data = new Geom(geom, obj);
 			data->mu = 1;
 
 			body1[i] = dBodyCreate (world);
@@ -429,7 +429,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		for (i=0; i<9; ++i)
 		{
 			dGeomID geom  = dCreateBox (0, 4,4,0.2); //geom
-			geom_data *data = allocate_geom_data(geom, obj);
+			Geom *data = new Geom(geom, obj);
 			data->mu = 1;
 
 			body2[i] = dBodyCreate (world);
@@ -489,11 +489,11 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	
 		//pillars
 		dGeomID geom;
-		geom_data *data;
+		Geom *data;
 		for (i=0; i<4; ++i)
 		{
 			geom  = dCreateCapsule (0, 0.5,1.5); //geom
-			data = allocate_geom_data(geom, obj);
+			data = new Geom(geom, obj);
 			body[i] = dBodyCreate (world);
 	
 			dMass m;
@@ -564,12 +564,6 @@ void remove_object(object_struct *target)
 		printlog(1, " (space)");
 		printlog(1, " TODO: loop through space...");
 		dSpaceDestroy (target->space);
-	}
-
-	if (target->jointgroup)
-	{
-		printlog(1, " (joingroup)");
-		dJointGroupDestroy (target->jointgroup);
 	}
 
 	/*

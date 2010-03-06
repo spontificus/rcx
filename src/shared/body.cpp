@@ -11,16 +11,6 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 
 	//parent object
 	tmp_body->object_parent = obj;
-	printlog(2, " (parent object:");
-	if (obj)
-	{
-		printlog(2, "yes)");
-		obj->body_count += 1;
-
-		printlog(2, "Note: no way of assigning body to object, check for body attachment in geoms!\n");
-	}
-	else
-		printlog(2, "no)");
 
 	//ad it to the list
 	tmp_body->next = body_data_head;

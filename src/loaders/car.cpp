@@ -144,7 +144,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	target->spawned = true;
 
 	//create object to store components and joints
-	target->object = allocate_object(true,true); //activate space + jointgroup
+	target->object = allocate_object(); //activate space + jointgroup
 
 	dMass m;
 	target->bodyid = dBodyCreate (world);
@@ -167,7 +167,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 	dBodySetPosition (target->bodyid, x, y, z);
 
-	geom_data *gdata;
+	Geom *gdata;
 	dGeomID geom;
 
 	int i;
@@ -177,7 +177,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 		{
 			b = target->box[i];
 			geom = dCreateBox(0,b[0],b[1],b[2]);
-			gdata = allocate_geom_data (geom, target->object);
+			gdata = new Geom (geom, target->object);
 
 			dGeomSetBody (geom, target->bodyid);
 
@@ -199,19 +199,19 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dReal *s = target->s;
 
 	geom = dCreateBox(0,s[0],s[1],s[2]);
-	target->sensor1 = allocate_geom_data (geom, target->object);
+	target->sensor1 = new Geom (geom, target->object);
 	target->sensor1->collide = false; //untouchable "ghost" geom - sensor
 	dGeomSetBody (geom, target->bodyid);
 	dGeomSetOffsetPosition(geom,0,0,-s[3]);
 
 	geom = dCreateBox(0,s[0],s[1],s[2]);
-	target->sensor2 = allocate_geom_data (geom, target->object);
+	target->sensor2 = new Geom (geom, target->object);
 	target->sensor2->collide = false; //sensor
 	dGeomSetBody (geom, target->bodyid);
 	dGeomSetOffsetPosition(geom,0,0,s[3]);
 
 	//wheels:
-	geom_data *wheel_data[4];
+	Geom *wheel_data[4];
 	dGeomID wheel_geom;
 	dBodyID wheel_body[4];
 	for (i=0;i<4;++i)
@@ -233,7 +233,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 		dGeomSetBody (wheel_geom, wheel_body[i]);
 
 		//allocate (geom) data
-		wheel_data[i] = allocate_geom_data(wheel_geom, target->object);
+		wheel_data[i] = new Geom(wheel_geom, target->object);
 
 		//friction
 		wheel_data[i]->mu = target->wheel_mu;
@@ -285,7 +285,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	//create joints (hinge2) for wheels
 	for (i=0; i<4; ++i)
 	{
-		target->joint[i]=dJointCreateHinge2 (world, target->object->jointgroup);
+		target->joint[i]=dJointCreateHinge2 (world, 0);
 		//body is still body of car main body
 		dJointAttach (target->joint[i], target->bodyid, wheel_body[i]);
 		dJointSetHinge2Axis1 (target->joint[i],0,0,1);

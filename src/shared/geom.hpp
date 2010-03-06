@@ -1,51 +1,59 @@
 #ifndef _RCX_GEOM_H
 #define _RCX_GEOM_H
+#include "component.hpp"
 #include "object.hpp"
 #include "file_3d.hpp"
 #include "script.hpp"
+#include <SDL/SDL_stdinc.h> //definition for Uint32
 
-//geom_data: data for geometrical shape (for collision detection), for: 
+//Geom: (meta)data for geometrical shape (for collision detection), for: 
 //contactpoint generation (friction and saftness/hardness). also contains
 //rendering data for geom
 //
 //(contains boolean variable indicating collision - for triggering event script)
 //
 //>Dynamically allocated
-typedef struct geom_data_struct {
-	//keep track of the "owning" object
-	object_struct * object_parent;
-	//geom data bellongs to
-	dGeomID geom_id;
+class Geom: public Component
+{
+	public:
+		//methods for creating/destroying/processing Geoms
+		Geom (dGeomID geom, object_struct *obj);
+		~Geom();
 
-	file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
+		//methods for steps/simulations:
+		static void Graphics_Step();
+		static void TMP_Events_Step(Uint32 step);
 
-	//Physics data:
-	//placeholder for more physics data
-	dReal mu, mu_rim, erp, cfm, slip, bounce;
+		//end of methods, variables:
+		//geom data bellongs to
+		dGeomID geom_id;
 
-	bool wheel; //true if wheel side slip and connected to hinge2
-	dJointID hinge2;
+		//Physics data:
+		//placeholder for more physics data
+		dReal mu, mu_rim, erp, cfm, slip, bounce;
 
-	//End of physics data
-	
-	bool collide; //create physical collision when touching other components
+		bool wheel; //true if wheel side slip and connected to hinge2
+		dJointID hinge2;
 
-	bool colliding; //set after each collision
-	script_struct *script; //script to execute when colliding (NULL if not used)
+		//End of physics data
+		
+		file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
 
-	//debug variables
-	dGeomID flipper_geom;
-	int flipper_counter;
+		bool collide; //create physical collision when touching other components
 
-	//used to find next/prev link in dynamically allocated chain
-	//set next to null in last link in chain (prev = NULL in first)
-	struct geom_data_struct *prev;
-	struct geom_data_struct *next;
-} geom_data;
+		bool colliding; //set after each collision
+		script_struct *script; //script to execute when colliding (NULL if not used)
 
-extern geom_data *geom_data_head; //points at the first component in chain
-geom_data *allocate_geom_data (dGeomID geom, object_struct *obj);
-void free_geom_data(geom_data *target);
-void geom_graphics_step();
+		//debug variables
+		dGeomID flipper_geom;
+		int flipper_counter;
+
+	private:
+		//used to find next/prev geom in list of all geoms
+		//set next to null in last link in chain (prev = NULL in first)
+		static Geom *head; // = NULL;
+		Geom *prev;
+		Geom *next;
+};
 
 #endif

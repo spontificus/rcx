@@ -51,14 +51,14 @@ int load_track (char *path)
 	dWorldSetGravity (world,0,0,-track.gravity);
 
 	//(for now, use geoms to describe world)
-	track.object = allocate_object(true,false); //space + no jointgroup
+	track.object = allocate_object(); //space + no jointgroup
 
 	//tmp vars
 	dGeomID geom;
-	geom_data *data;
+	Geom *data;
 	//ground plane
 	geom = dCreatePlane (0, 0,0,1,0);
-	data = allocate_geom_data(geom, track.object);
+	data = new Geom(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
@@ -66,28 +66,28 @@ int load_track (char *path)
 
 	//4 more planes as walls
 	geom = dCreatePlane (0, 1,0,0,-100);
-	data = allocate_geom_data(geom, track.object);
+	data = new Geom(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
 
 	geom = dCreatePlane (0, -1,0,0,-100);
-	data = allocate_geom_data(geom, track.object);
+	data = new Geom(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
 
 	geom = dCreatePlane (0, 0,1,0,-100);
-	data = allocate_geom_data(geom, track.object);
+	data = new Geom(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
 	data->cfm = track.cfm;
 
 	geom = dCreatePlane (0, 0,-1,0,-100);
-	data = allocate_geom_data(geom, track.object);
+	data = new Geom(geom, track.object);
 	data->mu = track.mu;
 	data->slip = track.slip;
 	data->erp = track.erp;
@@ -140,7 +140,7 @@ int load_track (char *path)
 
 	//temp solution, ramp
 	geom = dCreateBox (0,8,12,1);
-	data = allocate_geom_data(geom, track.object);
+	data = new Geom(geom, track.object);
 
 	dMatrix3 rot;
 	dRFromAxisAndAngle (rot, 1, 0, 0, 0.3);

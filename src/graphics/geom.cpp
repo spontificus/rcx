@@ -4,11 +4,11 @@
 
 //loop through all geoms, see if they need rendering
 
-void geom_graphics_step()
+void Geom::Graphics_Step()
 {
-	geom_data *geom;
+	Geom *geom;
 	const dReal *pos, *rot; //store rendering position
-	for (geom = geom_data_head; geom; geom = geom->next)
+	for (geom = head; geom; geom = geom->next)
 	{
 		if (!geom->file_3d) //invisible
 			continue;
