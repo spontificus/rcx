@@ -15,15 +15,14 @@ object_struct *allocate_object ()
 	object_head->prev = NULL;
 	object_head->next = object_next;
 
-	object_head->space = dHashSpaceCreate(space); //inside world
-
 	if (object_next)
 		object_next->prev = object_head;
 	else
 		printlog(2, " (first registered object)");
 
 	//default values
-
+	object_head->space = dHashSpaceCreate(space); //inside world
+	object_head->components = NULL;
 
 	printlog (2, "\n");
 	return object_head;

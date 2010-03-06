@@ -9,12 +9,17 @@ Component::Component(object_struct *obj)
 	//rather simple: just add it to the top of obj list of components
 	next = obj->components;
 	prev = NULL;
+	obj->components = this;
 
 	if (next)
 	{
-		printlog(2, " (first for object)");
 		next->prev = this;
 	}
+	else
+	{
+		printlog(2, " (first for object)");
+	}
+
 
 	printlog(2, "\n");
 }

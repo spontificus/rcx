@@ -165,6 +165,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//prettend to be executing the script... just load debug values from
 	//script structure
 	//
+	object_struct *obj;
 	if (script->box)
 	{
 	printlog(1, " (hard-coded box)\n");
@@ -172,9 +173,10 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
+	obj = allocate_object();
 
 	dGeomID geom  = dCreateBox (0, 1,1,1); //geom
-	Geom *data = new Geom(geom, NULL);
+	Geom *data = new Geom(geom, obj);
 	dBodyID body = dBodyCreate (world);
 
 	dMass m;
@@ -214,7 +216,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 
 	//flipper surface
-	object_struct *obj = allocate_object();
+	obj = allocate_object();
 	
 	dGeomID geom  = dCreateBox (0, 8,8,0.5); //geom
 	Geom *data = new Geom(geom, obj);
