@@ -15,6 +15,8 @@ do
 		echo -n "build/$DIR/$NAME.o:"
 	fi
 
+	echo -n " $FILE"
+
 	for HEADER in $(grep '^#include.*"' $FILE |cut -d'"' -f2)
 	do
 		echo -n " $DIR/$HEADER"
