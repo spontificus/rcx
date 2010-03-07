@@ -14,11 +14,10 @@ Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argu
 	printlog(2, "configuring Geom class");
 
 	//parent object
-	object_parent = obj;
-	if (obj->space)
+	if (obj->selected_space)
 	{
-		printlog(2, "(with space)");
-		dSpaceAdd (obj->space, geom);
+		printlog(2, "(adding to selected space)");
+		dSpaceAdd (obj->selected_space, geom);
 	}
 
 	//add it to the geom list
@@ -63,7 +62,7 @@ Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argu
 Geom::~Geom ()
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, "clearing geom");
+	printlog(2, "clearing Geom class");
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer
@@ -78,6 +77,8 @@ Geom::~Geom ()
 		next->prev = prev;
 	else
 		printlog(2, "(geom is last)");
+
+	//TODO: dGeomDestroy(geom_id);
 
 }
 

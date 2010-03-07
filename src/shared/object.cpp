@@ -21,8 +21,8 @@ object_struct *allocate_object ()
 		printlog(2, "(first registered object)");
 
 	//default values
-	object_head->space = dHashSpaceCreate(space); //inside world
 	object_head->components = NULL;
+	object_head->selected_space = NULL;
 
 	return object_head;
 }

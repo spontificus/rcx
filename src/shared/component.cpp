@@ -19,6 +19,9 @@ Component::Component(object_struct *obj)
 	{
 		printlog(2, "(first for object)");
 	}
+
+	//keep track of owning object
+	object_parent = obj;
 }
 
 Component::~Component()

@@ -52,6 +52,7 @@ int load_track (char *path)
 
 	//(for now, use geoms to describe world)
 	track.object = allocate_object(); //space + no jointgroup
+	new Space (track.object);
 
 	//tmp vars
 	dGeomID geom;

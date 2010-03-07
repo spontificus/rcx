@@ -209,7 +209,7 @@ void camera_physics_step()
 			dGeomSetPosition(geom, camera.pos[0], camera.pos[1], camera.pos[2]);
 
 			dContactGeom contact[internal.contact_points];
-			int count = dCollide ( (dGeomID)(track.object->space), geom, internal.contact_points, &contact[0], sizeof(dContactGeom));
+			int count = dCollide ( (dGeomID)(track.object->selected_space), geom, internal.contact_points, &contact[0], sizeof(dContactGeom));
 
 			int i;
 			dReal depth;

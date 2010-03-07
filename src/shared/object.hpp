@@ -4,6 +4,7 @@
 
 #include "script.hpp"
 #include "component.hpp"
+#include "space.hpp"
 
 //object: one "thing" on the track, from a complex building to a tree, spawning
 //will be controlled by a custom scripting langue in future versions, the most
@@ -15,10 +16,7 @@
 typedef struct object_struct {
 	//things to keep track of when cleaning out object
 	Component *components;
-
-	//REMOVE:
-	dSpaceID space;
-	//
+	dSpaceID selected_space;
 
 	//placeholder for more data
 	

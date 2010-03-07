@@ -560,12 +560,12 @@ void remove_object(object_struct *target)
 	//lets just hope the given pointer is ok...
 	printlog(1, "remove object");
 
-	if (target->space)
-	{
-		printlog(1, "(space)");
-		printlog(1, "TODO: loop through space...");
-		dSpaceDestroy (target->space);
-	}
+	//if (target->space)
+	//{
+		//printlog(1, "(space)");
+		//printlog(1, "TODO: loop through space...");
+		//dSpaceDestroy (target->space);
+	//}
 
 	/*
 	if (target->cmp_count != 0)

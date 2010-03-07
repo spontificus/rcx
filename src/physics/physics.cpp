@@ -14,6 +14,8 @@
 #include "../shared/body.hpp"
 #include "../shared/geom.hpp"
 #include "../shared/camera.hpp"
+#include "../shared/car.hpp"
+#include "../shared/joint.hpp"
 
 
 unsigned int stepsize_warnings = 0;
@@ -22,10 +24,13 @@ int physics_init(void)
 {
 	printlog(0, "Initiating physics");
 	dInitODE2(0);
-	//TODO: this is an ugly flag, change it
+	printlog(1, "TODO: change ODE allocation flags...");
 	dAllocateODEDataForThread(dAllocateFlagBasicData | dAllocateFlagCollisionData);
 
 	world = dWorldCreate();
+
+	//TODO: move to "dQuadTreeSpaceCreate()" - much better performance!!!
+	printlog(1, "TODO: create world space using dQuadTreeSpaceCreate() - much better performance!");
 	space = dHashSpaceCreate(0);
 	contactgroup = dJointGroupCreate(0);
 
@@ -57,7 +62,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 	geom2 = (Geom*) dGeomGetData (o2);
 
 	if (!geom1->collide&&!geom2->collide)
-		printlog(1, "not collideable, FIXME!: bitfield solution");
+		printlog(1, "not collideable, TODO: bitfield solution");
 
 	dContact contact[internal.contact_points];
 	int count = dCollide (o1,o2,internal.contact_points, &contact[0].geom, sizeof(dContact));
@@ -193,10 +198,6 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		geom1->colliding = true;
 	}
 }
-
-#include "../shared/car.hpp"
-#include "../shared/joint.hpp"
-#include "../shared/body.hpp"
 
 void physics_step(void)
 {
