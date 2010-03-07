@@ -6,7 +6,7 @@
 body_data *body_data_head = NULL;
 body_data *allocate_body_data (dBodyID body, object_struct *obj)
 {
-	printlog(2, " > allocating body_data");
+	printlog(2, "allocating body_data");
 	body_data *tmp_body = (body_data *)malloc(sizeof(body_data));
 
 	//parent object
@@ -20,7 +20,7 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 	if (body_data_head->next)
 		body_data_head->next->prev = body_data_head;
 	else
-		printlog(2, " (first registered)");
+		printlog(2, "(first registered)");
 
 	//add it to the body
 	dBodySetData (body, (void*)(body_data*)(body_data_head));
@@ -35,7 +35,6 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 	body_data_head->event = false;
 	body_data_head->script = NULL;
 
-	printlog (2, "\n");
 	return body_data_head;
 }
 
@@ -43,12 +42,12 @@ body_data *allocate_body_data (dBodyID body, object_struct *obj)
 void free_body_data (body_data *target)
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, " > freeing body");
+	printlog(2, "freeing body");
 
 	//1: remove it from the list
 	if (!target->prev) //head in list, change head pointer
 	{
-		printlog(2, " (body is head)");
+		printlog(2, "(body is head)");
 		body_data_head = target->next;
 	}
 	else //not head in list, got a previous link to update
@@ -57,12 +56,11 @@ void free_body_data (body_data *target)
 	if (target->next) //not last link in list
 		target->next->prev = target->prev;
 	else
-		printlog(2, " (body is last)");
+		printlog(2, "(body is last)");
 
 	//2: remove it from memory
 
 	free(target);
 
-	printlog (2, "\n");
 }
 

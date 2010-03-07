@@ -8,7 +8,7 @@
 
 car_struct *load_car (char *path)
 {
-	printlog(1, "=> Loading car: %s", path);
+	printlog(1, "Loading car: %s", path);
 
 	//see if already loaded
 	car_struct *tmp = car_head;
@@ -16,13 +16,12 @@ car_struct *load_car (char *path)
 	{
 		if (!strcmp(tmp->name, path))
 		{
-			printlog(1, " (already loaded)\n");
+			printlog(1, "(already loaded)");
 			return tmp;
 		}
 		tmp = tmp->next;
 	}
 
-	printlog(1, "\n");
 	//apparently not
 	car_struct *target = allocate_car();
 	target->name = (char *)calloc(strlen(path) + 1, sizeof(char));
@@ -45,17 +44,17 @@ car_struct *load_car (char *path)
 
 	//* set up values for front/rear driving ratios
 	if (target->steer_ratio>100 || target->steer_ratio<0 )
-		printlog(0, "ERROR: front/rear steering ratio should be set between 0 and 100!\n");
+		printlog(0, "ERROR: front/rear steering ratio should be set between 0 and 100!");
 	target->fsteer = (dReal) (target->steer_ratio/100.0);
 	target->rsteer = (dReal) (target->fsteer-1.0);
 	
 	if (target->motor_ratio>100 || target->motor_ratio<0 )
-		printlog(0, "ERROR: front/rear motor ratio should be set between 0 and 100!\n");
+		printlog(0, "ERROR: front/rear motor ratio should be set between 0 and 100!");
 	target->fmotor = (dReal) (target->motor_ratio/100.0);
 	target->rmotor = (dReal) (1.0-target->fmotor);
 
 	if (target->break_ratio>100 || target->break_ratio<0 )
-		printlog(0, "ERROR: front/rear breaking ratio should be set between 0 and 100!\n");
+		printlog(0, "ERROR: front/rear breaking ratio should be set between 0 and 100!");
 	target->fbreak = (dReal) (target->break_ratio/100.0);
 	target->rbreak = (dReal) (1.0-target->fbreak);
 
@@ -119,26 +118,25 @@ car_struct *load_car (char *path)
 						b[0],b[1],b[2], lgreen, gray, 70);
 		}
 
-	printlog(1, "\n");
 	return target;
 }
 
 
 void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 {
-	printlog(1, "-> spawning car at: %f %f %f\n", x,y,z);
+	printlog(1, "spawning car at: %f %f %f", x,y,z);
 
-	printlog(1, "Warning: wheels will not collide to other wheels... (wheels use cylinders)\n");
-	printlog(1, "(note to self: only solution would be moving to capped cylinders... :-/ )\n");
+	printlog(1, "Warning: wheels will not collide to other wheels... (wheels use cylinders)");
+	printlog(1, "(note to self: only solution would be moving to capped cylinders... :-/ )");
 
 	if (target->spawned)
 	{
-		printlog(0, "ERROR: trying to spawn already spawned car!\n");
+		printlog(0, "ERROR: trying to spawn already spawned car!");
 		//TODO: separate car into car_data and car_spawned to make one car spawnable for several players...
 		return;
 	}
 
-	printlog(1, "TODO: antigravity forces\n\n");
+	printlog(1, "TODO: antigravity forces");
 
 	//not spawned, continue
 	target->spawned = true;
@@ -313,7 +311,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 void remove_car (car_struct* target)
 {
-	printlog(1, "removing car\n");
+	printlog(1, "removing car");
 	remove_object (target->object);
 	free_car (target);
 }

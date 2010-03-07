@@ -13,10 +13,10 @@
 //simple dirty way of removing everything
 void free_all (void)
 {
-	printlog(1, "-> Freeing all data\n");
-	printlog(2, ">>> TODO: optimize???\n");
+	printlog(1, "Freeing all data");
+	printlog(2, "TODO: optimize???");
 	//first thing to destroy: cars
-	printlog(2, ">>> TODO: change from free_car to destroy_car?\n\n");
+	printlog(2, "TODO: change from free_car to destroy_car?");
 
 	while (car_head)
 		free_car(car_head);

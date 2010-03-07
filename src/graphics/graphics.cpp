@@ -55,32 +55,30 @@ void graphics_resize (int new_w, int new_h)
 	{
 		//some explanation: angle up+down      ratio h/z        rad to angle
 		angle = (GLdouble) 2*atan((GLdouble) (h/2)/internal.dist) *180/M_PI;
-		printlog(1, "(perspective: %f degrees, based on (your) eye distance: %i pixels\n", angle, internal.dist);
+		printlog(1, "(perspective: %f degrees, based on (your) eye distance: %i pixels", angle, internal.dist);
 	}
 	else //bad...
 	{
 		angle = internal.angle;
-		printlog(1, "Angle forced to: %f degrees. And you are an evil person...\n", angle);
+		printlog(1, "Angle forced to: %f degrees. And you are an evil person...", angle);
 	}
 
 	gluPerspective (angle, (GLdouble) w/h, 1, 1000);
 
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity();
-
-	printlog(1, "\n");
 }
 
 int graphics_init(void)
 {
-	printlog(0, "=> Initiating graphics\n");
+	printlog(0, "Initiating graphics");
 
 	SDL_Init(SDL_INIT_VIDEO);
 	screen = SDL_SetVideoMode (internal.res[0], internal.res[1], 0, flags);
 
 	if (!screen)
 	{
-		printlog(0, "Error: couldn't set video mode\n");
+		printlog(0, "Error: couldn't set video mode");
 		return -1;
 	}
 
@@ -90,7 +88,7 @@ int graphics_init(void)
 	//toggle fullscreen (if requested)
 	if (internal.fullscreen)
 		if (!SDL_WM_ToggleFullScreen(screen))
-			printlog(0, "Error: unable to toggle fullscreen\n");
+			printlog(0, "Error: unable to toggle fullscreen");
 
 	//glClearDepth (1.0); pointless to define this?
 
@@ -133,7 +131,7 @@ void graphics_step (Uint32 step)
 			graphics_event_resize = false;
 		}
 		else
-			printlog(0, "Warning: resizing failed, will retry\n");
+			printlog(0, "Warning: resizing failed, will retry");
 	}
 
 	//start rendering
@@ -164,7 +162,7 @@ void graphics_step (Uint32 step)
 
 int graphics_loop ()
 {
-	printlog(1, "Starting graphics loop\n");
+	printlog(1, "Starting graphics loop");
 	Uint32 time, time_old;
 	time_old = SDL_GetTicks();
 
@@ -196,7 +194,7 @@ int graphics_loop ()
 
 void graphics_quit(void)
 {
-	printlog(1, "=> Quit graphics\n");
+	printlog(1, "Quit graphics");
 	SDL_Quit();
 }
 

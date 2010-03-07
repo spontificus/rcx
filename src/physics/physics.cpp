@@ -20,7 +20,7 @@ unsigned int stepsize_warnings = 0;
 
 int physics_init(void)
 {
-	printlog(0, "=> Initiating physics\n");
+	printlog(0, "Initiating physics");
 	dInitODE2(0);
 	//TODO: this is an ugly flag, change it
 	dAllocateODEDataForThread(dAllocateFlagBasicData | dAllocateFlagCollisionData);
@@ -57,7 +57,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 	geom2 = (Geom*) dGeomGetData (o2);
 
 	if (!geom1->collide&&!geom2->collide)
-		printlog(1, "not collideable, FIXME!: bitfield solution\n");
+		printlog(1, "not collideable, FIXME!: bitfield solution");
 
 	dContact contact[internal.contact_points];
 	int count = dCollide (o1,o2,internal.contact_points, &contact[0].geom, sizeof(dContact));
@@ -214,7 +214,7 @@ void physics_step(void)
 
 int physics_loop (void *d)
 {
-	printlog(1, "Starting physics loop\n");
+	printlog(1, "Starting physics loop");
 
 	Uint32 simtime = SDL_GetTicks(); //set simulated time to realtime
 	Uint32 realtime; //real time (with possible delay since last update)
@@ -252,7 +252,7 @@ int physics_loop (void *d)
 
 void physics_quit (void)
 {
-	printlog(1, "=> Quit physics\n");
+	printlog(1, "Quit physics");
 	dJointGroupDestroy (contactgroup);
 	dSpaceDestroy (space);
 	dWorldDestroy (world);

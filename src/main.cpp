@@ -47,7 +47,7 @@ void start_race(void)
 	start_time = simtime; //how long it took for race to start
 
 	//start
-	printlog (0, "\n-> Starting Race (multithreaded)\n");
+	printlog (0, "Starting Race (multithreaded)");
 
 	ode_mutex = SDL_CreateMutex(); //create mutex for ode locking
 	sdl_mutex = SDL_CreateMutex(); //only use sdl in 1 thread
@@ -78,14 +78,14 @@ void print_info()
 {
 	Uint32 uptime = SDL_GetTicks();
 	uptime -= start_time;
-	printlog(0, "-> Race done!\n");
-	printlog(0, "\n<-- Some basic info: -->\n");
-	printlog(0, "(does not interest most people)\n");
-	printlog(0, "Startup time (ms):			%i\n", start_time);
-	printlog(0, "Race time (ms):				%i\n", uptime);
-	printlog(0, "Threading mode:				%i threads\n", 3);
-	printlog(0, "Avarage FPS:				%i\n", (1000*frame_count)/uptime);
-	printlog(0, "Stepsize-too-low (slowdown) warnings:	%i\n", stepsize_warnings);
+	printlog(0, "Race Done!");
+	printlog(1, "<-- Some basic info: -->");
+	printlog(1, "(does not interest most people)");
+	printlog(1, "Startup time (ms):				%i", start_time);
+	printlog(1, "Race time (ms):				%i", uptime);
+	printlog(1, "Threading mode:				%i threads", 3);
+	printlog(1, "Avarage FPS:					%i", (1000*frame_count)/uptime);
+	printlog(1, "Stepsize-too-low (slowdown) warnings:	%i", stepsize_warnings);
 }
 
 //simple demo:
@@ -113,6 +113,8 @@ int main (int argc, char *argv[])
 			chdir (pwd);
 			break;
 		}
+
+	printlog(0, "Loading...\n");
 
 	if (load_conf ((char *)"data/internal.conf", (char *)&internal, internal_index))
 		return -1;
@@ -165,7 +167,7 @@ int main (int argc, char *argv[])
 	//some basic info
 	print_info();
 
-	printlog(0, "\nBye!\n\n");
+	printf("\nBye!\n\n");
 	return 0;
 }
 

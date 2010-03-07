@@ -7,7 +7,7 @@ car_struct *car_head = NULL;
 //(no object allocations - since we want to allocate car without spawning)
 car_struct *allocate_car(void)
 {
-	printlog(2, " > allocating car");
+	printlog(2, "allocating car");
 	car_struct *car_next = car_head;
 	car_head = (car_struct *)malloc(sizeof(car_struct));
 
@@ -17,11 +17,11 @@ car_struct *allocate_car(void)
 	if (car_next)
 		car_next->prev=car_head;
 	else
-		printlog(2, " (first registered)");
+		printlog(2, "(first registered)");
 
 
 	//default values
-	printlog(2, "\nFIXME: set more values to default");
+	printlog(2, "FIXME: set more values to default");
 
 	car_head->name = NULL;
 	car_head->spawned = false;
@@ -79,14 +79,13 @@ car_struct *allocate_car(void)
 
 	car_head->jx = 3; //wheel offset
 
-	printlog(2, "\n");
 	return car_head;
 }
 
 //run _before_ starting full erase of object/component lists (at race end)
 void free_car (car_struct *target)
 {
-	printlog(2, " > freeing car\n");
+	printlog(2, "freeing car");
 
 	//remove from list
 	if (!target->prev) //head

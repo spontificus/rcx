@@ -11,13 +11,13 @@ Geom *Geom::head = NULL;
 //ads it to the component list, and ads the data to specified geom (assumed)
 Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argument to base class constructor
 {
-	printlog(2, " > configuring Geom class");
+	printlog(2, "configuring Geom class");
 
 	//parent object
 	object_parent = obj;
 	if (obj->space)
 	{
-		printlog(2, " (with space)");
+		printlog(2, "(with space)");
 		dSpaceAdd (obj->space, geom);
 	}
 
@@ -30,7 +30,7 @@ Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argu
 	if (next)
 		next->prev = this;
 	else
-		printlog(2, " (first registered)");
+		printlog(2, "(first registered)");
 
 	//add it to the geom
 	dGeomSetData (geom, (void*)(Geom*)(this));
@@ -58,18 +58,17 @@ Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argu
 	flipper_geom = 0;
 	flipper_counter = 0;
 
-	printlog (2, "\n");
 }
 //destroys a geom, and removes it from the list
 Geom::~Geom ()
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, " > clearing geom");
+	printlog(2, "clearing geom");
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer
 	{
-		printlog(2, " (geom is head)");
+		printlog(2, "(geom is head)");
 		Geom::head = next;
 	}
 	else //not head in list, got a previous link to update
@@ -78,8 +77,7 @@ Geom::~Geom ()
 	if (next) //not last link in list
 		next->prev = prev;
 	else
-		printlog(2, " (geom is last)");
+		printlog(2, "(geom is last)");
 
-	printlog (2, "\n");
 }
 

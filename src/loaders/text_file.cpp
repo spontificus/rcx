@@ -36,7 +36,7 @@ bool Text_File::Open (const char *file)
 	//close old
 	Close();
 
-	printlog(2, " * Text_File: opening file %s\n", file);
+	printlog(2, "Text_File: opening file %s", file);
 
 	//open
 #ifndef windows
@@ -56,7 +56,7 @@ bool Text_File::Open (const char *file)
 	else
 	{
 		open = false;
-		printlog(0, "ERROR: could not open file %s!\n", file);
+		printlog(0, "ERROR: could not open file %s!", file);
 	}
 
 	return open;
@@ -67,7 +67,7 @@ void Text_File::Close()
 	//make sure no old data is left
 	if (open)
 	{
-		printlog(2, " * Text_File: closing file\n");
+		printlog(2, "Text_File: closing file");
 		fclose (fp);
 		Clear_List();
 	}
@@ -133,7 +133,7 @@ bool Text_File::Line_To_Buffer()
 			return true;
 		
 		//else: I guess the buffer was too small...
-		printlog(1, "WARNING: Text_File buffer was too small, resizing\n");
+		printlog(1, "WARNING: Text_File buffer was too small, resizing");
 		buffer_size += INITIAL_BUFFER_SIZE;
 		buffer = (char*) realloc (buffer, buffer_size);
 	}
@@ -166,7 +166,7 @@ bool Text_File::Buffer_To_List()
 			//wery unusual error (line ends after quotation mark)
 			if (*buffer_ptr == '\0')
 			{
-				printlog(0, "WARNING: Text_File line ended just after quotation mark (not counted)...\n");
+				printlog(0, "WARNING: Text_File line ended just after quotation mark (not counted)...");
 				break;
 			}
 
@@ -178,7 +178,7 @@ bool Text_File::Buffer_To_List()
 				++buffer_ptr;
 
 			if (*buffer_ptr=='\0') //end of line before end of quote
-				printlog(0, "WARNING: Text_File reached end of line before end of quote...\n");
+				printlog(0, "WARNING: Text_File reached end of line before end of quote...");
 			else
 			{
 				*buffer_ptr = '\0'; //make this end (instead of ")
@@ -229,7 +229,7 @@ void Text_File::Append_To_List(char *word)
 
 	if (word_count > list_size)
 	{
-		printlog(1, "WARNING: Text_File word list was too small, resizing\n");
+		printlog(1, "WARNING: Text_File word list was too small, resizing");
 		list_size+=INITIAL_LIST_SIZE;
 		words = (char**) realloc(words, list_size*sizeof(char**));
 	}

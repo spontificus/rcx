@@ -13,7 +13,7 @@
 
 int load_track (char *path)
 {
-	printlog(1, "=> Loading track: %s\n", path);
+	printlog(1, "Loading track: %s", path);
 	char *conf=(char *)calloc(strlen(path)+11+1,sizeof(char));//+1 for \0
 	strcpy (conf,path);
 	strcat (conf,"/track.conf");
@@ -162,7 +162,7 @@ int load_track (char *path)
 	strcpy (list,path);
 	strcat (list,"/objects.lst");
 
-	printlog(1, "-> Loading track object list: %s\n", path);
+	printlog(1, "Loading track object list: %s", path);
 	Text_File file;
 
 	//each object is loaded/selected at a time (NULL if none loaded so far)
@@ -176,7 +176,7 @@ int load_track (char *path)
 			//object load request
 			if (file.word_count==2 && !strcmp(file.words[0], ">"))
 			{
-				printlog(2, " * object load request: %s\n", file.words[1]);
+				printlog(2, "object load request: %s", file.words[1]);
 				char obj_name[13+strlen(file.words[1])+1];
 				strcpy (obj_name, "data/objects/");
 				strcat (obj_name, file.words[1]);
@@ -190,11 +190,11 @@ int load_track (char *path)
 			//three words (x, y and z coord for spawning): spawning
 			else if (file.word_count == 3)
 			{
-				printlog(2, " * object spawn request\n");
+				printlog(2, "object spawn request");
 				//in case no object has been loaded yet
 				if (!obj)
 				{
-					printlog(0, "ERROR: trying to spawn object without specifying what object!\n");
+					printlog(0, "ERROR: trying to spawn object without specifying what object!");
 					break;
 				}
 
@@ -210,14 +210,13 @@ int load_track (char *path)
 			}
 			else
 			{
-				printlog(0, "ERROR: unknown line in object list!\n");
+				printlog(0, "ERROR: unknown line in object list!");
 				break;
 			}
 		}
 	}
 
 	//that's it!
-	printlog(1, "\n");
 	return 0;
 }
 

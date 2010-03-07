@@ -14,7 +14,7 @@
 //(objects are loaded as script instructions, executed for spawning)
 script_struct *load_object(char *path)
 {
-	printlog(1, "-> Loading object: %s", path);
+	printlog(1, "Loading object: %s", path);
 
 	script_struct *tmp = script_head;
 	//see if already loaded
@@ -22,7 +22,7 @@ script_struct *load_object(char *path)
 	{
 		if (!strcmp(tmp->name, path))
 		{
-			printlog(1, " (already loaded)\n");
+			printlog(1, "(already loaded)");
 			return tmp;
 		}
 		tmp = tmp->next;
@@ -35,7 +35,7 @@ script_struct *load_object(char *path)
 	if (!strcmp(path,"data/objects/misc/box"))
 	{
 		//"load" 3d box
-		printlog(1, " (hard-coded box)\n");
+		printlog(2, "(hard-coded box)");
 
 		script = allocate_script();
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
@@ -48,7 +48,7 @@ script_struct *load_object(char *path)
 	}
 	else if (!strcmp(path, "data/objects/misc/flipper"))
 	{
-		printlog(1, " (hard-coded flipper)\n");
+		printlog(2, "(hard-coded flipper)");
 
 		script = allocate_script();
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
@@ -63,7 +63,7 @@ script_struct *load_object(char *path)
 	}
 	else if (!strcmp(path, "data/objects/misc/NH4"))
 	{
-		printlog(1, " (hard-coded \"molecule\")\n");
+		printlog(2, "(hard-coded \"molecule\")");
 
 		script = allocate_script();
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
@@ -79,7 +79,7 @@ script_struct *load_object(char *path)
 	}
 	else if (!strcmp(path, "data/objects/misc/sphere"))
 	{
-		printlog(1, " (hard-coded sphere)\n");
+		printlog(2, "(hard-coded sphere)");
 
 		script = allocate_script();
 		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
@@ -95,7 +95,7 @@ script_struct *load_object(char *path)
 	}
 	else if (!strcmp(path, "data/objects/misc/building"))
 	{
-		printlog(1, " (hard-coded building)\n");
+		printlog(2, "(hard-coded building)");
 
 		//name
 		script = allocate_script();
@@ -135,8 +135,7 @@ script_struct *load_object(char *path)
 
 	else
 	{
-		printlog(1, "\n");
-		printlog(0, "ERROR: path didn't match any hard-coded object\n");
+		printlog(0, "ERROR: path didn't match any hard-coded object");
 		script = NULL;
 	}
 
@@ -161,14 +160,14 @@ void debug_joint_fixed(dBodyID body1, dBodyID body2, object_struct *obj)
 //TODO: rotation
 void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 {
-	printlog(1, "-> Spawning object at: %f %f %f", x,y,z);
+	printlog(1, "Spawning object at: %f %f %f", x,y,z);
 	//prettend to be executing the script... just load debug values from
 	//script structure
 	//
 	object_struct *obj;
 	if (script->box)
 	{
-	printlog(1, " (hard-coded box)\n");
+	printlog(2, "(hard-coded box)");
 	//
 	//
 	//
@@ -210,7 +209,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	else if (script->flipper)
 	{
-	printlog(1, " (hard-coded flipper)\n");
+	printlog(2, "(hard-coded flipper)");
 	//
 	//
 	//
@@ -249,7 +248,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	else if (script->NH4)
 	{
-	printlog(1, " (hard-coded \"molecule\")\n");
+	printlog(2, "(hard-coded \"molecule\")");
 	//
 	//
 	//
@@ -323,7 +322,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	}
 	else if (script->sphere)
 	{
-	printlog(1, " (sphere)\n");
+	printlog(2, "(sphere)");
 	//
 	//
 	//
@@ -355,7 +354,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	else if (script->building)
 	{
-	printlog(1, " (hard-coded building)\n");
+	printlog(2, "(hard-coded building)");
 	//
 	//
 
@@ -551,7 +550,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 	else
-		printlog(0, "\nERROR: trying to spawn unidentified object?!\n");
+		printlog(0, "ERROR: trying to spawn unidentified object?!");
 
 }
 
@@ -559,12 +558,12 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 void remove_object(object_struct *target)
 {
 	//lets just hope the given pointer is ok...
-	printlog(1, " > remove object");
+	printlog(1, "remove object");
 
 	if (target->space)
 	{
-		printlog(1, " (space)");
-		printlog(1, " TODO: loop through space...");
+		printlog(1, "(space)");
+		printlog(1, "TODO: loop through space...");
 		dSpaceDestroy (target->space);
 	}
 
@@ -584,5 +583,4 @@ void remove_object(object_struct *target)
 	}*/
 
 	free_object (target);
-	printlog(1, "\n");
 }

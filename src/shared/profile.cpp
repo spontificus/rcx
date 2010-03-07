@@ -4,7 +4,7 @@ profile *profile_head = NULL;
 
 profile *allocate_profile(void)
 {
-	printlog(2, " > allocating profile");
+	printlog(2, "allocating profile");
 	profile *profile_next = profile_head;
 	profile_head = (profile *)malloc(sizeof(profile));
 
@@ -14,8 +14,7 @@ profile *allocate_profile(void)
 	if (profile_next)
 		profile_next->prev=profile_head;
 	else
-		printlog(2, " (first registered)");
-	printlog(2, "\n");
+		printlog(2, "(first registered)");
 
 	//default values
 	profile_head->steer_speed = 1;
@@ -44,7 +43,7 @@ profile *allocate_profile(void)
 //free profile
 void free_profile (profile *target)
 {
-	printlog(2, " > freeing profile\n");
+	printlog(2, "freeing profile");
 
 	//remove from list
 	if (!target->prev) //head

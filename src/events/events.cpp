@@ -61,7 +61,7 @@ void event_step(Uint32 step)
 
 			case SDL_ACTIVEEVENT:
 				if (event.active.gain == 0)
-					printlog(1, "(FIXME: pause when losing focus (or being iconified)!)\n");
+					printlog(1, "(FIXME: pause when losing focus (or being iconified)!)");
 			break;
 			//check for special key presses
 			case SDL_KEYDOWN:
@@ -76,7 +76,7 @@ void event_step(Uint32 step)
 						spawn_object (box, 0,0,10);
 					break;
 					case SDLK_F6:
-						printlog(1, "(10sec height)\n");
+						printlog(1, "(10sec height)");
 						spawn_object (box ,0,0,489.5);
 					break;
 					
@@ -211,7 +211,7 @@ void event_step(Uint32 step)
 
 int events_loop (void *d)
 {
-	printlog(1, "Starting event loop\n");
+	printlog(1, "Starting event loop");
 	//dAllocateODEDataForThread (dAllocateFlagBasicData); //needed for manipulating ode from event thread
 	Uint32 time, time_old;
 	time_old = SDL_GetTicks();

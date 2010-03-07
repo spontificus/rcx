@@ -9,7 +9,7 @@
 //loads configuration file to memory (using index)
 int load_conf (char *name, char *memory, const struct data_index index[])
 {
-	printlog(1, "-> loading conf file: %s\n", name);
+	printlog(1, "loading conf file: %s", name);
 
 	Text_File file;
 	if (!file.Open(name))
@@ -21,25 +21,25 @@ int load_conf (char *name, char *memory, const struct data_index index[])
 	char *str_left; //text left in word if not completely converted
 	while (file.Read_Line())
 	{
-		printlog(2, " * Parameter: %s\n", file.words[0]);
+		printlog(2, "Parameter: %s", file.words[0]);
 
 		//find matching index (loop until end of list or found matching
 		for (i=0; ((index[i].type !=0) && (strcmp(index[i].name,file.words[0]) != 0) ); ++i);
 
 		if (index[i].type==0) //not match, got to end
 		{
-			printlog(0, "ERROR: Parameter: %s - No index name match!\n", file.words[0]);
+			printlog(0, "ERROR: Parameter: %s - No index name match!", file.words[0]);
 			continue;
 		}
 
 		//else, we have a match
-		printlog(2, " * match found!, %i, %c, %i\n",i,index[i].type,index[i].length);
+		printlog(2, "match found!, %i, %c, %i",i,index[i].type,index[i].length);
 
 		//see if ammount of args is correct
 		//argument name+values == words
 		if (index[i].length+1 != file.word_count)
 		{
-			printlog(0, "ERROR: Parameter: %s - wrong ammount of args: %i, expected: %i!\n",file.words[0], file.word_count, index[i].length);
+			printlog(0, "ERROR: Parameter: %s - wrong ammount of args: %i, expected: %i!",file.words[0], file.word_count, index[i].length);
 			break;
 		}
 
@@ -76,14 +76,14 @@ int load_conf (char *name, char *memory, const struct data_index index[])
 
 				//unknown
 				default:
-					printlog(0, "ERROR: Parameter: %s - unknown type(%c)!\n", file.words[0], index[i].type);
+					printlog(0, "ERROR: Parameter: %s - unknown type(%c)!", file.words[0], index[i].type);
 				break;
 			}
 
 			//if the word wasn't processed
 			if (str_left == file.words[argnr+1])
 			{
-				printlog(0, "ERROR: Could not translate word \"%s\" to type \"%c\"\n", file.words[argnr+1], index[i].type);
+				printlog(0, "ERROR: Could not translate word \"%s\" to type \"%c\"", file.words[argnr+1], index[i].type);
 				//this is potentially dangerous (since the variable might not have a default value)
 				//return -1; //currently assuming it has a safe default anyway (not guaranteed)
 			}
@@ -91,6 +91,5 @@ int load_conf (char *name, char *memory, const struct data_index index[])
 
 	}
 
-	printlog(2, "\n");
 	return 0;
 }

@@ -8,13 +8,13 @@ script_struct *script_head = NULL;
 //(not used yet, only for storing 3d list pointers...)
 script_struct *allocate_script(void)
 {
-	printlog(2, " > allocating script");
+	printlog(2, "allocating script");
 	script_struct *tmp = (script_struct *)malloc(sizeof(script_struct));
 	tmp->next = script_head;
 	script_head = tmp;
 
 	if (!tmp->next)
-		printlog(2, " (first registered script)");
+		printlog(2, "(first registered script)");
 
 	script_head->name = NULL;
 
@@ -26,7 +26,6 @@ script_struct *allocate_script(void)
 	script_head->sphere = false;
 
 
-	printlog (2, "\n");
 	return script_head;
 }
 

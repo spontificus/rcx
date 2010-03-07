@@ -4,7 +4,7 @@
 
 Component::Component(object_struct *obj)
 {
-	printlog(2, " > creating Component class");
+	printlog(2, "creating Component class");
 
 	//rather simple: just add it to the top of obj list of components
 	next = obj->components;
@@ -17,24 +17,21 @@ Component::Component(object_struct *obj)
 	}
 	else
 	{
-		printlog(2, " (first for object)");
+		printlog(2, "(first for object)");
 	}
-
-
-	printlog(2, "\n");
 }
 
 Component::~Component()
 {
 	//just unlink...
-	printlog(2, " > freeing component");
+	printlog(2, "freeing component");
 	if (prev)
 	{
 		prev->next = next;
 	}
 	else
 	{
-		printlog(2, " (is head)");
+		printlog(2, "(is head)");
 		object_parent->components = next;
 	}
 
@@ -44,9 +41,7 @@ Component::~Component()
 	}
 	else
 	{
-		printlog(2, " (is tail)");
+		printlog(2, "(is tail)");
 	}
-
-	printlog(2, "\n");
 }
 
