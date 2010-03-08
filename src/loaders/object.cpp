@@ -216,6 +216,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 	//flipper surface
 	obj = allocate_object();
+	new Space(obj);
 	
 	dGeomID geom  = dCreateBox (0, 8,8,0.5); //geom
 	Geom *data = new Geom(geom, obj);
@@ -254,6 +255,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 
 	object_struct *obj = allocate_object();
+	new Space(obj);
 
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
@@ -359,6 +361,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 
 	object_struct *obj = allocate_object(); //no space (no geoms collide)
+	new Space(obj);
 	dBodyID old_body[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 	dBodyID old_pillar[4] = {0,0,0,0};
 
