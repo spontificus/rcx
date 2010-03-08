@@ -7,7 +7,7 @@ Space::Space(object_struct *obj): Component(obj)
 {
 	printlog(2, "configuring Space class");
 
-	space_id = dHashSpaceCreate(space);
+	space_id = dSimpleSpaceCreate(space);
 
 	printlog(2, "(autoselecting this as default space for object)");
 	obj->selected_space=space_id;
