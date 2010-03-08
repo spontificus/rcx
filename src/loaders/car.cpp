@@ -143,6 +143,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 	//create object to store components and joints
 	target->object = allocate_object(); //activate space + jointgroup
+	new Space(target->object);
 
 	dMass m;
 	target->bodyid = dBodyCreate (world);

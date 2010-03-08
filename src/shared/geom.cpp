@@ -19,6 +19,10 @@ Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argu
 		printlog(2, "(adding to selected space)");
 		dSpaceAdd (obj->selected_space, geom);
 	}
+	else //add geom to global space
+	{
+		dSpaceAdd (space, geom);
+	}
 
 	//add it to the geom list
 	next = Geom::head;
