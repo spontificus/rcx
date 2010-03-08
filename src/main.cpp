@@ -147,7 +147,7 @@ int main (int argc, char *argv[])
 	//load box for online spawning
 	box = load_object((char *)"data/objects/misc/box");
 	sphere = load_object((char *)"data/objects/misc/sphere");
-	if (!box)
+	if (!box || !sphere)
 		emergency_quit();
 
 	spawn_car (venom, track.start[0], track.start[1], track.start[2]);

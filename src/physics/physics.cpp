@@ -24,7 +24,6 @@ int physics_init(void)
 {
 	printlog(0, "Initiating physics");
 	dInitODE2(0);
-	printlog(1, "TODO: change ODE allocation flags...");
 	dAllocateODEDataForThread(dAllocateFlagBasicData | dAllocateFlagCollisionData);
 
 	world = dWorldCreate();
