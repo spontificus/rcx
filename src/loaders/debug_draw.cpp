@@ -59,24 +59,6 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 	glEndList();
 }
 
-void debug_draw_sphere_part(GLfloat x, GLfloat y, GLfloat z)
-{
-	glNormal3f (1.0f*x, -0.8f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x,  0.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-
-	glNormal3f (0.8f*x, -1.0f*y, 1.0f*z);
-	glVertex3f (0.0f*x, -1.0f*y, 0.0f*z);
-	glVertex3f (1.0f*x,  0.0f*y, 0.0f*z);
-	glVertex3f (0.5f*x, -0.5f*y, 0.5f*z);
-}
-
 void debug_draw_sphere (GLuint list, GLfloat d, const GLfloat colour[],
 		const GLfloat specular[], const GLint shininess)
 {
