@@ -41,8 +41,8 @@ class Geom: public Component
 
 		bool collide; //create physical collision when touching other components
 
+		//register if geom is colliding
 		bool colliding; //set after each collision
-		script_struct *script; //script to execute when colliding (NULL if not used)
 
 		//debug variables
 		dGeomID flipper_geom;
@@ -54,6 +54,10 @@ class Geom: public Component
 		static Geom *head; // = NULL;
 		Geom *prev;
 		Geom *next;
+
+		//for events
+		script_struct *script; //script to execute when colliding (NULL if not used)
+
 };
 
 #endif

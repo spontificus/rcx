@@ -28,19 +28,7 @@ void event_step(Uint32 step)
 {
 	//loop geoms to see if any event
 	Geom::TMP_Events_Step(step);
-
-	//loop joints
-	joint_data *joint = joint_data_head;
-	while (joint)
-	{
-		if (joint->event)
-		{
-			//assume the joint should be destroyed
-			dJointDestroy (joint->joint_id);
-			free_joint_data (joint);
-		}
-		joint=joint->next;
-	}
+	Joint::TMP_Events_Step(step);
 
 	//get SDL events
 	SDL_mutexP(sdl_mutex); //make sure not colliding with other threads

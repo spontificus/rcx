@@ -27,8 +27,6 @@ void free_all (void)
 	//take care of object (without calling ode - not needed)
 	while (body_data_head)
 		free_body_data(body_data_head);
-	while (joint_data_head)
-		free_joint_data(joint_data_head);
        	
 	//TODO: Object::Destroy_All()
 	while (object_head)

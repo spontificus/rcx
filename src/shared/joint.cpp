@@ -1,81 +1,61 @@
 #include "joint.hpp"
+#include "component.hpp"
 
-joint_data *joint_data_head = NULL;
-joint_data *allocate_joint_data (dJointID joint, object_struct *obj, bool feedback)
+Joint *Joint::head = NULL;
+
+Joint::Joint (dJointID joint, object_struct *obj): Component(obj)
 {
-	printlog(2, "allocating joint_data");
-	bool warn = false;
-	joint_data *tmp_joint = (joint_data *)malloc(sizeof(joint_data));
+	printlog(2, "configuring Joint class");
 
 	//parent object
-	tmp_joint->object_parent = obj;
-	if (obj)
-	{
-		printlog(2, "(parent object)");
-//		obj->joint_count += 1;
-
-		warn = true;
-	}
-	else
-		printlog(2, "WARNING: no parent object!");
+	object_parent = obj;
 
 	//add it to the list
-	tmp_joint->next = joint_data_head;
-	joint_data_head = tmp_joint;
-	joint_data_head->prev = NULL;
+	next = head;
+	head = this;
+	prev = NULL;
 
-	if (joint_data_head->next)
-		joint_data_head->next->prev = joint_data_head;
+	if (next)
+		next->prev = this;
 	else
 		printlog(2, "(first registered)");
 
 	//add it to the joint
-	dJointSetData (joint, (void*)(joint_data*)(joint_data_head));
-	joint_data_head->joint_id = joint;
+	dJointSetData (joint, (void*)(this));
+	joint_id = joint;
 
 	//default values (currently only event triggering)
-	joint_data_head->threshold = 0; //no threshold (disables event testing)
-	joint_data_head->buffer = 1; //almost empty
-	joint_data_head->event = false;
-	joint_data_head->script = NULL;
-
-	if (feedback)
-	{
-		printlog(2, "(with feedback)");
-		dJointSetFeedback (joint, &(joint_data_head->feedback));
-	}
-
-
-	if (warn)
-		printlog(2, "Warning: can't change jointgroup (specify when creating!)");
-
-	return joint_data_head;
+	threshold = 0; //no threshold (disables event testing)
+	buffer = 1; //almost empty
+	event = false;
+	script = NULL;
+	feedback = NULL;
 }
 
-
 //destroys a joint, and removes it from the list
-void free_joint_data (joint_data *target)
+Joint::~Joint ()
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, "freeing joint");
+	printlog(2, "clearing Joint class");
 
 	//1: remove it from the list
-	if (!target->prev) //head in list, change head pointer
+	if (!prev) //head in list, change head pointer
 	{
 		printlog(2, "(is head)");
-		joint_data_head = target->next;
+		head = next;
 	}
 	else //not head in list, got a previous link to update
-		target->prev->next = target->next;
+		prev->next = next;
 
-	if (target->next) //not last link in list
-		target->next->prev = target->prev;
+	if (next) //not last link in list
+		next->prev = prev;
 	else
 		printlog(2, "(is last)");
 
 	//2: remove it from memory
+	if (feedback)
+		delete feedback;
 
-	free(target);
-
+	//TODO: dJointDestroy(joint);
 }
 

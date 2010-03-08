@@ -147,13 +147,13 @@ void debug_joint_fixed(dBodyID body1, dBodyID body2, object_struct *obj)
 {
 	dJointID joint;
 	joint = dJointCreateFixed (world, 0);
+	Joint *jd = new Joint(joint, obj);
 	dJointAttach (joint, body1, body2);
 	dJointSetFixed (joint);
 
 	//use feedback
-	joint_data *data = (joint_data *)allocate_joint_data (joint, obj, true);
-	data->threshold = 25000;
-	data->buffer = 1000;
+	//set threshold, buffer and dummy script
+	jd->Set_Event(25000, 1000, (script_struct*)1337);
 }
 
 //spawn a "loaded" (actually hard-coded) object
