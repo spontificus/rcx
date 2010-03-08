@@ -133,14 +133,55 @@ void Body::Angular_Drag ()
 	dBodySetAngularVel(body_id, vel[0]*remain, vel[1]*remain, vel[2]*remain);
 }
 
-//currently just simulates air drag
-//NOTE: ode provides linear/angular dampening, but this should be more realistic
+
+void Body::Set_Event(dReal thres, dReal buff, script_struct *scr)
+{
+	if (thres > 0 && buff > 0 && scr)
+	{
+		printlog(2, "setting Body event");
+
+		threshold=thres;
+		buffer=buff;
+		script=scr;
+
+		//make sure no old event is left
+		event=false;
+	}
+	else
+	{
+		printlog(2, "disabling Body event");
+
+		//disable
+		threshold = 0;
+	}
+}
+
+
 void Body::Physics_Step (void)
 {
 	Body *d = Body::head;
+	const dReal *force;
+	dReal force_total;
 
 	while (d)
 	{
+		if (d->threshold && d->buffer > 0)
+		{
+			//TODO: also check torque?
+			force = dBodyGetForce(d->body_id);
+			force_total = dLENGTH(force);
+			force_total -= d->threshold;
+
+			if (force_total > 0)
+			{
+				d->buffer -= force_total*internal.stepsize;
+				if (d->buffer < 0)
+					d->event = true;
+			}
+		}
+
+
+		//drag
 		if (d->use_advanced_linear_drag)
 			d->Advanced_Linear_Drag();
 		else if (d->use_linear_drag) //might have simple drag instead

@@ -43,9 +43,9 @@ void Joint::Physics_Step (void)
 
 	while (d)
 	{
-		if (d->threshold && d->feedback)
+		if (d->threshold && d->feedback && d->buffer > 0)
 		{
-			//printf("check\n");
+			//TODO: check torque also?
 			delt1 = dLENGTH(d->feedback->f1);
 			delt2 = dLENGTH(d->feedback->f2);
 

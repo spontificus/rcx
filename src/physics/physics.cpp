@@ -205,7 +205,6 @@ void physics_step(void)
 	Body::Physics_Step(); //drag (air/liquid "friction")
 
 	dSpaceCollide (space, 0, &CollisionCallback);
-
 	dWorldQuickStep (world, internal.stepsize);
 	dJointGroupEmpty (contactgroup);
 

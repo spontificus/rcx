@@ -165,6 +165,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//script structure
 	//
 	object_struct *obj;
+	Body *bd;
+
 	if (script->box)
 	{
 	printlog(2, "(hard-coded box)");
@@ -183,7 +185,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dMassAdjust (&m,400); //mass
 	dBodySetMass (body, &m);
 
-	new Body(body, obj); //just for drag
+	bd = new Body(body, obj); //just for drag
+	bd->Set_Event (100, 10, (script_struct*)1337);
 
 	dGeomSetBody (geom, body);
 
