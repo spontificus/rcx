@@ -315,6 +315,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//connect to main sphere
 	
 	joint = dJointCreateBall (world, 0);
+	new Joint(joint);
 	dJointAttach (joint, body1, body);
 	dJointSetBallAnchor (joint, x+pos[i][0], y+pos[i][1], z+pos[i][2]);
 	}

@@ -43,19 +43,23 @@ void Joint::Physics_Step (void)
 
 	while (d)
 	{
-		delt1 = dLENGTH(d->feedback->f1);
-		delt2 = dLENGTH(d->feedback->f2);
-
-		if (delt1>delt2)
-			delt = delt1 - d->threshold;
-		else
-			delt = delt2 - d->threshold;
-
-		if (delt > 0)
+		if (d->threshold && d->feedback)
 		{
-			d->buffer -= delt*internal.stepsize;
-			if (d->buffer < 0)
-				d->event = true;
+			//printf("check\n");
+			delt1 = dLENGTH(d->feedback->f1);
+			delt2 = dLENGTH(d->feedback->f2);
+
+			if (delt1>delt2)
+				delt = delt1 - d->threshold;
+			else
+				delt = delt2 - d->threshold;
+
+			if (delt > 0)
+			{
+				d->buffer -= delt*internal.stepsize;
+				if (d->buffer < 0)
+					d->event = true;
+			}
 		}
 
 		d = d->next;

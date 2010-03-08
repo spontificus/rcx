@@ -2,6 +2,7 @@
 #include "../shared/printlog.hpp"
 #include "../shared/track.hpp"
 #include "../shared/body.hpp"
+#include "../shared/joint.hpp"
 #include "colours.hpp"
 #include "debug_draw.hpp"
 
@@ -285,6 +286,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	for (i=0; i<4; ++i)
 	{
 		target->joint[i]=dJointCreateHinge2 (world, 0);
+		new Joint(target->joint[i], target->object);
 		//body is still body of car main body
 		dJointAttach (target->joint[i], target->bodyid, wheel_body[i]);
 		dJointSetHinge2Axis1 (target->joint[i],0,0,1);
