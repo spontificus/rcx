@@ -1,6 +1,7 @@
 #include "../shared/car.hpp"
 #include "../shared/printlog.hpp"
 #include "../shared/track.hpp"
+#include "../shared/geom.hpp"
 #include "../shared/body.hpp"
 #include "../shared/joint.hpp"
 #include "colours.hpp"
@@ -157,12 +158,10 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	dBodySetMass (target->bodyid, &m);
 
 	//set up air (and liquid) drag for body
-	body_data *odata;
-	odata = allocate_body_data (target->bodyid, target->object);
-	Body_Data_Set_Advanced_Linear_Drag (odata, target->body_linear_drag[0],
-			target->body_linear_drag[1], target->body_linear_drag[2]);
+	Body *bdata = new Body (target->bodyid, target->object);
+	bdata->Set_Advanced_Linear_Drag (target->body_linear_drag[0], target->body_linear_drag[1], target->body_linear_drag[2]);
 	//rotational drag
-	Body_Data_Set_Angular_Drag ( odata, target->body_angular_drag);
+	bdata->Set_Angular_Drag (target->body_angular_drag);
 
 
 	dBodySetPosition (target->bodyid, x, y, z);
@@ -248,10 +247,10 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 
 
 		//drag
-		odata = allocate_body_data (wheel_body[i], target->object);
-		Body_Data_Set_Linear_Drag (odata, target->wheel_linear_drag);
+		bdata = new Body (wheel_body[i], target->object);
+		bdata->Set_Linear_Drag (target->wheel_linear_drag);
 		//rotational drag
-		Body_Data_Set_Angular_Drag (odata, target->wheel_angular_drag);
+		bdata->Set_Angular_Drag (target->wheel_angular_drag);
 
 		//graphics
 		wheel_data[i]->file_3d = target->wheel_graphics;

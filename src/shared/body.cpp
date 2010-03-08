@@ -1,66 +1,60 @@
 #include "body.hpp"
+#include "object.hpp"
 #include "internal.hpp"
-#include "body.hpp"
 #include "printlog.hpp"
 
-body_data *body_data_head = NULL;
-body_data *allocate_body_data (dBodyID body, object_struct *obj)
-{
-	printlog(2, "allocating body_data");
-	body_data *tmp_body = (body_data *)malloc(sizeof(body_data));
+Body *Body::head = NULL;
 
-	//parent object
-	tmp_body->object_parent = obj;
+Body::Body (dBodyID body, object_struct *obj): Component(obj)
+{
+	printlog(2, "configuring Body class");
 
 	//ad it to the list
-	tmp_body->next = body_data_head;
-	body_data_head = tmp_body;
-	body_data_head->prev = NULL;
+	next = head;
+	head = this;
+	prev = NULL;
 
-	if (body_data_head->next)
-		body_data_head->next->prev = body_data_head;
+	if (next)
+		next->prev = this;
 	else
 		printlog(2, "(first registered)");
 
 	//add it to the body
-	dBodySetData (body, (void*)(body_data*)(body_data_head));
-	body_data_head->body_id = body;
+	dBodySetData (body, (void*)(this));
+	body_id = body;
 
 	//default values
-	Body_Data_Set_Linear_Drag(body_data_head, internal.linear_drag);
-	Body_Data_Set_Angular_Drag(body_data_head, internal.angular_drag);
+	Set_Linear_Drag(internal.linear_drag);
+	Set_Angular_Drag(internal.angular_drag);
 
-	body_data_head->threshold = 0; //no threshold (disables event testing)
-	body_data_head->buffer = 1; //almost empty buffer
-	body_data_head->event = false;
-	body_data_head->script = NULL;
-
-	return body_data_head;
+	threshold = 0; //no threshold (disables event testing)
+	buffer = 1; //almost empty buffer
+	event = false;
+	script = NULL;
 }
 
 //destroys a body, and removes it from the list
-void free_body_data (body_data *target)
+Body::~Body()
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, "freeing body");
+	printlog(2, "clearing Joint class");
 
 	//1: remove it from the list
-	if (!target->prev) //head in list, change head pointer
+	if (!prev) //head in list, change head pointer
 	{
 		printlog(2, "(body is head)");
-		body_data_head = target->next;
+		head = next;
 	}
 	else //not head in list, got a previous link to update
-		target->prev->next = target->next;
+		prev->next = next;
 
-	if (target->next) //not last link in list
-		target->next->prev = target->prev;
+	if (next) //not last link in list
+		next->prev = prev;
 	else
 		printlog(2, "(body is last)");
 
 	//2: remove it from memory
 
-	free(target);
-
+	//TODO: dBodyDestroy
 }
 

@@ -202,7 +202,7 @@ void physics_step(void)
 {
 	car_physics_step(); //control, antigrav...
 	Joint::Physics_Step(); //joint forces
-	body_physics_step(); //drag (air/liquid "friction")
+	Body::Physics_Step(); //drag (air/liquid "friction")
 
 	dSpaceCollide (space, 0, &CollisionCallback);
 

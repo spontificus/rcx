@@ -24,11 +24,7 @@ void free_all (void)
 	while (profile_head)
 		free_profile(profile_head);
 
-	//take care of object (without calling ode - not needed)
-	while (body_data_head)
-		free_body_data(body_data_head);
-       	
-	//TODO: Object::Destroy_All()
+	//TODO: Object::Destroy_All() (which calls Component->Destroy_All() for included components)
 	while (object_head)
 		free_object(object_head);
 

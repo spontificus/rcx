@@ -29,6 +29,7 @@ void event_step(Uint32 step)
 	//loop geoms to see if any event
 	Geom::TMP_Events_Step(step);
 	Joint::TMP_Events_Step(step);
+	Body::TMP_Events_Step(step);
 
 	//get SDL events
 	SDL_mutexP(sdl_mutex); //make sure not colliding with other threads
