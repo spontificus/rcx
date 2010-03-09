@@ -167,8 +167,9 @@ void Body::Physics_Step (void)
 	{
 		if (d->threshold && d->buffer > 0)
 		{
+			printf("FIXME: can not read accumulated force on body (yet), modify ODE...\n");
 			//TODO: also check torque?
-			force = dBodyGetForce(d->body_id);
+			/*force = dBodyGetForce(d->body_id);
 			force_total = dLENGTH(force);
 			force_total -= d->threshold;
 
@@ -177,7 +178,7 @@ void Body::Physics_Step (void)
 				d->buffer -= force_total*internal.stepsize;
 				if (d->buffer < 0)
 					d->event = true;
-			}
+			}*/
 		}
 
 

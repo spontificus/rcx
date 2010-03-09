@@ -186,7 +186,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	dBodySetMass (body, &m);
 
 	bd = new Body(body, obj); //just for drag
-	bd->Set_Event (100, 10, (script_struct*)1337);
+	//bd->Set_Event (100, 10, (script_struct*)1337);
 
 	dGeomSetBody (geom, body);
 
