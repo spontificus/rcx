@@ -60,8 +60,21 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 	geom1 = (Geom*) dGeomGetData (o1);
 	geom2 = (Geom*) dGeomGetData (o2);
 
+	//get attached bodies
+	dBodyID b1, b2;
+	b1 = dGeomGetBody(o1);
+	b2 = dGeomGetBody(o2);
+
+	//none connected to bodies
+	if (!b1 && !b2)
+		return;
+
+	//none wants to create collisions..
 	if (!geom1->collide&&!geom2->collide)
+	{
 		printlog(1, "not collideable, TODO: bitfield solution");
+		return;
+	}
 
 	dContact contact[internal.contact_points];
 	int count = dCollide (o1,o2,internal.contact_points, &contact[0].geom, sizeof(dContact));
@@ -146,9 +159,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 					contact[i].surface.soft_cfm = cfm;
 					contact[i].surface.bounce = bounce; //in case specified
 					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-					dJointAttach (c,
-							dGeomGetBody(contact[i].geom.g1),
-							dGeomGetBody(contact[i].geom.g2));
+					dJointAttach (c,b1,b2);
 				}
 				//rim
 				else
@@ -160,9 +171,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 					contact[i].surface.soft_cfm = cfm;
 					contact[i].surface.bounce = bounce; //in case specified
 					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-					dJointAttach (c,
-							dGeomGetBody(contact[i].geom.g1),
-							dGeomGetBody(contact[i].geom.g2));
+					dJointAttach (c,b1,b2);
 				}
 
 			}
@@ -179,9 +188,7 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 				contact[i].surface.soft_cfm = cfm;
 				contact[i].surface.bounce = bounce; //in case specified
 				dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-				dJointAttach (c,
-						dGeomGetBody(contact[i].geom.g1),
-						dGeomGetBody(contact[i].geom.g2));
+				dJointAttach (c,b1,b2);
 			}
 		}
 	}
