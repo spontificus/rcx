@@ -348,6 +348,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
 	Geom *data = new Geom(geom, obj);
+	data->threshold = 100000;
+	data->buffer = 100;
 	dBodyID body1 = dBodyCreate (world);
 
 	dMass m;
@@ -390,6 +392,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		{
 			dGeomID geom  = dCreateBox (0, 4,0.4,2.7); //geom
 			Geom *data = new Geom(geom, obj);
+			data->threshold = 100000;
+			data->buffer = 10000;
 			data->mu = 1;
 
 			body1[i] = dBodyCreate (world);
@@ -448,6 +452,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		{
 			dGeomID geom  = dCreateBox (0, 4,4,0.2); //geom
 			Geom *data = new Geom(geom, obj);
+			data->threshold = 100000;
+			data->buffer = 10000;
 			data->mu = 1;
 
 			body2[i] = dBodyCreate (world);
@@ -512,6 +518,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		{
 			geom  = dCreateCapsule (0, 0.5,1.5); //geom
 			data = new Geom(geom, obj);
+			data->threshold = 100000;
+			data->buffer = 10000;
 			body[i] = dBodyCreate (world);
 	
 			dMass m;
