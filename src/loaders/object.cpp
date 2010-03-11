@@ -178,6 +178,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 
 	dGeomID geom  = dCreateBox (0, 1,1,1); //geom
 	Geom *data = new Geom(geom, obj);
+	data->threshold = 100000;
+	data->buffer = 100;
 	dBodyID body = dBodyCreate (world);
 
 	dMass m;
