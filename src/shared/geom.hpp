@@ -44,6 +44,13 @@ class Geom: public Component
 		//register if geom is colliding
 		bool colliding; //set after each collision
 
+		//geom can respond to collision forces
+		void Collision_Force(dReal force); //"damage" geom with specified force
+		bool force_to_body; //send forces to connected body instead
+		dReal threshold;
+		dReal buffer;
+		bool event;
+
 		//debug variables
 		dGeomID flipper_geom;
 		int flipper_counter;

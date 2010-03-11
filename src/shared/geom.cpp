@@ -57,6 +57,12 @@ Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argu
 
 	collide = true; //on collision, create opposing forces
 
+	//for force handling (disable)
+	force_to_body=false;
+	threshold=0;
+	buffer=1;
+	event=false;
+
 	//debug variables
 	flipper_geom = 0;
 	flipper_counter = 0;

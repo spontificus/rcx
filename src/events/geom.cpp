@@ -7,6 +7,12 @@ void Geom::TMP_Events_Step(Uint32 step)
 	Geom *geom = Geom::head;
 	while (geom)
 	{
+		if (geom->event)
+		{
+			printf("TODO: remove this geom!\n");
+			geom->event = false;
+		}
+
 		if (geom->flipper_geom)
 		{
 			if (geom->colliding)

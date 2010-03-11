@@ -17,6 +17,8 @@
 #include "../shared/car.hpp"
 #include "../shared/joint.hpp"
 
+#include "collision_feedback.hpp"
+
 
 unsigned int stepsize_warnings = 0;
 
@@ -179,16 +181,35 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 
 		else
 		{
-			for (i=0; i<count; ++i)
+			if (geom1->threshold>0 || geom2->threshold>0)
 			{
-				contact[i].surface.mode = mode;
+				for (i=0; i<count; ++i)
+				{
+					contact[i].surface.mode = mode;
 
-				contact[i].surface.mu = mu;
-				contact[i].surface.soft_erp = erp;
-				contact[i].surface.soft_cfm = cfm;
-				contact[i].surface.bounce = bounce; //in case specified
-				dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-				dJointAttach (c,b1,b2);
+					contact[i].surface.mu = mu;
+					contact[i].surface.soft_erp = erp;
+					contact[i].surface.soft_cfm = cfm;
+					contact[i].surface.bounce = bounce; //in case specified
+					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+					dJointAttach (c,b1,b2);
+
+					new Collision_Feedback(c, geom1, geom2);
+				}
+			}
+			else
+			{
+				for (i=0; i<count; ++i)
+				{
+					contact[i].surface.mode = mode;
+
+					contact[i].surface.mu = mu;
+					contact[i].surface.soft_erp = erp;
+					contact[i].surface.soft_cfm = cfm;
+					contact[i].surface.bounce = bounce; //in case specified
+					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
+					dJointAttach (c,b1,b2);
+				}
 			}
 		}
 	}
@@ -215,6 +236,7 @@ void physics_step(void)
 	dWorldQuickStep (world, internal.stepsize);
 	dJointGroupEmpty (contactgroup);
 
+	Collision_Feedback::Physics_Step(); //forces from collisions
 	camera_physics_step(); //move camera to wanted postion
 }
 

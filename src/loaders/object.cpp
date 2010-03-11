@@ -263,6 +263,9 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
 	Geom *data = new Geom(geom, obj);
+	data->threshold = 1000;
+	data->buffer = 100;
+
 	dBodyID body1 = dBodyCreate (world);
 
 	dMass m;
