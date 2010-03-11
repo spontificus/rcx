@@ -37,7 +37,7 @@ Body::Body (dBodyID body, object_struct *obj): Component(obj)
 Body::~Body()
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, "clearing Joint class");
+	printlog(2, "clearing Body class");
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer
