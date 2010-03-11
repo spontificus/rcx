@@ -97,6 +97,10 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 		cfm = (geom1->cfm)*(geom2->cfm);
 		slip = 0.0;
 
+		bool feedback = false;
+		if (geom1->threshold>0 || geom2->threshold>0)
+			feedback = true;
+
 		//optional bouncyness (good for wheels?)
 		if (geom1->bounce||geom2->bounce)
 		{
@@ -162,6 +166,9 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 					contact[i].surface.bounce = bounce; //in case specified
 					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
 					dJointAttach (c,b1,b2);
+
+					if (feedback)
+						new Collision_Feedback(c, geom1, geom2);
 				}
 				//rim
 				else
@@ -174,17 +181,18 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 					contact[i].surface.bounce = bounce; //in case specified
 					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
 					dJointAttach (c,b1,b2);
+
+					if (feedback)
+						new Collision_Feedback(c, geom1, geom2);
 				}
 
 			}
 		}
 
-		else
+		else //normal collision
 		{
-			if (geom1->threshold>0 || geom2->threshold>0)
+			for (i=0; i<count; ++i)
 			{
-				for (i=0; i<count; ++i)
-				{
 					contact[i].surface.mode = mode;
 
 					contact[i].surface.mu = mu;
@@ -194,22 +202,8 @@ void CollisionCallback (void *data, dGeomID o1, dGeomID o2)
 					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
 					dJointAttach (c,b1,b2);
 
-					new Collision_Feedback(c, geom1, geom2);
-				}
-			}
-			else
-			{
-				for (i=0; i<count; ++i)
-				{
-					contact[i].surface.mode = mode;
-
-					contact[i].surface.mu = mu;
-					contact[i].surface.soft_erp = erp;
-					contact[i].surface.soft_cfm = cfm;
-					contact[i].surface.bounce = bounce; //in case specified
-					dJointID c = dJointCreateContact (world,contactgroup,&contact[i]);
-					dJointAttach (c,b1,b2);
-				}
+					if (feedback)
+						new Collision_Feedback(c, geom1, geom2);
 			}
 		}
 	}
