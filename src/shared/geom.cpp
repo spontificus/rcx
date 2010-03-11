@@ -88,7 +88,6 @@ Geom::~Geom ()
 	else
 		printlog(2, "(geom is last)");
 
-	//TODO: dGeomDestroy(geom_id);
-
+	dGeomDestroy(geom_id);
 }
 

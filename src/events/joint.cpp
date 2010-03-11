@@ -11,7 +11,6 @@ void Joint::TMP_Events_Step(Uint32 step)
 		if (joint->event)
 		{
 			//assume the joint should be destroyed
-			dJointDestroy (joint->joint_id);
 			delete joint;
 		}
 		joint=joint->next;

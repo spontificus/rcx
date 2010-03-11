@@ -15,7 +15,6 @@ void Geom::Collision_Force(dReal force)
 		//now it's negative, issue event
 		if (buffer < 0)
 		{
-			printf("event\n");
 			event = true;
 		}
 	}

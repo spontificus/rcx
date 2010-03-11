@@ -263,7 +263,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
 	Geom *data = new Geom(geom, obj);
-	data->threshold = 1000;
+	data->threshold = 100000;
 	data->buffer = 100;
 
 	dBodyID body1 = dBodyCreate (world);
@@ -300,6 +300,8 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//connected spheres
 	geom  = dCreateSphere (0, 0.8); //geom
 	data = new Geom(geom, obj);
+	data->threshold = 100000;
+	data->buffer = 100;
 	body = dBodyCreate (world);
 
 	dMassSetSphere (&m,1,0.5); //radius

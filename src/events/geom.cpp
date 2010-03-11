@@ -1,5 +1,6 @@
 #include <ode/ode.h>
 #include "../shared/geom.hpp"
+#include "../shared/body.hpp"
 
 //temporary geom event processing
 void Geom::TMP_Events_Step(Uint32 step)
@@ -7,10 +8,21 @@ void Geom::TMP_Events_Step(Uint32 step)
 	Geom *geom = Geom::head;
 	while (geom)
 	{
+		//TMP demo until scripting
 		if (geom->event)
 		{
-			printf("TODO: remove this geom!\n");
 			geom->event = false;
+
+			dBodyID bodyid = dGeomGetBody(geom->geom_id);
+
+			//if has body, remove body and this geom
+			if (bodyid)
+			{
+				Body *body = (Body*)dBodyGetData(bodyid);
+
+				delete geom;
+				delete body;
+			}
 		}
 
 		if (geom->flipper_geom)

@@ -56,6 +56,6 @@ Joint::~Joint ()
 	if (feedback)
 		delete feedback;
 
-	//TODO: dJointDestroy(joint);
+	dJointDestroy(joint_id);
 }
 

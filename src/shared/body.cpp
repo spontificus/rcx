@@ -55,6 +55,6 @@ Body::~Body()
 
 	//2: remove it from memory
 
-	//TODO: dBodyDestroy
+	dBodyDestroy(body_id);
 }
 
