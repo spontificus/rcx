@@ -132,6 +132,20 @@ script_struct *load_object(char *path)
 
 		script->building = true;
 	}
+	else if (!strcmp(path,"data/objects/misc/pillar"))
+	{
+		//"load" 3d box
+		printlog(2, "(hard-coded pillar)");
+
+		script = allocate_script();
+		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
+		strcpy (script->name, path);
+
+		script->graphics_debug1 = allocate_file_3d();
+		debug_draw_box (script->graphics_debug1->list, 2,2,5, gray,gray, 50);
+		script->pillar = true;
+	}
+
 
 	else
 	{
@@ -574,6 +588,26 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	}
 	//
 	//
+	else if (script->pillar)
+	{
+		printlog(2, "(hard-coded building)");
+
+		//just one geom in this object
+		Geom *g = new Geom(dCreateBox(0, 2,2,5), new object_struct);
+
+		//position
+		dGeomSetPosition(g->geom_id, x,y,z+5/2);
+
+		//render
+		g->file_3d = script->graphics_debug1;
+
+		//identification
+		g->TMP_pillar_geom = true;
+
+		//destruction
+		g->threshold = 200000;
+		g->buffer = 10000;
+	}
 	else
 		printlog(0, "ERROR: trying to spawn unidentified object?!");
 

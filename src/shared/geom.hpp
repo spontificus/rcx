@@ -44,17 +44,20 @@ class Geom: public Component
 		//register if geom is colliding
 		bool colliding; //set after each collision
 
-		//geom can respond to collision forces
+		//geom can respond to collision forces, TODO private:
 		void Collision_Force(dReal force); //"damage" geom with specified force
 		bool force_to_body; //send forces to connected body instead
 		dReal threshold;
 		dReal buffer;
 		bool event;
+		//void Set_Buffer(... - TODO
+		void Increase_Buffer(dReal add);
 
 		//debug variables
 		dGeomID flipper_geom;
 		int flipper_counter;
 
+		bool TMP_pillar_geom;
 	private:
 		//used to find next/prev geom in list of all geoms
 		//set next to null in last link in chain (prev = NULL in first)

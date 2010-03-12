@@ -24,6 +24,7 @@ script_struct *allocate_script(void)
 	script_head->NH4 = false;
 	script_head->building = false;
 	script_head->sphere = false;
+	script_head->pillar = false;
 
 
 	return script_head;

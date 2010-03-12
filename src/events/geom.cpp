@@ -1,6 +1,7 @@
 #include <ode/ode.h>
 #include "../shared/geom.hpp"
 #include "../shared/body.hpp"
+#include "../shared/track.hpp"
 
 //temporary geom event processing
 void Geom::TMP_Events_Step(Uint32 step)
@@ -22,6 +23,32 @@ void Geom::TMP_Events_Step(Uint32 step)
 
 				delete geom;
 				delete body;
+			}
+			else //static geom, hmm...
+			{
+				if (geom->TMP_pillar_geom)
+				{
+					//pillar that should be getting a body (to detach), and buffer refill
+					dBodyID body = dBodyCreate(world);
+					new Body(body, geom->object_parent);
+
+					//mass
+					dMass m;
+					dMassSetBox (&m, 1, 2,2,5);
+					dMassAdjust (&m, 200); //200kg
+					dBodySetMass(body, &m);
+
+					//position
+					const dReal *pos = dGeomGetPosition(geom->geom_id);
+					dBodySetPosition(body, pos[0], pos[1], pos[2]);
+
+					//attach
+					dGeomSetBody(geom->geom_id, body);
+
+
+					//reset buffer
+					geom->Increase_Buffer(4000);
+				}
 			}
 		}
 

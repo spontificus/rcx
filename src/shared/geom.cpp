@@ -67,6 +67,7 @@ Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argu
 	flipper_geom = 0;
 	flipper_counter = 0;
 
+	TMP_pillar_geom =false; //not a demo pillar geom
 }
 //destroys a geom, and removes it from the list
 Geom::~Geom ()

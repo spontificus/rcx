@@ -23,6 +23,7 @@ typedef struct script_struct {
 	bool NH4;
 	bool building;
 	bool sphere;
+	bool pillar;
 
 	struct script_struct *next;
 } script_struct;

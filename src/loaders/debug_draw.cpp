@@ -62,7 +62,7 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 void debug_draw_sphere (GLuint list, GLfloat d, const GLfloat colour[],
 		const GLfloat specular[], const GLint shininess)
 {
-	printlog(2, " > Creating rendering list for debug sphere\n");
+	printlog(2, "Creating rendering list for debug sphere");
 	GLfloat radius = d/2;
 
 	glNewList (list, GL_COMPILE);
