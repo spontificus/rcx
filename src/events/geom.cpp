@@ -35,11 +35,11 @@ void Geom::TMP_Events_Step(Uint32 step)
 
 					//body1
 					dBodyID b = dBodyCreate(world);
-					new Body(b, geom->object_parent);
 					dMass m;
 					dMassSetBox (&m, 1, 2,2,5/2);
 					dMassAdjust (&m, 100); //200kg
 					dBodySetMass(b, &m);
+					new Body(b, geom->object_parent);
 					dBodySetPosition(b, pos1[0], pos1[1], pos1[2]);
 					dBodySetRotation(b, rot);
 					dGeomSetBody(g,b);
@@ -54,10 +54,10 @@ void Geom::TMP_Events_Step(Uint32 step)
 
 					//body2
 					b = dBodyCreate(world);
-					new Body(b, geom->object_parent);
 					dMassSetBox (&m, 1, 2,2,5/2);
 					dMassAdjust (&m, 100); //200kg
 					dBodySetMass(b, &m);
+					new Body(b, geom->object_parent);
 					dBodySetPosition(b, pos2[0], pos2[1], pos2[2]);
 					dBodySetRotation(b, rot);
 					dGeomSetBody(g,b);
@@ -75,7 +75,6 @@ void Geom::TMP_Events_Step(Uint32 step)
 				{
 					//pillar that should be getting a body (to detach), and buffer refill
 					dBodyID body = dBodyCreate(world);
-					new Body(body, geom->object_parent);
 
 					//mass
 					dMass m;
@@ -83,6 +82,7 @@ void Geom::TMP_Events_Step(Uint32 step)
 					dMassAdjust (&m, 200); //200kg
 					dBodySetMass(body, &m);
 
+					new Body(body, geom->object_parent);
 					//position
 					const dReal *pos = dGeomGetPosition(geom->geom_id);
 					dBodySetPosition(body, pos[0], pos[1], pos[2]);
