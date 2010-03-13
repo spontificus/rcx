@@ -592,7 +592,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	else if (script->pillar)
 	{
-		printlog(2, "(hard-coded building)");
+		printlog(2, "(hard-coded pillar)");
 
 		//just one geom in this object
 		Geom *g = new Geom(dCreateBox(0, 2,2,5), new object_struct);
