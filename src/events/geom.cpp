@@ -35,8 +35,9 @@ void Geom::TMP_Events_Step(Uint32 step)
 
 					//body1
 					dBodyID b = dBodyCreate(world);
+					new Body(b, geom->object_parent);
 					dMass m;
-					dMassSetBox (&m, 1, 2,2,5);
+					dMassSetBox (&m, 1, 2,2,5/2);
 					dMassAdjust (&m, 100); //200kg
 					dBodySetMass(b, &m);
 					dBodySetPosition(b, pos1[0], pos1[1], pos1[2]);
@@ -53,7 +54,8 @@ void Geom::TMP_Events_Step(Uint32 step)
 
 					//body2
 					b = dBodyCreate(world);
-					dMassSetBox (&m, 1, 2,2,5);
+					new Body(b, geom->object_parent);
+					dMassSetBox (&m, 1, 2,2,5/2);
 					dMassAdjust (&m, 100); //200kg
 					dBodySetMass(b, &m);
 					dBodySetPosition(b, pos2[0], pos2[1], pos2[2]);
