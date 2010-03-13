@@ -598,7 +598,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		Geom *g = new Geom(dCreateBox(0, 2,2,5), allocate_object());
 
 		//position
-		dGeomSetPosition(g->geom_id, x,y,z+5/2);
+		dGeomSetPosition(g->geom_id, x,y,(z+2.5));
 
 		//render
 		g->file_3d = script->graphics_debug1;
