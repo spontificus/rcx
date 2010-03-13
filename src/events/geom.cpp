@@ -30,7 +30,6 @@ void Geom::TMP_Events_Step(Uint32 step)
 					//geom1
 					dGeomID g = dCreateBox(0, 2,2,5/2);
 					Geom *gd = new Geom(g, geom->object_parent);
-					gd->file_3d = geom->script->graphics_debug2;
 					gd->threshold = 100000;
 					gd->buffer = 500;
 
@@ -44,10 +43,11 @@ void Geom::TMP_Events_Step(Uint32 step)
 					dBodySetRotation(b, rot);
 					dGeomSetBody(g,b);
 
+					gd->file_3d = geom->script->graphics_debug2;
+
 					//geom2
 					g = dCreateBox(0, 2,2,5/2);
 					gd = new Geom(g, geom->object_parent);
-					gd->file_3d = geom->script->graphics_debug2;
 					gd->threshold = 100000;
 					gd->buffer = 500;
 
@@ -59,6 +59,8 @@ void Geom::TMP_Events_Step(Uint32 step)
 					dBodySetPosition(b, pos2[0], pos2[1], pos2[2]);
 					dBodySetRotation(b, rot);
 					dGeomSetBody(g,b);
+
+					gd->file_3d = geom->script->graphics_debug2;
 				}
 				Body *body = (Body*)dBodyGetData(bodyid);
 
