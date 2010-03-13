@@ -2,6 +2,10 @@
 #simple script to generate makefile compatible list of prerequisites
 
 
+#remove old
+rm prereqs.lst
+
+#generate new
 for FILE in *cpp */*cpp
 do
 	DIR=$(dirname $FILE)
@@ -10,16 +14,14 @@ do
 	#in case file is in root of src dir, don't print "/./"
 	if [ $DIR == "." ]
 	then
-		echo -n "build/$NAME.o:"
+		echo -n "build/$NAME.o:" >> prereqs.lst
 	else
-		echo -n "build/$DIR/$NAME.o:"
+		echo -n "build/$DIR/$NAME.o:" >> prereqs.lst
 	fi
-
-	echo -n " $FILE"
 
 	for HEADER in $(grep '^#include.*"' $FILE |cut -d'"' -f2)
 	do
-		echo -n " $DIR/$HEADER"
+		echo -n " $DIR/$HEADER" >> prereqs.lst
 	done
-	echo ""
+	echo "" >> prereqs.lst
 done
