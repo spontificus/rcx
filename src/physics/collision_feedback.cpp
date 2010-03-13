@@ -16,16 +16,17 @@ Collision_Feedback::Collision_Feedback(dJointID joint, Geom *g1, Geom *g2)
 
 void Collision_Feedback::Physics_Step()
 {
-	Collision_Feedback *cf, *next;
+	Collision_Feedback *prev;
 
-	for (cf = head; cf; cf = next)
+	while (head)
 	{
-		cf->geom1->Collision_Force(dLENGTH(cf->feedback.f1));
-		cf->geom2->Collision_Force(dLENGTH(cf->feedback.f2));
+		head->geom1->Collision_Force(dLENGTH(head->feedback.f1));
+		head->geom2->Collision_Force(dLENGTH(head->feedback.f2));
 
-		next = cf->next;
-		delete cf;
+
+		prev = head;
+		head = head->next;
+		delete prev;
 	}
-
-	head = NULL;
 }
+
