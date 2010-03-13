@@ -142,7 +142,9 @@ script_struct *load_object(char *path)
 		strcpy (script->name, path);
 
 		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_box (script->graphics_debug1->list, 2,2,5, gray,gray, 50);
+		script->graphics_debug2 = allocate_file_3d();
+		debug_draw_box (script->graphics_debug1->list, 2,2,5, gray,gray, 50); //complete
+		debug_draw_box (script->graphics_debug2->list, 2,2,5/2, gray,gray, 50); //broken in half
 		script->pillar = true;
 	}
 
@@ -607,6 +609,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		//destruction
 		g->threshold = 200000;
 		g->buffer = 10000;
+		g->script = script; //got some data well need
 	}
 	else
 		printlog(0, "ERROR: trying to spawn unidentified object?!");

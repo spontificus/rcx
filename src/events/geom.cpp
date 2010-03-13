@@ -19,6 +19,47 @@ void Geom::TMP_Events_Step(Uint32 step)
 			//if has body, remove body and this geom
 			if (bodyid)
 			{
+				//break into two pieces
+				if (geom->TMP_pillar_geom)
+				{
+					const dReal *rot = dBodyGetRotation(bodyid);
+					dVector3 pos1, pos2;
+					dBodyGetRelPointPos(bodyid, 0,0,5/4, pos1);
+					dBodyGetRelPointPos(bodyid, 0,0,-5/4, pos2);
+
+					//geom1
+					dGeomID g = dCreateBox(0, 2,2,5/2);
+					Geom *gd = new Geom(g, geom->object_parent);
+					gd->file_3d = geom->script->graphics_debug2;
+					gd->threshold = 100000;
+					gd->buffer = 500;
+
+					//body1
+					dBodyID b = dBodyCreate(world);
+					dMass m;
+					dMassSetBox (&m, 1, 2,2,5);
+					dMassAdjust (&m, 100); //200kg
+					dBodySetMass(b, &m);
+					dBodySetPosition(b, pos1[0], pos1[1], pos1[2]);
+					dBodySetRotation(b, rot);
+					dGeomSetBody(g,b);
+
+					//geom2
+					g = dCreateBox(0, 2,2,5/2);
+					gd = new Geom(g, geom->object_parent);
+					gd->file_3d = geom->script->graphics_debug2;
+					gd->threshold = 100000;
+					gd->buffer = 500;
+
+					//body2
+					b = dBodyCreate(world);
+					dMassSetBox (&m, 1, 2,2,5);
+					dMassAdjust (&m, 100); //200kg
+					dBodySetMass(b, &m);
+					dBodySetPosition(b, pos2[0], pos2[1], pos2[2]);
+					dBodySetRotation(b, rot);
+					dGeomSetBody(g,b);
+				}
 				Body *body = (Body*)dBodyGetData(bodyid);
 
 				delete geom;
@@ -47,7 +88,7 @@ void Geom::TMP_Events_Step(Uint32 step)
 
 
 					//reset buffer
-					geom->Increase_Buffer(4000);
+					geom->Increase_Buffer(8000);
 				}
 			}
 		}

@@ -51,6 +51,9 @@ class Geom: public Component
 		dReal threshold;
 		dReal buffer;
 		bool event;
+		//for events
+		script_struct *script; //script to execute when colliding (NULL if not used)
+
 		//void Set_Buffer(... - TODO
 		void Increase_Buffer(dReal add);
 
@@ -65,10 +68,6 @@ class Geom: public Component
 		static Geom *head; // = NULL;
 		Geom *prev;
 		Geom *next;
-
-		//for events
-		script_struct *script; //script to execute when colliding (NULL if not used)
-
 };
 
 #endif
