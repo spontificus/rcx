@@ -23,6 +23,7 @@ class Geom: public Component
 		//methods for steps/simulations:
 		static void Graphics_Step();
 		static void TMP_Events_Step(Uint32 step);
+		static void Collision_Callback(void *, dGeomID, dGeomID);
 
 		//end of methods, variables:
 		//geom data bellongs to
