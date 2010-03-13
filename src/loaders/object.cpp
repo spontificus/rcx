@@ -595,7 +595,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		printlog(2, "(hard-coded pillar)");
 
 		//just one geom in this object
-		Geom *g = new Geom(dCreateBox(0, 2,2,5), new object_struct);
+		Geom *g = new Geom(dCreateBox(0, 2,2,5), allocate_object());
 
 		//position
 		dGeomSetPosition(g->geom_id, x,y,z+5/2);
