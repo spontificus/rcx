@@ -7,6 +7,15 @@ Collision_Feedback::Collision_Feedback(dJointID joint, Geom *g1, Geom *g2)
 	geom1 = g1;
 	geom2 = g2;
 
+	//make sure initialized to 0 (in case joint doesn't return any data...)
+	feedback.f1[0]=0;
+	feedback.f1[1]=0;
+	feedback.f1[2]=0;
+	feedback.f2[0]=0;
+	feedback.f2[1]=0;
+	feedback.f2[2]=0;
+
+	//set
 	dJointSetFeedback(joint, &feedback);
 
 	//add to list
@@ -20,10 +29,11 @@ void Collision_Feedback::Physics_Step()
 
 	while (head)
 	{
+		//just pass force to appropriate geom
 		head->geom1->Collision_Force(dLENGTH(head->feedback.f1));
 		head->geom2->Collision_Force(dLENGTH(head->feedback.f2));
 
-
+		//remove
 		prev = head;
 		head = head->next;
 		delete prev;
