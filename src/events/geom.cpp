@@ -60,17 +60,19 @@ void Geom::TMP_Events_Step(Uint32 step)
 				pos = dGeomGetPosition(geom->flipper_geom);
 				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
 						pos[2]+step*0.02);
-				if (++geom->flipper_counter > 10)
+				if ((geom->flipper_counter+=step) > 10)
 					geom->colliding=false;
 			}
-			else if (geom->flipper_counter)
+			else if (geom->flipper_counter>0)
 			{
 				const dReal *pos;
 				pos = dGeomGetPosition(geom->flipper_geom);
 				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
 						pos[2]-step*0.02);
-				--geom->flipper_counter;
+				geom->flipper_counter-=step;
 			}
+			else
+				geom->flipper_counter=0;
 		}
 		geom=geom->next;
 	}
