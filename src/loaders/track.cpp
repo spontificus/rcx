@@ -24,13 +24,7 @@ int load_track (char *path)
 	free (conf);
 
 	//set camera default values, some from track specs
-	camera.pos[0] = track.cam_start[0];
-	camera.pos[1] = track.cam_start[1];
-	camera.pos[2] = track.cam_start[2];
-
-	camera.t_pos[0] = track.target_start[0];
-	camera.t_pos[1] = track.target_start[1];
-	camera.t_pos[2] = track.target_start[2];
+	camera.Set_Pos(track.cam_start, track.target_start);
 
 	//append forced data
 	track.position[3] = 0.0f; //directional

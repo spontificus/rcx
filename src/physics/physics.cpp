@@ -59,7 +59,7 @@ void physics_step(void)
 
 	Collision_Feedback::Physics_Step(); //forces from collisions
 	Joint::Physics_Step(); //joint forces
-	camera_physics_step(); //move camera to wanted postion
+	camera.Physics_Step(); //move camera to wanted postion
 }
 
 int physics_loop (void *d)

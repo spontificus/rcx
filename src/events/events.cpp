@@ -92,31 +92,29 @@ void event_step(Uint32 step)
 
 		//set camera settings
 		if (keys[prof->cam1])
-			set_camera_settings (&prof->cam[0]);
+			camera.Set_Settings (&prof->cam[0]);
 		else if (keys[prof->cam2])
-			set_camera_settings (&prof->cam[1]);
+			camera.Set_Settings (&prof->cam[1]);
 		else if (keys[prof->cam3])
-			set_camera_settings (&prof->cam[2]);
+			camera.Set_Settings (&prof->cam[2]);
 		else if (keys[prof->cam4])
-			set_camera_settings (&prof->cam[3]);
+			camera.Set_Settings (&prof->cam[3]);
 
 		//move camera
-		camera_settings *settings = camera.settings;
-		if (settings)
-		{
-			if (keys[prof->cam_x_pos])
-				settings->distance[0]+=step*0.03;
-			else if (keys[prof->cam_x_neg])
-				settings->distance[0]-=step*0.03;
-			if (keys[prof->cam_y_pos])
-				settings->distance[1]+=step*0.03;
-			else if (keys[prof->cam_y_neg])
-				settings->distance[1]-=step*0.03;
-			if (keys[prof->cam_z_pos])
-				settings->distance[2]+=step*0.03;
-			else if (keys[prof->cam_z_neg])
-				settings->distance[2]-=step*0.03;
-		}
+		if (keys[prof->cam_x_pos]) //x
+			camera.Move(+step*0.03, 0, 0);
+		if (keys[prof->cam_x_neg])
+			camera.Move(-step*0.03, 0, 0);
+
+		if (keys[prof->cam_y_pos]) //y
+			camera.Move(0, +step*0.03, 0);
+		if (keys[prof->cam_y_neg])
+			camera.Move(0, -step*0.03, 0);
+
+		if (keys[prof->cam_z_pos]) //z
+			camera.Move(0, 0, +step*0.03);
+		if (keys[prof->cam_z_neg])
+			camera.Move(0, 0, -step*0.03);
 
 		//if selected car, read input
 		if (prof->car)

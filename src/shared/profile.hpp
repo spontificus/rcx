@@ -35,7 +35,7 @@ typedef struct profile_struct {
 	SDLKey cam_z_pos;
 	SDLKey cam_z_neg;
 
-	camera_settings cam[4];
+	struct Camera_Settings cam[4];
 	int camera;
 	SDLKey cam1;
 	SDLKey cam2;

@@ -34,8 +34,8 @@ extern struct track_struct {
 	dReal wind[3];
 
 	dReal start[3];
-	GLdouble cam_start[3];
-	GLdouble target_start[3];
+	dReal cam_start[3];
+	dReal target_start[3];
 
 	file_3d_struct *file_3d;
 	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
@@ -57,8 +57,8 @@ const struct data_index track_index[] = {
 	{"density",	'f',1,	offsetof(struct track_struct, density)},
 	{"wind",	'f',3,	offsetof(struct track_struct, wind)},
 	{"start",	'f',3,	offsetof(struct track_struct, start)},
-	{"cam_start",	'd',3,	offsetof(struct track_struct, cam_start)},
-	{"target_start",'d',3,	offsetof(struct track_struct, target_start)},
+	{"cam_start",	'f',3,	offsetof(struct track_struct, cam_start)},
+	{"target_start",'f',3,	offsetof(struct track_struct, target_start)},
 	{"",0,0}};//end
 
 int load_track (char *path);

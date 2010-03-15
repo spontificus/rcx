@@ -6,12 +6,12 @@
 #define v_length(x, y, z) (dSqrt( (x)*(x) + (y)*(y) + (z)*(z) ))
 
 //collide camera with track, generate acceleration on camera if collisding
-void camera_physics_step()
+void Camera::Physics_Step()
 {
 	//some values that are easy to deal with:
 	dReal time = internal.stepsize;
 	car_struct *car = camera.car;
-	camera_settings *settings = camera.settings;
+	Camera_Settings *settings = camera.settings;
 
 	//if camera got a targeted car and proper settings, simulate movment
 	//
