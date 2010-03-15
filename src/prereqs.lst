@@ -17,7 +17,7 @@ build/physics/body.o: physics/../shared/body.hpp physics/../shared/printlog.hpp 
 build/physics/camera.o: physics/../shared/camera.hpp physics/../shared/internal.hpp physics/../shared/track.hpp
 build/physics/car.o: physics/../shared/car.hpp physics/../shared/internal.hpp
 build/physics/collision_feedback.o: physics/collision_feedback.hpp
-build/physics/geom.o: physics/../shared/geom.hpp physics/../shared/internal.hpp physics/../shared/printlog.hpp
+build/physics/geom.o: physics/../shared/geom.hpp physics/../shared/internal.hpp physics/../shared/track.hpp physics/../shared/printlog.hpp physics/collision_feedback.hpp
 build/physics/joint.o: physics/../shared/joint.hpp physics/../shared/internal.hpp
 build/physics/physics.o: physics/../shared/threads.hpp physics/../shared/internal.hpp physics/../shared/runlevel.hpp physics/../shared/track.hpp physics/../shared/printlog.hpp physics/../shared/body.hpp physics/../shared/geom.hpp physics/../shared/camera.hpp physics/../shared/car.hpp physics/../shared/joint.hpp physics/collision_feedback.hpp
 build/shared/body.o: shared/body.hpp shared/object.hpp shared/internal.hpp shared/printlog.hpp

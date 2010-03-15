@@ -51,7 +51,6 @@ int physics_init(void)
 void physics_step(void)
 {
 	car_physics_step(); //control, antigrav...
-	Joint::Physics_Step(); //joint forces
 	Body::Physics_Step(); //drag (air/liquid "friction")
 
 	dSpaceCollide (space, 0, &Geom::Collision_Callback);
@@ -59,6 +58,7 @@ void physics_step(void)
 	dJointGroupEmpty (contactgroup);
 
 	Collision_Feedback::Physics_Step(); //forces from collisions
+	Joint::Physics_Step(); //joint forces
 	camera_physics_step(); //move camera to wanted postion
 }
 
