@@ -1,4 +1,5 @@
 #include "space.hpp"
+#include "geom.hpp"
 #include "printlog.hpp"
 #include "track.hpp"
 #include <ode/ode.h>
@@ -17,7 +18,14 @@ Space::~Space()
 {
 	printlog(2, "clearing Geom class");
 
-	printlog(0, "WARNING: not removing from simulation...\n");
-	//TODO: for (i=0; i<space_id.size; ++i); delete Geom; done
-	//TODO: dSpaceDestroy(space_id);
+	Geom *g;
+
+	while (dSpaceGetNumGeoms(space_id)) //while contains geoms
+	{
+		//remove first geom - next time first will be the next geom
+		g = (Geom*)dGeomGetData(dSpaceGetGeom(space_id, 0));
+		delete g;
+	}
+
+	dSpaceDestroy(space_id);
 }
