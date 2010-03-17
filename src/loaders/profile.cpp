@@ -37,7 +37,7 @@ SDLKey get_key (char *name)
 }
 
 //load profile (conf and key list)
-profile *load_profile (char *path)
+profile *load_profile (const char *path)
 {
 	printlog(1, "loading profile: %s", path);
 	profile *prof = allocate_profile();

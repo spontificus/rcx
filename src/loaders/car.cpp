@@ -8,7 +8,7 @@
 #include "debug_draw.hpp"
 
 
-car_struct *load_car (char *path)
+car_struct *load_car (const char *path)
 {
 	printlog(1, "Loading car: %s", path);
 

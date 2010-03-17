@@ -116,7 +116,7 @@ int main (int argc, char *argv[])
 
 	printlog(0, "Loading...\n");
 
-	if (load_conf ((char *)"data/internal.conf", (char *)&internal, internal_index))
+	if (load_conf ("data/internal.conf", (char *)&internal, internal_index))
 		return -1;
 
 	if (graphics_init())
@@ -124,11 +124,11 @@ int main (int argc, char *argv[])
 
 	//<insert menu here>
 	
-	profile *prof = load_profile ((char *)"data/profiles/default");
+	profile *prof = load_profile ("data/profiles/default");
 	if (!prof)
 		return -1;
 
-	car_struct *venom = load_car((char *)"data/teams/Nemesis/cars/Venom");
+	car_struct *venom = load_car("data/teams/Nemesis/cars/Venom");
 	if (!venom)
 		emergency_quit();
 	prof->car = venom;

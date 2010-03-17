@@ -11,5 +11,5 @@ struct data_index {
 	size_t offset;
 };
 
-int load_conf (char *name, char *memory, const struct data_index index[]);
+int load_conf (const char *name, char *memory, const struct data_index index[]);
 #endif

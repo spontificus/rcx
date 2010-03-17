@@ -143,7 +143,7 @@ const struct {
 	{"",0}}; //end
 	
 profile *allocate_profile(void);
-profile *load_profile (char *path);
+profile *load_profile (const char *path);
 void free_profile (profile *target);
 
 #endif
