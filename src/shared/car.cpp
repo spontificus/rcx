@@ -97,7 +97,7 @@ void free_car (car_struct *target)
 		target->next->prev = target->prev;
 
 	//remove car
-	free_object (target->object);
+	delete (target->object);
 
 
 	free (target->name);

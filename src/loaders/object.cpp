@@ -159,7 +159,7 @@ script_struct *load_object(char *path)
 }
 
 //bind two bodies together using fixed joint (simplify connection of many bodies)
-void debug_joint_fixed(dBodyID body1, dBodyID body2, object_struct *obj)
+void debug_joint_fixed(dBodyID body1, dBodyID body2, Object *obj)
 {
 	dJointID joint;
 	joint = dJointCreateFixed (world, 0);
@@ -174,13 +174,13 @@ void debug_joint_fixed(dBodyID body1, dBodyID body2, object_struct *obj)
 
 //spawn a "loaded" (actually hard-coded) object
 //TODO: rotation
-void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
+void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 {
 	printlog(1, "Spawning object at: %f %f %f", x,y,z);
 	//prettend to be executing the script... just load debug values from
 	//script structure
 	//
-	object_struct *obj;
+	Object *obj;
 	Body *bd;
 
 	if (script->box)
@@ -190,7 +190,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	obj = allocate_object();
+	obj = new Object();
 
 	dGeomID geom  = dCreateBox (0, 1,1,1); //geom
 	Geom *data = new Geom(geom, obj);
@@ -236,7 +236,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 
 	//flipper surface
-	obj = allocate_object();
+	obj = new Object();
 	new Space(obj);
 	
 	dGeomID geom  = dCreateBox (0, 8,8,0.5); //geom
@@ -275,7 +275,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object();
+	Object *obj = new Object();
 	new Space(obj);
 
 	//center sphere
@@ -359,7 +359,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object();
+	Object *obj = new Object();
 
 	//center sphere
 	dGeomID geom  = dCreateSphere (0, 1); //geom
@@ -392,7 +392,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 
-	object_struct *obj = allocate_object(); //no space (no geoms collide)
+	Object *obj = new Object(); //no space (no geoms collide)
 	new Space(obj);
 	dBodyID old_body[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 	dBodyID old_pillar[4] = {0,0,0,0};
@@ -595,7 +595,7 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 		printlog(2, "(hard-coded pillar)");
 
 		//just one geom in this object
-		Geom *g = new Geom(dCreateBox(0, 2,2,5), allocate_object());
+		Geom *g = new Geom(dCreateBox(0, 2,2,5), new Object());
 
 		//position
 		dGeomSetPosition(g->geom_id, x,y,(z+2.5));
@@ -617,10 +617,10 @@ void spawn_object(script_struct *script, dReal x, dReal y, dReal z)
 }
 
 //removes an object
-void remove_object(object_struct *target)
-{
+//void remove_object(object_struct *target)
+//{
 	//lets just hope the given pointer is ok...
-	printlog(1, "remove object");
+	//printlog(1, "remove object");
 
 	//if (target->space)
 	//{
@@ -644,5 +644,5 @@ void remove_object(object_struct *target)
 		}
 	}*/
 
-	free_object (target);
-}
+	//free_object (target);
+//}

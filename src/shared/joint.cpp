@@ -3,7 +3,7 @@
 
 Joint *Joint::head = NULL;
 
-Joint::Joint (dJointID joint, object_struct *obj): Component(obj)
+Joint::Joint (dJointID joint, Object *obj): Component(obj)
 {
 	printlog(2, "configuring Joint class");
 

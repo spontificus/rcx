@@ -45,8 +45,8 @@ int load_track (char *path)
 	dWorldSetGravity (world,0,0,-track.gravity);
 
 	//(for now, use geoms to describe world)
-	track.object = allocate_object(); //space + no jointgroup
-	new Space (track.object);
+	track.object = new Object();
+	track.space = new Space (track.object);
 
 	//tmp vars
 	dGeomID geom;
@@ -201,7 +201,7 @@ int load_track (char *path)
 				y = atof(file.words[1]);
 				z = atof(file.words[2]);
 
-				spawn_object(obj, x, y, z);
+				Object::Spawn(obj, x, y, z);
 			}
 			else
 			{

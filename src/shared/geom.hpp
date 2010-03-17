@@ -17,7 +17,7 @@ class Geom: public Component
 {
 	public:
 		//methods for creating/destroying/processing Geoms
-		Geom (dGeomID geom, object_struct *obj);
+		Geom (dGeomID geom, Object *obj);
 		~Geom();
 
 		//methods for steps/simulations:

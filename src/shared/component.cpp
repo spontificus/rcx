@@ -2,7 +2,7 @@
 #include "object.hpp"
 #include "printlog.hpp"
 
-Component::Component(object_struct *obj)
+Component::Component(Object *obj)
 {
 	printlog(2, "creating Component class");
 

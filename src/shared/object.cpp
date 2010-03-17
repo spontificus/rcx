@@ -3,54 +3,56 @@
 #include "track.hpp"
 
 
-object_struct *object_head = NULL;
+Object *Object::head = NULL;
+
 //allocate a new object, add it to the list and returns its pointer
-object_struct *allocate_object ()
+Object::Object ()
 {
-	printlog(2, "allocating object");
-	object_struct *object_next = object_head;
+	printlog(2, "creating Object class");
 
-	object_head = (object_struct *)malloc(sizeof(object_struct));
+	prev=NULL;
+	next=head;
+	head=this;
 
-	object_head->prev = NULL;
-	object_head->next = object_next;
-
-	if (object_next)
-		object_next->prev = object_head;
+	if (next)
+		next->prev = this;
 	else
 		printlog(2, "(first registered object)");
 
 	//default values
-	object_head->components = NULL;
-	object_head->selected_space = NULL;
-
-	return object_head;
+	components = NULL;
+	selected_space = NULL;
 }
+
 //destroys an object
-void free_object(object_struct *target)
+Object::~Object()
 {
 	//lets just hope the given pointer is ok...
 	printlog(2, "freeing object");
 
 	//1: remove it from the list
-	if (target->prev == NULL) //first link
+	if (prev == NULL) //first link
 	{
 		printlog(2, "(object is head)");
-		object_head = target->next;
+		head = next;
 	}
 	else
-		target->prev->next = target->next;
+		prev->next = next;
 
-	if (target->next) //not last link
-		target->next->prev = target->prev;
+	if (next) //not last link
+		next->prev = prev;
 	else
 		printlog(2, "(object is last)");
 
 
-
-	//2: remove it from memory
-
-	free(target);
+	//remove components
+	while (components)
+		delete components; //just removes the one in top each time
 }
 
-
+//destroys all objects
+void Object::Destroy_All()
+{
+	while (head)
+		delete (head);
+}

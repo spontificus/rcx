@@ -13,26 +13,32 @@
 //group (for cleaning up object)
 //
 //>Dynamically allocated
-typedef struct object_struct {
-	//things to keep track of when cleaning out object
-	Component *components;
-	dSpaceID selected_space;
+class Object
+{
+	public:
+		Object();
+		virtual ~Object(); //(makes sure also inherited classes calls this destructor)
 
-	//placeholder for more data
-	
-	//used to find next/prev object in dynamically allocated chain
-	//set next to null in last object in chain
-	struct object_struct *prev;
-	struct object_struct *next;
-} object_struct;
+		static void Destroy_All();
+		static void Spawn(script_struct *script, dReal x, dReal y, dReal z);
+	private:
+		//things to keep track of when cleaning out object
+		Component *components;
+		friend class Component; //to allow access to above
+		dSpaceID selected_space;
+		//both geom and space uses the variable above
+		friend class Geom;
+		friend class Space;
 
-extern object_struct *object_head;
+		//placeholder for more data
+			
+		//used to find next/prev object in dynamically allocated chain
+		//set next to null in last object in chain
+		static Object *head;
+		Object *prev, *next;
+};
 
 
-void free_object(object_struct *target);
-object_struct *allocate_object ();
-
+//TODO: script_struct -> object_template (class, with static "Load" method)
 script_struct *load_object(char *path);
-void spawn_object(script_struct *script, dReal x, dReal y, dReal z);
-void remove_object(object_struct *target);
 #endif

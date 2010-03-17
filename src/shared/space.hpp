@@ -11,7 +11,7 @@ class Space: public Component
 {
 	public:
 		//methods
-		Space (object_struct *obj);
+		Space (Object *obj);
 		~Space();
 
 		//variables

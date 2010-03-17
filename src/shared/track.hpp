@@ -39,7 +39,8 @@ extern struct track_struct {
 
 	file_3d_struct *file_3d;
 	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
-	object_struct *object;
+	Object *object;
+	Space *space;
 } track;
 //index:
 

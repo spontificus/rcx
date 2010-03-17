@@ -9,7 +9,7 @@ Geom *Geom::head = NULL;
 
 //allocates a new geom data, returns its pointer (and uppdate its object's count),
 //ads it to the component list, and ads the data to specified geom (assumed)
-Geom::Geom (dGeomID geom, object_struct *obj): Component(obj) //pass object argument to base class constructor
+Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to base class constructor
 {
 	printlog(2, "configuring Geom class");
 

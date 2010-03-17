@@ -24,9 +24,7 @@ void free_all (void)
 	while (profile_head)
 		free_profile(profile_head);
 
-	//TODO: Object::Destroy_All() (which calls Component->Destroy_All() for included components)
-	while (object_head)
-		free_object(object_head);
+	Object::Destroy_All();
 
 	//only place where scripts and 3d lists are removed
 	script_struct *script_tmp = script_head;

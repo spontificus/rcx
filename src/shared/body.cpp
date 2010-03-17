@@ -5,7 +5,7 @@
 
 Body *Body::head = NULL;
 
-Body::Body (dBodyID body, object_struct *obj): Component(obj)
+Body::Body (dBodyID body, Object *obj): Component(obj)
 {
 	printlog(2, "configuring Body class");
 

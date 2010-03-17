@@ -14,7 +14,7 @@
 class Joint: public Component
 {
 	public:
-		Joint (dJointID joint, object_struct *obj);
+		Joint (dJointID joint, Object *obj);
 		~Joint();
 
 		void Set_Event(dReal thresh, dReal buff, script_struct *scr);

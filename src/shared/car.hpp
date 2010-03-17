@@ -31,7 +31,7 @@ typedef struct car_struct {
 	file_3d_struct *box_graphics[CAR_MAX_BOXES];
 
 	//just for keeping track
-	object_struct *object; //one object to store car components
+	Object *object; //one object to store car components
 
 //	dGeomID body_geom; //for focusing
 	dBodyID bodyid,wheel_body[4];

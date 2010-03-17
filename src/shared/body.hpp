@@ -15,7 +15,7 @@ class Body: public Component
 {
 	public:
 		//methods
-		Body (dBodyID body, object_struct *obj);
+		Body (dBodyID body, Object *obj);
 		~Body();
 
 		void Set_Event(dReal thresh, dReal buff, script_struct *scr);

@@ -144,7 +144,7 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 	target->spawned = true;
 
 	//create object to store components and joints
-	target->object = allocate_object(); //activate space + jointgroup
+	target->object = new Object();
 	new Space(target->object);
 
 	dMass m;
@@ -314,6 +314,6 @@ void spawn_car(car_struct *target, dReal x, dReal y, dReal z)
 void remove_car (car_struct* target)
 {
 	printlog(1, "removing car");
-	remove_object (target->object);
+	delete (target->object);
 	free_car (target);
 }

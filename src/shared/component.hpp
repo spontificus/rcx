@@ -4,19 +4,20 @@
 //TODO: make polymorph, this claaa should not be used directly...
 
 //prototype for object class
-struct object_struct; 
+class Object;
 
 class Component
 {
 	public:
-		Component(object_struct *obj);
-		virtual ~Component();
+		virtual ~Component(); //useful outside
+
 	private:
 		Component *prev, *next;
 
 	protected: //private for this and subclasses
+		Component(Object *obj);
 		//keep track of the "owning" object
-		object_struct * object_parent;
+		Object * object_parent;
 
 };
 #endif

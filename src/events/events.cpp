@@ -62,15 +62,15 @@ void event_step(Uint32 step)
 
 					//box spawning
 					case SDLK_F5:
-						spawn_object (box, 0,0,10);
+						Object::Spawn (box, 0,0,10);
 					break;
 					case SDLK_F6:
 						printlog(1, "(10sec height)");
-						spawn_object (box ,0,0,489.5);
+						Object::Spawn (box ,0,0,489.5);
 					break;
 					
 					case SDLK_F7:
-						spawn_object (sphere, 0,0,10);
+						Object::Spawn (sphere, 0,0,10);
 					break;
 
 					default:
