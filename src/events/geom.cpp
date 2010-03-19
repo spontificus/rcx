@@ -24,11 +24,11 @@ void Geom::TMP_Events_Step(Uint32 step)
 				{
 					const dReal *rot = dBodyGetRotation(bodyid);
 					dVector3 pos1, pos2;
-					dBodyGetRelPointPos(bodyid, 0,0,5/4, pos1);
-					dBodyGetRelPointPos(bodyid, 0,0,-5/4, pos2);
+					dBodyGetRelPointPos(bodyid, 0,0,5.0/4.0, pos1);
+					dBodyGetRelPointPos(bodyid, 0,0,-5.0/4.0, pos2);
 
 					//geom1
-					dGeomID g = dCreateBox(0, 2,2,5/2);
+					dGeomID g = dCreateBox(0, 2,2,5.0/2.0);
 					Geom *gd = new Geom(g, geom->object_parent);
 					gd->threshold = 100000;
 					gd->buffer = 500;
@@ -36,7 +36,7 @@ void Geom::TMP_Events_Step(Uint32 step)
 					//body1
 					dBodyID b = dBodyCreate(world);
 					dMass m;
-					dMassSetBox (&m, 1, 2,2,5/2);
+					dMassSetBox (&m, 1, 2,2,5.0/2.0);
 					dMassAdjust (&m, 100); //200kg
 					dBodySetMass(b, &m);
 					new Body(b, geom->object_parent);
@@ -47,14 +47,14 @@ void Geom::TMP_Events_Step(Uint32 step)
 					gd->file_3d = geom->script->graphics_debug2;
 
 					//geom2
-					g = dCreateBox(0, 2,2,5/2);
+					g = dCreateBox(0, 2,2,5.0/2.0);
 					gd = new Geom(g, geom->object_parent);
 					gd->threshold = 100000;
 					gd->buffer = 500;
 
 					//body2
 					b = dBodyCreate(world);
-					dMassSetBox (&m, 1, 2,2,5/2);
+					dMassSetBox (&m, 1, 2,2,5.0/2.0);
 					dMassAdjust (&m, 100); //200kg
 					dBodySetMass(b, &m);
 					new Body(b, geom->object_parent);
