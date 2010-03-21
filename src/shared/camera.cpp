@@ -49,6 +49,10 @@ void Camera::Set_Pos(dReal p[], dReal tp[])
 		memcpy(pos, p, sizeof(dReal)*3);
 		memcpy(t_pos, tp, sizeof(dReal)*3);
 	}
+
+	up[0]=0;
+	up[1]=0;
+	up[2]=1;
 }
 
 void Camera::Move(dReal x, dReal y, dReal z)

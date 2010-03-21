@@ -128,11 +128,9 @@ int main (int argc, char *argv[])
 	if (!prof)
 		return -1;
 
-	car_struct *venom = load_car("data/teams/Nemesis/cars/Venom");
-	if (!venom)
+	Car_Template *venom_template = Car_Template::Load("data/teams/Nemesis/cars/Venom");
+	if (!venom_template)
 		emergency_quit();
-	prof->car = venom;
-	camera.car = venom;
 
 	//menu done, race selected, starting race...
 	if (physics_init())
@@ -145,12 +143,15 @@ int main (int argc, char *argv[])
 		emergency_quit();
 
 	//load box for online spawning
-	box = load_object((char *)"data/objects/misc/box");
-	sphere = load_object((char *)"data/objects/misc/sphere");
+	box = Object::Load("data/objects/misc/box");
+	sphere = Object::Load("data/objects/misc/sphere");
 	if (!box || !sphere)
 		emergency_quit();
 
-	spawn_car (venom, track.start[0], track.start[1], track.start[2]);
+	//spawn car
+	Car *venom = venom_template->Spawn(track.start[0], track.start[1], track.start[2]);
+	prof->car = venom;
+	camera.car = venom;
 
 	//start race
 	start_race();

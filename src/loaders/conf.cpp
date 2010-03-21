@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 //loads configuration file to memory (using index)
-int load_conf (const char *name, char *memory, const struct data_index index[])
+int load_conf (const char *name, char *memory, const struct Conf_Index index[])
 {
 	printlog(1, "loading conf file: %s", name);
 

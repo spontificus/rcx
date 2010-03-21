@@ -34,7 +34,7 @@ extern struct internal_struct {
 	bool fullscreen;
 } internal;
 
-const struct data_index internal_index[] = {
+const struct Conf_Index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
 	{"sync_graphics",	'b',1, offsetof(struct internal_struct, sync_graphics)},
 	{"sync_events",		'b',1, offsetof(struct internal_struct, sync_events)},

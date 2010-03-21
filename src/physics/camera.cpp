@@ -10,7 +10,7 @@ void Camera::Physics_Step()
 {
 	//some values that are easy to deal with:
 	dReal time = internal.stepsize;
-	car_struct *car = camera.car;
+	Car *car = camera.car;
 	Camera_Settings *settings = camera.settings;
 
 	//if camera got a targeted car and proper settings, simulate movment

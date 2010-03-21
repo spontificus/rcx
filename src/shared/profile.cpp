@@ -17,6 +17,9 @@ profile *allocate_profile(void)
 		printlog(2, "(first registered)");
 
 	//default values
+	profile_head->car = NULL;
+
+
 	profile_head->steer_speed = 1;
 	profile_head->steer_max = 1;
 	profile_head->throttle_speed = 1;

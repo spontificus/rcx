@@ -44,7 +44,7 @@ extern struct track_struct {
 } track;
 //index:
 
-const struct data_index track_index[] = {
+const struct Conf_Index track_index[] = {
 	{"sky",		'f',3,	offsetof(struct track_struct, sky[0])},
 	{"ambient",	'f',3,	offsetof(struct track_struct, ambient[0])},
 	{"diffuse",	'f',3,	offsetof(struct track_struct, diffuse[0])},

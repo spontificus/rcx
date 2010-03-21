@@ -1,19 +1,12 @@
 #include "../shared/car.hpp"
 #include "../shared/internal.hpp"
 
-void car_physics_step(void)
+void Car::Physics_Step()
 {
-	car_struct *carp = car_head;
+	Car *carp = head;
 	bool antigrav;
 	while (carp != NULL)
 	{
-		//some loaded cars might not participate in race...
-		if (!carp->spawned)
-		{
-			carp=carp->next;
-			continue;
-		}
-
 		//first flipover detection (+ antigrav forces)
 
 		//both sensors are triggered, not flipping, only antigrav

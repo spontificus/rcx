@@ -176,7 +176,7 @@ int load_track (char *path)
 				strcpy (obj_name, "data/objects/");
 				strcat (obj_name, file.words[1]);
 
-				obj = load_object(obj_name);
+				obj = Object::Load(obj_name);
 
 				//failure to load object
 				if (!obj)

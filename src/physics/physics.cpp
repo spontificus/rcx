@@ -50,7 +50,7 @@ int physics_init(void)
 
 void physics_step(void)
 {
-	car_physics_step(); //control, antigrav...
+	Car::Physics_Step(); //control, antigrav...
 	Body::Physics_Step(); //drag (air/liquid "friction")
 
 	dSpaceCollide (space, 0, &Geom::Collision_Callback);
@@ -76,7 +76,7 @@ int physics_loop (void *d)
 		SDL_mutexP(ode_mutex);
 		physics_step();
 
-		//one with ode
+		//done with ode
 		SDL_mutexV(ode_mutex);
 		
 

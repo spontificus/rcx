@@ -11,7 +11,7 @@
 //profile: stores the user's settings (including key list)
 typedef struct profile_struct {
 	//the car the user is controlling
-	car_struct *car;
+	Car *car;
 	struct profile_struct *next;
 	struct profile_struct *prev;
 
@@ -45,7 +45,7 @@ typedef struct profile_struct {
 
 extern profile *profile_head;
 
-const struct data_index profile_index[] = {
+const struct Conf_Index profile_index[] = {
 	{"steer_speed",    'f' ,1 ,offsetof(struct profile_struct, steer_speed)},
 	{"steer_max",      'f' ,1 ,offsetof(struct profile_struct, steer_max)},
 	{"throttle_speed", 'f' ,1 ,offsetof(struct profile_struct, throttle_speed)},

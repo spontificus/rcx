@@ -18,9 +18,6 @@ void free_all (void)
 	//first thing to destroy: cars
 	printlog(2, "TODO: change from free_car to destroy_car?");
 
-	while (car_head)
-		free_car(car_head);
-
 	while (profile_head)
 		free_profile(profile_head);
 

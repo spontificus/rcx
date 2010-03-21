@@ -1,31 +1,34 @@
 #include "../shared/object.hpp"
+#include "colours.hpp"
+#include "debug_draw.hpp"
 
 #include <ode/ode.h>
 
+#include "../shared/racetime_data.hpp"
 #include "../shared/printlog.hpp"
-#include "colours.hpp"
 #include "../shared/track.hpp"
-#include "debug_draw.hpp"
 #include "../shared/joint.hpp"
 #include "../shared/geom.hpp"
 #include "../shared/body.hpp"
 
 //load data for spawning object (object data), hard-coded debug version
 //(objects are loaded as script instructions, executed for spawning)
-script_struct *load_object(char *path)
+script_struct *Object::Load(const char *path)
 {
 	printlog(1, "Loading object: %s", path);
 
-	script_struct *tmp = script_head;
 	//see if already loaded
-	while (tmp)
+	Racetime_Data *tmp;
+	if ((tmp = Racetime_Data::Find(path)))
 	{
-		if (!strcmp(tmp->name, path))
-		{
-			printlog(1, "(already loaded)");
-			return tmp;
-		}
-		tmp = tmp->next;
+		printlog(1, "(already loaded)");
+
+		script_struct *tmp_obj = dynamic_cast<script_struct *>(tmp);
+
+		if (!tmp_obj)
+			printlog(0, "ERROR: could not convert Racetime_Data class \"%s\" to Object_Template class!");
+		else
+			return tmp_obj; //abort loading of car, return already loaded one
 	}
 
 	//new object

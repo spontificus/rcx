@@ -26,7 +26,6 @@ class Camera
 		Camera();
 		void Set_Settings(Camera_Settings *settings);
 		void Set_Pos(dReal p[3], dReal tp[3]);
-		void Set_Car(car_struct *c);
 
 		//movement (might change or be removed at some point)
 		void Move(dReal x, dReal y, dReal z);
@@ -36,7 +35,7 @@ class Camera
 		void Graphics_Step();
 
 		//public for now...
-		car_struct *car;
+		Car *car;
 	private:
 		struct Camera_Settings *settings;
 		dReal pos[3];

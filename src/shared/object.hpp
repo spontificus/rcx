@@ -21,6 +21,7 @@ class Object
 
 		static void Destroy_All();
 		static void Spawn(script_struct *script, dReal x, dReal y, dReal z);
+		static script_struct *Load(const char *path); //TODO: move to Object_Template class
 	private:
 		//things to keep track of when cleaning out object
 		Component *components;
@@ -38,7 +39,4 @@ class Object
 		Object *prev, *next;
 };
 
-
-//TODO: script_struct -> object_template (class, with static "Load" method)
-script_struct *load_object(char *path);
 #endif
