@@ -76,10 +76,14 @@ Car::Car(void)
 	
 	velocity = 0;
 
+	//linking
 	next=head;
 	head=this;
+
 	if (next)
-		next=prev;
+		next->prev=this;
+
+	prev=NULL;
 
 	//set x in all boxes to 0 (disable)
 	/*for (i=0;i<CAR_MAX_BOXES;++i)
