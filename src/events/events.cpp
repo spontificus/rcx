@@ -102,19 +102,19 @@ void event_step(Uint32 step)
 
 		//move camera
 		if (keys[prof->cam_x_pos]) //x
-			camera.Move(+step*0.03, 0, 0);
+			camera.Move(+(step*0.03), 0, 0);
 		if (keys[prof->cam_x_neg])
-			camera.Move(-step*0.03, 0, 0);
+			camera.Move(-(step*0.03), 0, 0);
 
 		if (keys[prof->cam_y_pos]) //y
-			camera.Move(0, +step*0.03, 0);
+			camera.Move(0, +(step*0.03), 0);
 		if (keys[prof->cam_y_neg])
-			camera.Move(0, -step*0.03, 0);
+			camera.Move(0, -(step*0.03), 0);
 
 		if (keys[prof->cam_z_pos]) //z
-			camera.Move(0, 0, +step*0.03);
+			camera.Move(0, 0, +(step*0.03));
 		if (keys[prof->cam_z_neg])
-			camera.Move(0, 0, -step*0.03);
+			camera.Move(0, 0, -(step*0.03));
 
 		//if selected car, read input
 		if (prof->car)
