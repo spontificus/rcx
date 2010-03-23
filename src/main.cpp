@@ -149,10 +149,11 @@ int main (int argc, char *argv[])
 		emergency_quit();
 
 	//spawn car
-	Car *venom = venom_template->Spawn(track.start[0], track.start[1], track.start[2]);
+	Car *venom = venom_template->Spawn(track.start[0]-5, track.start[1], track.start[2]);
 	prof->car = venom;
 	camera.car = venom;
 
+	venom_template->Spawn(track.start[0]+5, track.start[1], track.start[2]);
 	//start race
 	start_race();
 
