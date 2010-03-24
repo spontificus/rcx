@@ -11,7 +11,7 @@
 #include "geom.hpp"
 #include "../loaders/conf.hpp"
 
-#define CAR_MAX_BOXES 20
+#include <vector>
 
 //for loading car.conf
 struct Car_Conf
@@ -50,11 +50,19 @@ class Car_Template:public Racetime_Data
 
 		//more data:
 		char *name;
-		//std::vector<dReal[6]> box;
 		dReal fsteer, rsteer, fmotor, rmotor, fbreak, rbreak;
 		file_3d_struct *wheel_graphics; //add right/left wheels
-		//file_3d_struct *box_graphics[CAR_MAX_BOXES];
 		dReal inertia_tensor;
+
+		//geoms
+		struct box {
+			dReal size[3];
+			dReal pos[3];
+			dReal rot[3];
+		};
+
+		std::vector<class box> boxes;
+		//std::vector<dReal[9]> boxes;
 };
 
 class Car:public Object

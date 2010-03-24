@@ -6,6 +6,7 @@
 #include "../shared/joint.hpp"
 #include "colours.hpp"
 #include "debug_draw.hpp"
+#include "text_file.hpp"
 
 
 Car_Template *Car_Template::Load (const char *path)
@@ -29,16 +30,75 @@ Car_Template *Car_Template::Load (const char *path)
 	//apparently not
 	Car_Template *target = new Car_Template(path);
 
-	char *conf=(char *)calloc(strlen(path)+9+1,sizeof(char));//+1 for \0
+	//car.conf
+	char conf[strlen(path)+9+1];//+1 for \0
 	strcpy (conf,path);
 	strcat (conf,"/car.conf");
 
 	if (load_conf(conf, (char *)&target->conf, Car_Template::conf_index))
 		return NULL;
 
-	free (conf);
+	//geoms.lst
+	char lst[strlen(path)+9+1];
+	strcpy (lst, path);
+	strcat (lst, "/geoms.lst");
 
+	Text_File file;
+	if (file.Open(lst))
+	{
+		while (file.Read_Line())
+		{
+			if (!strcmp(file.words[0], "box"))
+			{
+				struct box tmp_box;
+				if (file.word_count == 9) //not wanting rotation?
+				{
+					//size
+					tmp_box.size[0] = atof(file.words[2]);
+					tmp_box.size[1] = atof(file.words[3]);
+					tmp_box.size[2] = atof(file.words[4]);
 
+					//position
+					tmp_box.pos[0] = atof(file.words[6]);
+					tmp_box.pos[1] = atof(file.words[7]);
+					tmp_box.pos[2] = atof(file.words[8]);
+
+					//rotation (not)
+					tmp_box.rot[0]=0;
+					tmp_box.rot[1]=0;
+					tmp_box.rot[2]=0;
+				}
+				else if (file.word_count == 13) //also rotate?
+				{
+					//size
+					tmp_box.size[0] = atof(file.words[2]);
+					tmp_box.size[1] = atof(file.words[3]);
+					tmp_box.size[2] = atof(file.words[4]);
+
+					//position
+					tmp_box.pos[0] = atof(file.words[6]);
+					tmp_box.pos[1] = atof(file.words[7]);
+					tmp_box.pos[2] = atof(file.words[8]);
+
+					//rotation (not)
+					tmp_box.rot[0] = atof(file.words[10]);
+					tmp_box.rot[1] = atof(file.words[11]);
+					tmp_box.rot[2] = atof(file.words[12]);
+				}
+				else
+				{
+					printlog(0, "ERROR: box geom in car geom list expects exactly: size, position and (optional) rotation!");
+					continue; //don't add
+				}
+
+				target->boxes.push_back(tmp_box);
+			}
+			else
+				printlog(0, "ERROR: geom \"%s\" in car geom list not recognized!", file.words[0]);
+		}
+	}
+	else
+		printlog(0, "WARNING: can not open list of car geoms (%s)!", lst);
 
 	//helper datas:
 	//* inertia tensor for wheel axis (for translating motor torque to rotation speed cahnge)
@@ -184,32 +244,36 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 	dBodySetPosition (car->bodyid, x, y, z);
 
 	dGeomID geom;
-	/*Geom *gdata;
+	Geom *gdata;
 
 	int i;
-	dReal *b;
-	for (i=0;i<CAR_MAX_BOXES;++i)
-		if (target->box[i][0])
-		{
-			b = target->box[i];
-			geom = dCreateBox(0,b[0],b[1],b[2]);
-			gdata = new Geom (geom, target->object);
 
-			dGeomSetBody (geom, target->bodyid);
+	//add geoms, first: boxes
+	struct box b;
+	for (i=0;i< (int)boxes.size();++i)
+	{
+		b = boxes[i];
+	
+		geom = dCreateBox(0,b.size[0],b.size[1],b.size[2]);
+		gdata = new Geom (geom, car);
 
-			if (b[3]||b[4]||b[5]) //need offset
-				dGeomSetOffsetPosition(geom,b[3],b[4],b[5]);
+		dGeomSetBody (geom, car->bodyid);
 
-			//friction
-			gdata->mu = target->body_mu;
-			gdata->slip = target->body_slip;
-			gdata->erp = target->body_erp;
-			gdata->cfm = target->body_cfm;
-			//graphics
-			gdata->file_3d = target->box_graphics[i];
+		if (b.pos[0]||b.pos[1]||b.pos[2]) //need offset
+			dGeomSetOffsetPosition(geom,b.pos[0],b.pos[1],b.pos[2]);
 
+		if (b.rot[0]||b.rot[1]||b.rot[2]) //need offset
+			printf("not rotating!\n");
 
-		}*/
+		//friction
+		gdata->mu = conf.body_mu;
+		gdata->slip = conf.body_slip;
+		gdata->erp = conf.body_erp;
+		gdata->cfm = conf.body_cfm;
+		//graphics
+		//gdata->file_3d = 
+		printf("not rendering\n");
+	}
 
 	//side detection sensors:
 	dReal *s = conf.s;
@@ -230,7 +294,6 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 	Geom *wheel_data[4];
 	dGeomID wheel_geom;
 	dBodyID wheel_body[4];
-	int i;
 	for (i=0;i<4;++i)
 	{
 		//create cylinder

@@ -34,6 +34,7 @@ const struct Conf_Index Car_Template::conf_index[] = {
 	{"wheel_erp",		'f',1, offsetof(struct Car_Conf, wheel_erp)},
 	{"wheel_cfm",		'f',1, offsetof(struct Car_Conf, wheel_cfm)},
 	{"wheel_bounce",	'f',1, offsetof(struct Car_Conf, wheel_bounce)},
+	{"body",		'f',3, offsetof(struct Car_Conf, body[0])},
 	{"body_mu",		'f',1, offsetof(struct Car_Conf, body_mu)},
 	{"body_slip",		'f',1, offsetof(struct Car_Conf, body_slip)},
 	{"body_erp",		'f',1, offsetof(struct Car_Conf, body_erp)},
