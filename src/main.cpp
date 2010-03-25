@@ -153,7 +153,10 @@ int main (int argc, char *argv[])
 	prof->car = venom;
 	camera.car = venom;
 
-	venom_template->Spawn(track.start[0]+5, track.start[1], track.start[2]);
+	//lets spawn another (not driveable) car:
+	Car *tmp = venom_template->Spawn(track.start[0]+5, track.start[1], track.start[2]);
+	tmp->drift_breaks = false;
+
 	//start race
 	start_race();
 
