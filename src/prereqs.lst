@@ -6,10 +6,10 @@ build/events/joint.o: events/../shared/joint.hpp
 build/graphics/camera.o: graphics/../shared/camera.hpp
 build/graphics/geom.o: graphics/../shared/geom.hpp
 build/graphics/graphics.o: graphics/../shared/internal.hpp graphics/../shared/info.hpp graphics/../shared/track.hpp graphics/../shared/runlevel.hpp graphics/../shared/threads.hpp graphics/../shared/printlog.hpp graphics/../shared/camera.hpp
-build/loaders/car.o: loaders/../shared/car.hpp loaders/../shared/printlog.hpp loaders/../shared/track.hpp loaders/../shared/geom.hpp loaders/../shared/body.hpp loaders/../shared/joint.hpp loaders/colours.hpp loaders/debug_draw.hpp
+build/loaders/car.o: loaders/../shared/car.hpp loaders/../shared/printlog.hpp loaders/../shared/track.hpp loaders/../shared/geom.hpp loaders/../shared/body.hpp loaders/../shared/joint.hpp loaders/colours.hpp loaders/debug_draw.hpp loaders/text_file.hpp
 build/loaders/conf.o: loaders/conf.hpp loaders/text_file.hpp loaders/../shared/printlog.hpp
 build/loaders/debug_draw.o: loaders/debug_draw.hpp loaders/colours.hpp loaders/../shared/printlog.hpp
-build/loaders/object.o: loaders/../shared/object.hpp loaders/../shared/printlog.hpp loaders/colours.hpp loaders/../shared/track.hpp loaders/debug_draw.hpp loaders/../shared/joint.hpp loaders/../shared/geom.hpp loaders/../shared/body.hpp
+build/loaders/object.o: loaders/../shared/object.hpp loaders/colours.hpp loaders/debug_draw.hpp loaders/../shared/racetime_data.hpp loaders/../shared/printlog.hpp loaders/../shared/track.hpp loaders/../shared/joint.hpp loaders/../shared/geom.hpp loaders/../shared/body.hpp
 build/loaders/profile.o: loaders/../shared/profile.hpp loaders/../shared/printlog.hpp loaders/text_file.hpp
 build/loaders/text_file.o: loaders/text_file.hpp loaders/../shared/printlog.hpp
 build/loaders/track.o: loaders/../shared/track.hpp loaders/../shared/camera.hpp loaders/../shared/geom.hpp loaders/../shared/printlog.hpp loaders/../shared/object.hpp loaders/colours.hpp loaders/text_file.hpp loaders/debug_draw.hpp
@@ -32,8 +32,9 @@ build/shared/joint.o: shared/joint.hpp shared/component.hpp
 build/shared/object.o: shared/object.hpp shared/printlog.hpp shared/track.hpp
 build/shared/printlog.o: shared/internal.hpp shared/printlog.hpp
 build/shared/profile.o: shared/profile.hpp
+build/shared/racetime_data.o: shared/racetime_data.hpp
 build/shared/runlevel.o: shared/runlevel.hpp
 build/shared/script.o: shared/script.hpp shared/printlog.hpp
-build/shared/space.o: shared/space.hpp shared/printlog.hpp shared/track.hpp
+build/shared/space.o: shared/space.hpp shared/geom.hpp shared/printlog.hpp shared/track.hpp
 build/shared/threads.o: shared/threads.hpp
 build/shared/track.o: shared/track.hpp
