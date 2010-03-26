@@ -125,7 +125,7 @@ void debug_draw_capsule (GLuint list, GLfloat r, GLfloat l,
 	glMaterialfv (GL_FRONT, GL_SPECULAR, specular);
 	glMateriali (GL_FRONT, GL_SHININESS, shininess);
 
-	l/=3.0;
+	l/=2.0; //only need half lengths
 	//reusing sphere drawing code from above
 	// normals still not perfect, but then it's an imperfect algorithm
 	int slices = 12;

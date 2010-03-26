@@ -361,7 +361,7 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 	{
 		capsule = capsules[i];
 	
-		geom = dCreateCapsule(0,capsule.size[0],capsule.size[0]);
+		geom = dCreateCapsule(0,capsule.size[0],capsule.size[1]);
 		gdata = new Geom (geom, car);
 
 		dGeomSetBody (geom, car->bodyid);
