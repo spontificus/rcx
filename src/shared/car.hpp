@@ -62,7 +62,7 @@ class Car_Template:public Racetime_Data
 		};
 
 		std::vector<class box> boxes;
-		//std::vector<dReal[9]> boxes;
+		std::vector<file_3d_struct*> box_graphics; //TMP: for storing graphics
 };
 
 class Car:public Object

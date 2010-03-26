@@ -91,7 +91,13 @@ Car_Template *Car_Template::Load (const char *path)
 					continue; //don't add
 				}
 
+				//store box
 				target->boxes.push_back(tmp_box);
+
+				//create graphics for box:
+				file_3d_struct *f3d = allocate_file_3d();
+				target->box_graphics.push_back(f3d);
+				debug_draw_box(f3d->list, tmp_box.size[0],tmp_box.size[1],tmp_box.size[2], lgreen, gray, 70);
 			}
 			else
 				printlog(0, "ERROR: geom \"%s\" in car geom list not recognized!", file.words[0]);
@@ -271,8 +277,7 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		gdata->erp = conf.body_erp;
 		gdata->cfm = conf.body_cfm;
 		//graphics
-		//gdata->file_3d = 
-		printf("not rendering\n");
+		gdata->file_3d = box_graphics[i];
 	}
 
 	//side detection sensors:
