@@ -182,22 +182,6 @@ Car_Template *Car_Template::Load (const char *path)
 
 	glEndList();
 
-	//loop through possible body geoms and make a model for them
-	/*int i;
-	for (i=0;i<CAR_MAX_BOXES;++i)
-		if (target->box[i][0])
-		{
-			target->box_graphics[i] = allocate_file_3d();
-
-			GLfloat *b = target->box[i];
-			if (i==0)//first box
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], yellow, gray, 70);
-			else
-				debug_draw_box(target->box_graphics[i]->list,
-						b[0],b[1],b[2], lgreen, gray, 70);
-		}*/
-
 	return target;
 }
 
@@ -256,6 +240,7 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 
 	//add geoms, first: boxes
 	struct box b;
+	dMatrix3 rot;
 	for (i=0;i< (int)boxes.size();++i)
 	{
 		b = boxes[i];
@@ -268,9 +253,11 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		if (b.pos[0]||b.pos[1]||b.pos[2]) //need offset
 			dGeomSetOffsetPosition(geom,b.pos[0],b.pos[1],b.pos[2]);
 
-		if (b.rot[0]||b.rot[1]||b.rot[2]) //need offset
-			printf("not rotating!\n");
-
+		if (b.rot[0]||b.rot[1]||b.rot[2]) //need rotation
+		{
+			dRFromEulerAngles(rot, b.rot[0]*M_PI/180.0, b.rot[1]*M_PI/180.0, b.rot[2]*M_PI/180.0);
+			dGeomSetOffsetRotation(geom, rot);
+		}
 		//friction
 		gdata->mu = conf.body_mu;
 		gdata->slip = conf.body_slip;
@@ -347,7 +334,6 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 	}
 
 	//place and rotate wheels
-	dMatrix3 rot;
 	dRFromAxisAndAngle (rot, 0, 1, 0, M_PI/2);
 	dBodySetPosition (wheel_body[0], x+conf.wp[0], y+conf.wp[1], z);
 	dBodySetRotation (wheel_body[0], rot);
