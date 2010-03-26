@@ -7,6 +7,7 @@ box s 1 1 1 p 0 0 6
 sphere size 1 position 2 4 2
 sphere s 2 p 0 -2 2
 
+capsule size 5 2 position 0 8 5 #rotation 45 0 0
 #box2 0.5 1 0.5 1 4 0
 #box3 0.5 1 0.5 -1 4 0
 

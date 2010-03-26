@@ -64,9 +64,9 @@ Car_Template *Car_Template::Load (const char *path)
 					tmp_box.pos[2] = atof(file.words[8]);
 
 					//rotation (not)
-					tmp_box.rot[0]=0;
-					tmp_box.rot[1]=0;
-					tmp_box.rot[2]=0;
+					tmp_box.rot[0]=0.0;
+					tmp_box.rot[1]=0.0;
+					tmp_box.rot[2]=0.0;
 				}
 				else if (file.word_count == 13) //also rotate?
 				{
@@ -120,6 +120,51 @@ Car_Template *Car_Template::Load (const char *path)
 				file_3d_struct *f3d = allocate_file_3d();
 				target->sphere_graphics.push_back(f3d);
 				debug_draw_sphere(f3d->list, tmp_sphere.radius*2, lgreen, gray, 70);
+			}
+			else if (!strcmp(file.words[0], "capsule"))
+			{
+				struct capsule tmp_capsule;
+				if (file.word_count == 8) //not wanting rotation?
+				{
+					//size
+					tmp_capsule.size[0] = atof(file.words[2]);
+					tmp_capsule.size[1] = atof(file.words[3]);
+					//pos
+					tmp_capsule.pos[0] = atof(file.words[5]);
+					tmp_capsule.pos[1] = atof(file.words[6]);
+					tmp_capsule.pos[2] = atof(file.words[7]);
+					//rot
+					tmp_capsule.rot[0] = 0.0;
+					tmp_capsule.rot[1] = 0.0;
+					tmp_capsule.rot[2] = 0.0;
+				}
+				else if (file.word_count == 12) //also rotate?
+				{
+					//size
+					tmp_capsule.size[0] = atof(file.words[2]);
+					tmp_capsule.size[1] = atof(file.words[3]);
+					//pos
+					tmp_capsule.pos[0] = atof(file.words[5]);
+					tmp_capsule.pos[1] = atof(file.words[6]);
+					tmp_capsule.pos[2] = atof(file.words[7]);
+					//rot
+					tmp_capsule.rot[0] = atof(file.words[9]);
+					tmp_capsule.rot[1] = atof(file.words[10]);
+					tmp_capsule.rot[2] = atof(file.words[11]);
+				}
+				else
+				{
+					printlog(0, "ERROR: capsule geom in car geom list expects exactly: size (radius and length), position and (optional) rotation!");
+					continue; //don't add
+				}
+
+				//store
+				target->capsules.push_back(tmp_capsule);
+
+				//graphics
+				file_3d_struct *f3d = allocate_file_3d();
+				target->capsule_graphics.push_back(f3d);
+				debug_draw_capsule(f3d->list, tmp_capsule.size[0], tmp_capsule.size[1], lgreen, gray, 70);
 			}
 			else
 				printlog(0, "ERROR: geom \"%s\" in car geom list not recognized!", file.words[0]);
@@ -310,7 +355,33 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		//graphics
 		gdata->file_3d = sphere_graphics[i];
 	}
+	//finally: capsule
+	struct capsule capsule;
+	for (i=0; i<(int)capsules.size(); ++i)
+	{
+		capsule = capsules[i];
+	
+		geom = dCreateCapsule(0,capsule.size[0],capsule.size[0]);
+		gdata = new Geom (geom, car);
 
+		dGeomSetBody (geom, car->bodyid);
+
+		if (capsule.pos[0]||capsule.pos[1]||capsule.pos[2]) //need offset
+			dGeomSetOffsetPosition(geom,capsule.pos[0],capsule.pos[1],capsule.pos[2]);
+
+		if (capsule.rot[0]||capsule.rot[1]||capsule.rot[2]) //need rotation
+		{
+			dRFromEulerAngles(rot, capsule.rot[0]*M_PI/180.0, capsule.rot[1]*M_PI/180.0, capsule.rot[2]*M_PI/180.0);
+			dGeomSetOffsetRotation(geom, rot);
+		}
+		//friction
+		gdata->mu = conf.body_mu;
+		gdata->slip = conf.body_slip;
+		gdata->erp = conf.body_erp;
+		gdata->cfm = conf.body_cfm;
+		//graphics
+		gdata->file_3d = capsule_graphics[i];
+	}
 
 	//side detection sensors:
 	dReal *s = conf.s;

@@ -71,6 +71,15 @@ class Car_Template:public Racetime_Data
 
 		std::vector<class sphere> spheres;
 		std::vector<file_3d_struct*> sphere_graphics;
+
+		struct capsule {
+			dReal size[2];
+			dReal pos[3];
+			dReal rot[3];
+		};
+
+		std::vector<class capsule> capsules;
+		std::vector<file_3d_struct*> capsule_graphics;
 };
 
 class Car:public Object
