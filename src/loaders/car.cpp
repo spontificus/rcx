@@ -99,6 +99,28 @@ Car_Template *Car_Template::Load (const char *path)
 				target->box_graphics.push_back(f3d);
 				debug_draw_box(f3d->list, tmp_box.size[0],tmp_box.size[1],tmp_box.size[2], lgreen, gray, 70);
 			}
+			else if (!strcmp(file.words[0], "sphere"))
+			{
+				if (file.word_count != 7)
+				{
+					printlog(0, "ERROR: sphere geom in car geom list expects exactly: size (radius) and position!");
+					continue; //skip
+				}
+
+				struct sphere tmp_sphere;
+				tmp_sphere.radius = atof(file.words[2]);
+				tmp_sphere.pos[0] = atof(file.words[4]);
+				tmp_sphere.pos[1] = atof(file.words[5]);
+				tmp_sphere.pos[2] = atof(file.words[6]);
+
+				//store
+				target->spheres.push_back(tmp_sphere);
+
+				//graphics
+				file_3d_struct *f3d = allocate_file_3d();
+				target->sphere_graphics.push_back(f3d);
+				debug_draw_sphere(f3d->list, tmp_sphere.radius*2, lgreen, gray, 70);
+			}
 			else
 				printlog(0, "ERROR: geom \"%s\" in car geom list not recognized!", file.words[0]);
 		}
@@ -266,6 +288,29 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		//graphics
 		gdata->file_3d = box_graphics[i];
 	}
+	//then: spheres
+	struct sphere sphere;
+	for (i=0; i<(int)spheres.size(); ++i)
+	{
+		sphere = spheres[i];
+
+		geom = dCreateSphere(0,sphere.radius);
+		gdata = new Geom(geom, car);
+
+		dGeomSetBody (geom, car->bodyid);
+
+		if (sphere.pos[0]||sphere.pos[1]||sphere.pos[2]) //need offset
+			dGeomSetOffsetPosition(geom,sphere.pos[0],sphere.pos[1],sphere.pos[2]);
+
+		//friction
+		gdata->mu = conf.body_mu;
+		gdata->slip = conf.body_slip;
+		gdata->erp = conf.body_erp;
+		gdata->cfm = conf.body_cfm;
+		//graphics
+		gdata->file_3d = sphere_graphics[i];
+	}
+
 
 	//side detection sensors:
 	dReal *s = conf.s;

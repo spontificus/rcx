@@ -4,6 +4,9 @@ box size 3.5 7.2 1 postition 0 0 0 rotation 0 0 0 #main body box
 box s 1 1 2 p -5 0 4 r 45 0 0
 box s 1 1 1 p 0 0 6
 
+sphere size 1 position 2 4 2
+sphere s 2 p 0 -2 2
+
 #box2 0.5 1 0.5 1 4 0
 #box3 0.5 1 0.5 -1 4 0
 
