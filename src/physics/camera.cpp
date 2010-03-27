@@ -92,14 +92,14 @@ void Camera::Physics_Step()
 
 		if (camera.reverse && !camera.in_air) //move target and position to opposite side (if not just spinning in air)
 		{
-			dBodyGetRelPointPos (car->bodyid, settings->target[0], -settings->target[1], settings->target[2]*car->dir, t_pos);
-			dBodyVectorToWorld(car->bodyid, settings->distance[0], -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
+			dBodyGetRelPointPos (car->bodyid, settings->target[0]*car->dir, -settings->target[1], settings->target[2]*car->dir, t_pos);
+			dBodyVectorToWorld(car->bodyid, settings->distance[0]*car->dir, -settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
 		}
 		else //normal
 		{
-			dBodyGetRelPointPos (car->bodyid, settings->target[0]*camera.offset_scale,
+			dBodyGetRelPointPos (car->bodyid, settings->target[0]*camera.offset_scale*car->dir,
 					settings->target[1]*camera.offset_scale, settings->target[2]*car->dir*camera.offset_scale, t_pos);
-			dBodyVectorToWorld(car->bodyid, settings->distance[0], settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
+			dBodyVectorToWorld(car->bodyid, settings->distance[0]*car->dir, settings->distance[1], settings->distance[2]*car->dir, pos_wanted);
 		}
 
 		//position and velocity of anchor
