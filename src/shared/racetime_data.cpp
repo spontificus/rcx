@@ -18,6 +18,7 @@ Racetime_Data::~Racetime_Data()
 	delete[] name;
 }
 
+//Racetime_Data *Racetime_Data::Find(const char *name)
 Racetime_Data *Racetime_Data::Find(const char *name)
 {
 	Racetime_Data *tmp;

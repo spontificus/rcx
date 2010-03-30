@@ -20,8 +20,8 @@ Uint8 *keys;
 
 
 //TMP: keep track of demo spawn stuff
-script_struct *box = NULL;
-script_struct *sphere = NULL;
+Object_Template *box = NULL;
+Object_Template *sphere = NULL;
 
 
 void event_step(Uint32 step)
@@ -62,15 +62,15 @@ void event_step(Uint32 step)
 
 					//box spawning
 					case SDLK_F5:
-						Object::Spawn (box, 0,0,10);
+						box->Spawn (0,0,10);
 					break;
 					case SDLK_F6:
 						printlog(1, "(10sec height)");
-						Object::Spawn (box ,0,0,489.5);
+						box->Spawn (0,0,489.5);
 					break;
 					
 					case SDLK_F7:
-						Object::Spawn (sphere, 0,0,10);
+						sphere->Spawn (0,0,10);
 					break;
 
 					default:

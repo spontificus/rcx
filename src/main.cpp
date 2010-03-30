@@ -143,8 +143,8 @@ int main (int argc, char *argv[])
 		emergency_quit();
 
 	//load box for online spawning
-	box = Object::Load("data/objects/misc/box");
-	sphere = Object::Load("data/objects/misc/sphere");
+	box = Object_Template::Load("data/objects/misc/box");
+	sphere = Object_Template::Load("data/objects/misc/sphere");
 	if (!box || !sphere)
 		emergency_quit();
 

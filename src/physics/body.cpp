@@ -134,7 +134,7 @@ void Body::Angular_Drag ()
 }
 
 
-void Body::Set_Event(dReal thres, dReal buff, script_struct *scr)
+void Body::Set_Event(dReal thres, dReal buff, Script *scr)
 {
 	if (thres > 0 && buff > 0 && scr)
 	{

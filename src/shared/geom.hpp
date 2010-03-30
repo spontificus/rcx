@@ -52,7 +52,7 @@ class Geom: public Component
 		dReal buffer;
 		bool event;
 		//for events
-		script_struct *script; //script to execute when colliding (NULL if not used)
+		Script *script; //script to execute when colliding (NULL if not used)
 
 		//void Set_Buffer(... - TODO
 		void Increase_Buffer(dReal add);
@@ -62,6 +62,7 @@ class Geom: public Component
 		int flipper_counter;
 
 		bool TMP_pillar_geom;
+		file_3d_struct *TMP_pillar_graphics; //TMP
 	private:
 		//used to find next/prev geom in list of all geoms
 		//set next to null in last link in chain (prev = NULL in first)

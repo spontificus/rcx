@@ -5,6 +5,7 @@
 #include "script.hpp"
 #include "object.hpp"
 #include "component.hpp"
+#include "script.hpp"
 
 //body_data: data for body (describes mass and mass positioning), used for:
 //currently only for triggering event script (force threshold and event variables)
@@ -18,7 +19,7 @@ class Body: public Component
 		Body (dBodyID body, Object *obj);
 		~Body();
 
-		void Set_Event(dReal thresh, dReal buff, script_struct *scr);
+		void Set_Event(dReal thresh, dReal buff, Script *scr);
 		void Set_Linear_Drag(dReal drag);
 		void Set_Angular_Drag(dReal drag);
 		void Set_Advanced_Linear_Drag(dReal x, dReal y, dReal z);
@@ -47,7 +48,7 @@ class Body: public Component
 		dReal threshold; //if allocated forces exceeds, eat buffer
 		dReal buffer; //if buffer reaches zero, trigger event
 		bool event; //set after each buffer empty
-		script_struct *script; //execute on event
+		Script *script; //execute on event
 
 		//private methods for drag
 		void Linear_Drag();

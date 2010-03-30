@@ -161,7 +161,7 @@ int load_track (char *path)
 	Text_File file;
 
 	//each object is loaded/selected at a time (NULL if none loaded so far)
-	script_struct *obj = NULL;
+	Object_Template *obj = NULL;
 
 	//don't fail if can't find file, maybe there is no need for it anyway
 	if (file.Open(list))
@@ -176,7 +176,7 @@ int load_track (char *path)
 				strcpy (obj_name, "data/objects/");
 				strcat (obj_name, file.words[1]);
 
-				obj = Object::Load(obj_name);
+				obj = Object_Template::Load(obj_name);
 
 				//failure to load object
 				if (!obj)
@@ -201,7 +201,7 @@ int load_track (char *path)
 				y = atof(file.words[1]);
 				z = atof(file.words[2]);
 
-				Object::Spawn(obj, x, y, z);
+				obj->Spawn(x, y, z);
 			}
 			else
 			{

@@ -12,8 +12,7 @@
 #include "../shared/body.hpp"
 
 //load data for spawning object (object data), hard-coded debug version
-//(objects are loaded as script instructions, executed for spawning)
-script_struct *Object::Load(const char *path)
+Object_Template *Object_Template::Load(const char *path)
 {
 	printlog(1, "Loading object: %s", path);
 
@@ -23,7 +22,7 @@ script_struct *Object::Load(const char *path)
 	{
 		printlog(1, "(already loaded)");
 
-		script_struct *tmp_obj = dynamic_cast<script_struct *>(tmp);
+		Object_Template *tmp_obj = dynamic_cast<Object_Template *>(tmp);
 
 		if (!tmp_obj)
 			printlog(0, "ERROR: could not convert Racetime_Data class \"%s\" to Object_Template class!");
@@ -32,7 +31,7 @@ script_struct *Object::Load(const char *path)
 	}
 
 	//new object
-	script_struct *script;
+	Object_Template *tmplt;
 	
 	//currently no scripting, only hard-coded solutions
 	if (!strcmp(path,"data/objects/misc/box"))
@@ -40,80 +39,67 @@ script_struct *Object::Load(const char *path)
 		//"load" 3d box
 		printlog(2, "(hard-coded box)");
 
-		script = allocate_script();
-		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
-		strcpy (script->name, path);
+		tmplt = new Object_Template(path);
 
 		//the debug box will only spawn one component - one "3D file"
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_box (script->graphics_debug1->list, 1,1,1, red,gray, 50);
-		script->box = true;
+		tmplt->graphics_debug1 = allocate_file_3d();
+		debug_draw_box (tmplt->graphics_debug1->list, 1,1,1, red,gray, 50);
+		tmplt->box = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/flipper"))
 	{
 		printlog(2, "(hard-coded flipper)");
 
-		script = allocate_script();
-		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
-		strcpy (script->name, path);
+		tmplt = new Object_Template(path);
 
-		script->graphics_debug1 = allocate_file_3d();
-		script->graphics_debug2 = allocate_file_3d();
+		tmplt->graphics_debug1 = allocate_file_3d();
+		tmplt->graphics_debug2 = allocate_file_3d();
 
-		debug_draw_box (script->graphics_debug1->list, 8,8,0.5, red,gray, 30);
-		debug_draw_box (script->graphics_debug2->list, 3,3,2, lblue,black, 0);
-		script->flipper = true;
+		debug_draw_box (tmplt->graphics_debug1->list, 8,8,0.5, red,gray, 30);
+		debug_draw_box (tmplt->graphics_debug2->list, 3,3,2, lblue,black, 0);
+		tmplt->flipper = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/NH4"))
 	{
 		printlog(2, "(hard-coded \"molecule\")");
 
-		script = allocate_script();
-		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
-		strcpy (script->name, path);
+		tmplt = new Object_Template(path);
 
 		//draw approximate sphere
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug1->list,2, lblue,white,42);
-		script->graphics_debug2 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug2->list,1.6,white,white,42);
+		tmplt->graphics_debug1 = allocate_file_3d();
+		debug_draw_sphere (tmplt->graphics_debug1->list,2, lblue,white,42);
+		tmplt->graphics_debug2 = allocate_file_3d();
+		debug_draw_sphere (tmplt->graphics_debug2->list,1.6,white,white,42);
 
-		script->NH4 = true;
+		tmplt->NH4 = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/sphere"))
 	{
 		printlog(2, "(hard-coded sphere)");
 
-		script = allocate_script();
-		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
-		strcpy (script->name, path);
+		tmplt = new Object_Template(path);
 
 		//draw approximate sphere
-		script->graphics_debug1 = allocate_file_3d();
-		debug_draw_sphere (script->graphics_debug1->list,2, lblue,white,42);
-//		script->graphics_debug2 = allocate_file_3d();
-//		debug_draw_sphere (script->graphics_debug2->list,1.6,white,white,42);
+		tmplt->graphics_debug1 = allocate_file_3d();
+		debug_draw_sphere (tmplt->graphics_debug1->list,2, lblue,white,42);
 
-		script->sphere = true;
+		tmplt->sphere = true;
 	}
 	else if (!strcmp(path, "data/objects/misc/building"))
 	{
 		printlog(2, "(hard-coded building)");
 
-		//name
-		script = allocate_script();
-		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
-		strcpy (script->name, path);
+		tmplt = new Object_Template(path);
 
 		//create graphics
-		script->graphics_debug1 = allocate_file_3d(); //walls
-		script->graphics_debug2 = allocate_file_3d(); //floor/ceiling
-		script->graphics_debug3 = allocate_file_3d(); //pillars
+		tmplt->graphics_debug1 = allocate_file_3d(); //walls
+		tmplt->graphics_debug2 = allocate_file_3d(); //floor/ceiling
+		tmplt->graphics_debug3 = allocate_file_3d(); //pillars
 
-		debug_draw_box (script->graphics_debug1->list, 4,0.4,2.7, dgray,black, 0);
-		debug_draw_box (script->graphics_debug2->list, 4,4,0.2, lgray,gray, 30);
+		debug_draw_box (tmplt->graphics_debug1->list, 4,0.4,2.7, dgray,black, 0);
+		debug_draw_box (tmplt->graphics_debug2->list, 4,4,0.2, lgray,gray, 30);
 
-		glNewList (script->graphics_debug3->list, GL_COMPILE);
+		glNewList (tmplt->graphics_debug3->list, GL_COMPILE);
 
 		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, dgray);
 		glMaterialfv (GL_FRONT, GL_SPECULAR, gray);
@@ -133,32 +119,30 @@ script_struct *Object::Load(const char *path)
 
 		glEndList();
 
-		script->building = true;
+		tmplt->building = true;
 	}
 	else if (!strcmp(path,"data/objects/misc/pillar"))
 	{
 		//"load" 3d box
 		printlog(2, "(hard-coded pillar)");
 
-		script = allocate_script();
-		script->name = (char *)calloc(strlen(path) + 1, sizeof(char));
-		strcpy (script->name, path);
+		tmplt = new Object_Template(path);
 
-		script->graphics_debug1 = allocate_file_3d();
-		script->graphics_debug2 = allocate_file_3d();
-		debug_draw_box (script->graphics_debug1->list, 2,2,5, gray,gray, 50); //complete
-		debug_draw_box (script->graphics_debug2->list, 2,2,5/2, gray,gray, 50); //broken in half
-		script->pillar = true;
+		tmplt->graphics_debug1 = allocate_file_3d();
+		tmplt->graphics_debug2 = allocate_file_3d();
+		debug_draw_box (tmplt->graphics_debug1->list, 2,2,5, gray,gray, 50); //complete
+		debug_draw_box (tmplt->graphics_debug2->list, 2,2,5/2, gray,gray, 50); //broken in half
+		tmplt->pillar = true;
 	}
 
 
 	else
 	{
 		printlog(0, "ERROR: path didn't match any hard-coded object");
-		script = NULL;
+		tmplt = NULL;
 	}
 
-	return script;
+	return tmplt;
 }
 
 //bind two bodies together using fixed joint (simplify connection of many bodies)
@@ -172,21 +156,20 @@ void debug_joint_fixed(dBodyID body1, dBodyID body2, Object *obj)
 
 	//use feedback
 	//set threshold, buffer and dummy script
-	jd->Set_Event(25000, 1000, (script_struct*)1337);
+	jd->Set_Event(25000, 1000, (Script*)1337);
 }
 
 //spawn a "loaded" (actually hard-coded) object
 //TODO: rotation
-void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
+void Object_Template::Spawn (dReal x, dReal y, dReal z)
 {
 	printlog(1, "Spawning object at: %f %f %f", x,y,z);
-	//prettend to be executing the script... just load debug values from
-	//script structure
+	//prettend to be executing the script... just load debug values
 	//
 	Object *obj;
 	Body *bd;
 
-	if (script->box)
+	if (box)
 	{
 	printlog(2, "(hard-coded box)");
 	//
@@ -223,7 +206,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 //	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	data->file_3d = graphics_debug1;
 
 	//done
 	//
@@ -231,7 +214,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 	}
 	//
 	//
-	else if (script->flipper)
+	else if (flipper)
 	{
 	printlog(2, "(hard-coded flipper)");
 	//
@@ -255,7 +238,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 //	data->bounce = 4.0;
 	
 	//Graphics
-	data->file_3d = script->graphics_debug1;
+	data->file_3d = graphics_debug1;
 
 
 	//flipper sensor
@@ -267,11 +250,11 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 	data->flipper_geom = geom; //tmp debug solution
 
 	//graphics
-	data->file_3d = script->graphics_debug2;
+	data->file_3d = graphics_debug2;
 	//
 	}
 	//
-	else if (script->NH4)
+	else if (NH4)
 	{
 	printlog(2, "(hard-coded \"molecule\")");
 	//
@@ -304,7 +287,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	data->file_3d = graphics_debug1;
 
 	dReal pos[4][3] = {
 		{0, 0, 1.052},
@@ -339,14 +322,14 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug2;
+	data->file_3d = graphics_debug2;
 
 	//connect to main sphere
 	
 	joint = dJointCreateBall (world, 0);
 
 	Joint *jd = new Joint(joint, obj);
-	jd->Set_Event(1000, 500, (script_struct*)1337);
+	jd->Set_Event(1000, 500, (Script*)1337);
 
 	dJointAttach (joint, body1, body);
 	dJointSetBallAnchor (joint, x+pos[i][0], y+pos[i][1], z+pos[i][2]);
@@ -355,7 +338,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 	//
 	//
 	}
-	else if (script->sphere)
+	else if (sphere)
 	{
 	printlog(2, "(sphere)");
 	//
@@ -386,10 +369,10 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = script->graphics_debug1;
+	data->file_3d = graphics_debug1;
 	}
 	//
-	else if (script->building)
+	else if (building)
 	{
 	printlog(2, "(hard-coded building)");
 	//
@@ -425,7 +408,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 
 			new Body (body1[i], obj);
 
-			data->file_3d = script->graphics_debug1;
+			data->file_3d = graphics_debug1;
 		}
 		
 		const dReal k = 1.5*4+0.4/2;
@@ -485,7 +468,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 
 			new Body (body2[i], obj);
 
-			data->file_3d = script->graphics_debug2;
+			data->file_3d = graphics_debug2;
 		}
 
 		const dReal k2=2.7-0.2/2;
@@ -553,7 +536,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 			//friction
 			data->mu = 1;
 			//Next, Graphics
-			data->file_3d = script->graphics_debug3;
+			data->file_3d = graphics_debug3;
 		}
 
 		dBodySetPosition (body[0], x+2, y+2, z+2.5/2);
@@ -593,7 +576,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 	}
 	//
 	//
-	else if (script->pillar)
+	else if (pillar)
 	{
 		printlog(2, "(hard-coded pillar)");
 
@@ -604,7 +587,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 		dGeomSetPosition(g->geom_id, x,y,(z+2.5));
 
 		//render
-		g->file_3d = script->graphics_debug1;
+		g->file_3d = graphics_debug1;
 
 		//identification
 		g->TMP_pillar_geom = true;
@@ -612,7 +595,7 @@ void Object::Spawn (script_struct *script, dReal x, dReal y, dReal z)
 		//destruction
 		g->threshold = 200000;
 		g->buffer = 10000;
-		g->script = script; //got some data well need
+		g->TMP_pillar_graphics = graphics_debug2;
 	}
 	else
 		printlog(0, "ERROR: trying to spawn unidentified object?!");

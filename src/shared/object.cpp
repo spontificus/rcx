@@ -1,6 +1,22 @@
 #include "object.hpp"
 #include "printlog.hpp"
 #include "track.hpp"
+#include "printlog.hpp"
+
+#include <stdlib.h>
+
+//allocate new script storage, and add it to list
+//(not used yet, only for storing 3d list pointers...)
+Object_Template::Object_Template(const char *name): Racetime_Data(name)
+{
+	//debug identification bools set to false
+	box = false;
+	flipper = false;
+	NH4 = false;
+	building = false;
+	sphere = false;
+	pillar = false;
+}
 
 
 Object *Object::head = NULL;

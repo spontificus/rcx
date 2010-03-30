@@ -6,7 +6,7 @@
 class Racetime_Data
 {
 	public:
-		void Destroy_All();
+		static void Destroy_All();
 		static Racetime_Data *Find(const char *name);
 
 	protected:

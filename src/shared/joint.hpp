@@ -17,7 +17,7 @@ class Joint: public Component
 		Joint (dJointID joint, Object *obj);
 		~Joint();
 
-		void Set_Event(dReal thresh, dReal buff, script_struct *scr);
+		void Set_Event(dReal thresh, dReal buff, Script *scr);
 
 		static void Physics_Step();
 		static void TMP_Events_Step(Uint32 step);
@@ -36,7 +36,7 @@ class Joint: public Component
 		dReal threshold; //if force on body exceeds threshold, eat buffer
 		dReal buffer; //if buffer reaches zero, trigger event
 		bool event; //if event triggered, run script
-		script_struct *script; //the script to run
+		Script *script; //the script to run
 };
 
 #endif

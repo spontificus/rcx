@@ -22,16 +22,7 @@ void free_all (void)
 		free_profile(profile_head);
 
 	Object::Destroy_All();
-
-	//only place where scripts and 3d lists are removed
-	script_struct *script_tmp = script_head;
-	while (script_head)
-	{
-		script_tmp = script_head->next;
-		free (script_head->name);
-		free (script_head);
-		script_head = script_tmp;
-	}
+	Racetime_Data::Destroy_All();
 
 	//destroy loaded 3d files
 	file_3d_struct *file_3d_tmp;

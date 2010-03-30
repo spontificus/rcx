@@ -2,6 +2,8 @@
 #define _RCX_OBJECT_H
 #include <ode/common.h>
 
+#include "racetime_data.hpp"
+#include "file_3d.hpp"
 #include "script.hpp"
 #include "component.hpp"
 #include "space.hpp"
@@ -11,23 +13,54 @@
 //important role of "object" is to store the ode space for the spawned object
 //(keeps track of the geoms in ode that describes the components) and joint
 //group (for cleaning up object)
-//
-//>Dynamically allocated
+
+//template for spawning
+class Object_Template:public Racetime_Data
+{
+	public:
+		static Object_Template *Load(const char *path);
+		void Spawn(dReal x, dReal y, dReal z);
+
+	private:
+		Object_Template(const char*); //just set some default values
+		//placeholder for script data, now just variables
+
+		//script to be run when spawning object
+		Script *spawn;
+
+		//temporary graphics
+		file_3d_struct *graphics_debug1;
+		file_3d_struct *graphics_debug2;
+		file_3d_struct *graphics_debug3;
+
+		//temporary solution
+		bool box;
+		bool flipper;
+		bool NH4;
+		bool building;
+		bool sphere;
+		bool pillar;
+};
+
+//can be added/removed at runtime ("racetime")
 class Object
 {
 	public:
-		Object();
-		virtual ~Object(); //(makes sure also inherited classes calls this destructor)
-
+		virtual ~Object(); //(virtual makes sure also inherited classes calls this destructor)
 		static void Destroy_All();
-		static void Spawn(script_struct *script, dReal x, dReal y, dReal z);
-		static script_struct *Load(const char *path); //TODO: move to Object_Template class
+
 	private:
+		Object();
+		//the following are either using or inherited from this class
+		friend class Object_Template; //needs access to constructor
+		friend int load_track (char *);
+		friend class Car;
+
 		//things to keep track of when cleaning out object
 		Component *components;
-		friend class Component; //to allow access to above
 		dSpaceID selected_space;
-		//both geom and space uses the variable above
+		//to allow acces to the two above pointers
+		friend class Component;
 		friend class Geom;
 		friend class Space;
 

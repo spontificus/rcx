@@ -30,8 +30,8 @@ void physics_quit (void);
 
 
 //TMP: used by events for keeping track of objects spawning
-#include "../shared/script.hpp"
-extern script_struct *box; //keep track of our loaded debug box
-extern script_struct *sphere;
+#include "object.hpp"
+extern Object_Template *box; //keep track of our loaded debug box
+extern Object_Template *sphere;
 
 #endif
