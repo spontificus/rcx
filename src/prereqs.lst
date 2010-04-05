@@ -29,12 +29,11 @@ build/shared/file_3d.o: shared/file_3d.hpp shared/printlog.hpp
 build/shared/geom.o: shared/geom.hpp shared/printlog.hpp shared/track.hpp shared/internal.hpp shared/../loaders/conf.hpp
 build/shared/internal.o: shared/internal.hpp
 build/shared/joint.o: shared/joint.hpp shared/component.hpp
-build/shared/object.o: shared/object.hpp shared/printlog.hpp shared/track.hpp
+build/shared/object.o: shared/object.hpp shared/printlog.hpp shared/track.hpp shared/printlog.hpp
 build/shared/printlog.o: shared/internal.hpp shared/printlog.hpp
 build/shared/profile.o: shared/profile.hpp
 build/shared/racetime_data.o: shared/racetime_data.hpp
 build/shared/runlevel.o: shared/runlevel.hpp
-build/shared/script.o: shared/script.hpp shared/printlog.hpp
 build/shared/space.o: shared/space.hpp shared/geom.hpp shared/printlog.hpp shared/track.hpp
 build/shared/threads.o: shared/threads.hpp
 build/shared/track.o: shared/track.hpp
