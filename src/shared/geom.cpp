@@ -3,6 +3,7 @@
 #include "printlog.hpp"
 #include "track.hpp"
 #include "internal.hpp"
+#include "../events/event_lists.hpp"
 #include "../loaders/conf.hpp"
 
 Geom *Geom::head = NULL;
@@ -74,6 +75,9 @@ Geom::~Geom ()
 {
 	//lets just hope the given pointer is ok...
 	printlog(2, "clearing Geom class");
+
+	//remove all events
+	//Event_List<Geom>::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer
