@@ -8,6 +8,8 @@ LIBS	= `sdl-config --static-libs --libs` `ode-config --libs` -lm -lopengl32 -lgl
 FLAGS	= `sdl-config --cflags` `ode-config --cflags`
 ARGS	= -O2 -pipe -Wall -march=i686 -mtune=i686 $(FLAGS) -Dwindows
 
+all: rcx
+
 rcx: builddirs $(OBJS)
 	g++ -o ../rcx.exe $(OBJS) $(ARGS) $(LIBS)
 
@@ -18,10 +20,13 @@ include prereqs.lst
 $(OBJS): build/%.o:%.cpp
 	g++ -c -o $@ $< $(ARGS)
 
-.PHONY: builddirs clean
+.PHONY: builddirs clean distclean
 
 builddirs:
 	-mkdir -p build/{shared,events,loaders,graphics,physics}
 
 clean:
-	-rm -f ../rcx $(OBJS)
+	-rm -f $(OBJS)
+
+distclean: clean
+	-rm -f ../rcx

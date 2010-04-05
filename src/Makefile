@@ -6,6 +6,8 @@ LIBS	= `pkg-config --libs $(LIBLST)`
 FLAGS	= `pkg-config --cflags $(LIBLST)`
 ARGS	= -O2 -pipe -Wall -march=native -mtune=native -lm $(FLAGS)
 
+all: rcx
+
 #final normal target
 rcx: builddirs $(OBJS)
 	g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
@@ -17,10 +19,14 @@ include prereqs.lst
 $(OBJS): build/%.o:%.cpp
 	g++ -c -o $@ $< $(ARGS)
 
-.PHONY: builddirs clean
+.PHONY: builddirs clean distclean
 
 builddirs:
 	-mkdir -p build/{shared,events,loaders,graphics,physics}
 
 clean:
-	-rm -f ../rcx $(OBJS)
+	-rm -f $(OBJS)
+
+distclean: clean
+	-rm -f ../rcx
+
