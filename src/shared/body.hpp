@@ -47,7 +47,6 @@ class Body: public Component
 		//event processing
 		dReal threshold; //if allocated forces exceeds, eat buffer
 		dReal buffer; //if buffer reaches zero, trigger event
-		bool event; //set after each buffer empty
 		Script *script; //execute on event
 
 		//private methods for drag

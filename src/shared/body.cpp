@@ -30,7 +30,6 @@ Body::Body (dBodyID body, Object *obj): Component(obj)
 
 	threshold = 0; //no threshold (disables event testing)
 	buffer = 1; //almost empty buffer
-	event = false;
 	script = NULL;
 }
 

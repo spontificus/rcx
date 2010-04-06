@@ -2,6 +2,7 @@
 #include "../shared/printlog.hpp"
 #include "../shared/track.hpp"
 #include "../shared/internal.hpp"
+#include "../events/event_lists.hpp"
 
 #define v_length(x, y, z) (dSqrt( (x)*(x) + (y)*(y) + (z)*(z) ))
 //functions for body drag
@@ -145,11 +146,13 @@ void Body::Set_Event(dReal thres, dReal buff, Script *scr)
 		script=scr;
 
 		//make sure no old event is left
-		event=false;
+		Event_Lists::Remove(this);
 	}
 	else
 	{
 		printlog(2, "disabling Body event");
+
+		Event_Lists::Remove(this);
 
 		//disable
 		threshold = 0;

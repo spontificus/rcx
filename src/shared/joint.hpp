@@ -35,7 +35,6 @@ class Joint: public Component
 		dJointFeedback *feedback; //used if checking forces
 		dReal threshold; //if force on body exceeds threshold, eat buffer
 		dReal buffer; //if buffer reaches zero, trigger event
-		bool event; //if event triggered, run script
 		Script *script; //the script to run
 };
 
