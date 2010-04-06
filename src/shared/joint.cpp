@@ -1,5 +1,6 @@
 #include "joint.hpp"
 #include "component.hpp"
+#include "../events/event_lists.hpp"
 
 Joint *Joint::head = NULL;
 
@@ -37,6 +38,9 @@ Joint::~Joint ()
 {
 	//lets just hope the given pointer is ok...
 	printlog(2, "clearing Joint class");
+
+	//remove all events
+	Event_Lists::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer

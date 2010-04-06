@@ -62,7 +62,6 @@ Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to
 	force_to_body=false;
 	threshold=0;
 	buffer=1;
-	event=false;
 
 	//debug variables
 	flipper_geom = 0;
@@ -77,7 +76,7 @@ Geom::~Geom ()
 	printlog(2, "clearing Geom class");
 
 	//remove all events
-	//Event_List<Geom>::Remove(this);
+	Event_Lists::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer

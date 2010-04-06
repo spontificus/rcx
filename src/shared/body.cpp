@@ -2,6 +2,7 @@
 #include "object.hpp"
 #include "internal.hpp"
 #include "printlog.hpp"
+#include "../events/event_lists.hpp"
 
 Body *Body::head = NULL;
 
@@ -38,6 +39,9 @@ Body::~Body()
 {
 	//lets just hope the given pointer is ok...
 	printlog(2, "clearing Body class");
+
+	//remove all events
+	Event_Lists::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer

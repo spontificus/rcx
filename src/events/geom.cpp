@@ -2,102 +2,99 @@
 #include "../shared/geom.hpp"
 #include "../shared/body.hpp"
 #include "../shared/track.hpp"
+#include "event_lists.hpp"
 
 //temporary geom event processing
 void Geom::TMP_Events_Step(Uint32 step)
 {
-	Geom *geom = Geom::head;
-	while (geom)
+	Geom *geom;
+	while (Event_Lists::Get_Event(&geom))
 	{
-		//TMP demo until scripting
-		if (geom->event)
+		dBodyID bodyid = dGeomGetBody(geom->geom_id);
+
+		//if has body, remove body and this geom
+		if (bodyid)
 		{
-			geom->event = false;
-
-			dBodyID bodyid = dGeomGetBody(geom->geom_id);
-
-			//if has body, remove body and this geom
-			if (bodyid)
+			//break into two pieces
+			if (geom->TMP_pillar_geom)
 			{
-				//break into two pieces
-				if (geom->TMP_pillar_geom)
-				{
-					const dReal *rot = dBodyGetRotation(bodyid);
-					dVector3 pos1, pos2;
-					dBodyGetRelPointPos(bodyid, 0,0,5.0/4.0, pos1);
-					dBodyGetRelPointPos(bodyid, 0,0,-5.0/4.0, pos2);
+				const dReal *rot = dBodyGetRotation(bodyid);
+				dVector3 pos1, pos2;
+				dBodyGetRelPointPos(bodyid, 0,0,5.0/4.0, pos1);
+				dBodyGetRelPointPos(bodyid, 0,0,-5.0/4.0, pos2);
 
-					//geom1
-					dGeomID g = dCreateBox(0, 2,2,5.0/2.0);
-					Geom *gd = new Geom(g, geom->object_parent);
-					gd->threshold = 100000;
-					gd->buffer = 500;
+				//geom1
+				dGeomID g = dCreateBox(0, 2,2,5.0/2.0);
+				Geom *gd = new Geom(g, geom->object_parent);
+				gd->threshold = 100000;
+				gd->buffer = 500;
 
-					//body1
-					dBodyID b = dBodyCreate(world);
-					dMass m;
-					dMassSetBox (&m, 1, 2,2,5.0/2.0);
-					dMassAdjust (&m, 100); //200kg
-					dBodySetMass(b, &m);
-					new Body(b, geom->object_parent);
-					dBodySetPosition(b, pos1[0], pos1[1], pos1[2]);
-					dBodySetRotation(b, rot);
-					dGeomSetBody(g,b);
+				//body1
+				dBodyID b = dBodyCreate(world);
+				dMass m;
+				dMassSetBox (&m, 1, 2,2,5.0/2.0);
+				dMassAdjust (&m, 100); //200kg
+				dBodySetMass(b, &m);
+				new Body(b, geom->object_parent);
+				dBodySetPosition(b, pos1[0], pos1[1], pos1[2]);
+				dBodySetRotation(b, rot);
+				dGeomSetBody(g,b);
 
-					gd->file_3d = geom->TMP_pillar_graphics;
+				gd->file_3d = geom->TMP_pillar_graphics;
 
-					//geom2
-					g = dCreateBox(0, 2,2,5.0/2.0);
-					gd = new Geom(g, geom->object_parent);
-					gd->threshold = 100000;
-					gd->buffer = 500;
+				//geom2
+				g = dCreateBox(0, 2,2,5.0/2.0);
+				gd = new Geom(g, geom->object_parent);
+				gd->threshold = 100000;
+				gd->buffer = 500;
 
-					//body2
-					b = dBodyCreate(world);
-					dMassSetBox (&m, 1, 2,2,5.0/2.0);
-					dMassAdjust (&m, 100); //200kg
-					dBodySetMass(b, &m);
-					new Body(b, geom->object_parent);
-					dBodySetPosition(b, pos2[0], pos2[1], pos2[2]);
-					dBodySetRotation(b, rot);
-					dGeomSetBody(g,b);
+				//body2
+				b = dBodyCreate(world);
+				dMassSetBox (&m, 1, 2,2,5.0/2.0);
+				dMassAdjust (&m, 100); //200kg
+				dBodySetMass(b, &m);
+				new Body(b, geom->object_parent);
+				dBodySetPosition(b, pos2[0], pos2[1], pos2[2]);
+				dBodySetRotation(b, rot);
+				dGeomSetBody(g,b);
 
-					gd->file_3d = geom->TMP_pillar_graphics;
-				}
-				Body *body = (Body*)dBodyGetData(bodyid);
-
-				delete geom;
-				delete body;
+				gd->file_3d = geom->TMP_pillar_graphics;
 			}
-			else //static geom, hmm...
+			Body *body = (Body*)dBodyGetData(bodyid);
+
+			delete geom;
+			delete body;
+		}
+		else //static geom, hmm...
+		{
+			if (geom->TMP_pillar_geom)
 			{
-				if (geom->TMP_pillar_geom)
-				{
-					//pillar that should be getting a body (to detach), and buffer refill
-					dBodyID body = dBodyCreate(world);
+				//pillar that should be getting a body (to detach), and buffer refill
+				dBodyID body = dBodyCreate(world);
 
-					//mass
-					dMass m;
-					dMassSetBox (&m, 1, 2,2,5);
-					dMassAdjust (&m, 200); //200kg
-					dBodySetMass(body, &m);
+				//mass
+				dMass m;
+				dMassSetBox (&m, 1, 2,2,5);
+				dMassAdjust (&m, 200); //200kg
+				dBodySetMass(body, &m);
 
-					new Body(body, geom->object_parent);
-					//position
-					const dReal *pos = dGeomGetPosition(geom->geom_id);
-					dBodySetPosition(body, pos[0], pos[1], pos[2]);
+				new Body(body, geom->object_parent);
+				//position
+				const dReal *pos = dGeomGetPosition(geom->geom_id);
+				dBodySetPosition(body, pos[0], pos[1], pos[2]);
 
-					//attach
-					dGeomSetBody(geom->geom_id, body);
+				//attach
+				dGeomSetBody(geom->geom_id, body);
 
 
-					//reset buffer
-					geom->Increase_Buffer(8000);
-				}
+				//reset buffer
+				geom->Increase_Buffer(8000);
 			}
 		}
+	}
 
-		if (geom->flipper_geom)
+	//TODO: flippers disabled for now
+		/*if (geom->flipper_geom)
 		{
 			if (geom->colliding)
 			{
@@ -119,6 +116,5 @@ void Geom::TMP_Events_Step(Uint32 step)
 			else
 				geom->flipper_counter=0;
 		}
-		geom=geom->next;
-	}
+		geom=geom->next;*/
 }

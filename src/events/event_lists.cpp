@@ -73,6 +73,8 @@ bool Event_Lists::Get_Event(Joint **joint)
 //removing
 void Event_Lists::Remove(Geom *comp)
 {
+	printlog(2, "seeking and removing all events for specified Geom");
+
 	Event_Lists *p = geom_head; //points at current event in list
 	Event_Lists **pp = &geom_head; //points at pointer ("next") pointing at current event
 
@@ -94,6 +96,7 @@ void Event_Lists::Remove(Geom *comp)
 
 void Event_Lists::Remove(Body *comp)
 {
+	printlog(2, "seeking and removing all events for specified Body");
 	Event_Lists *p = body_head;
 	Event_Lists **pp = &body_head;
 	while (p)
@@ -114,6 +117,8 @@ void Event_Lists::Remove(Body *comp)
 
 void Event_Lists::Remove(Joint *comp)
 {
+	printlog(2, "seeking and removing all events for specified Joint");
+
 	Event_Lists *p = joint_head;
 	Event_Lists **pp = &joint_head;
 	while (p)

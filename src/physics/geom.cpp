@@ -6,6 +6,8 @@
 
 #include "collision_feedback.hpp"
 
+#include "../events/event_lists.hpp"
+
 #include <ode/ode.h>
 
 //when two geoms might intersect
@@ -196,7 +198,7 @@ void Geom::Collision_Force(dReal force)
 		if (buffer < 0)
 		{
 			printlog(2, "Geom buffer depleted, generating event");
-			event = true;
+			new Event_Lists(this);
 		}
 	}
 	else //just damage buffer even more
@@ -208,5 +210,5 @@ void Geom::Increase_Buffer(dReal buff)
 	buffer+=buff;
 
 	if (buffer < 0) //still depleted, regenerate event
-		event = true;
+		new Event_Lists(this);
 }

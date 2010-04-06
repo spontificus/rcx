@@ -50,7 +50,7 @@ class Geom: public Component
 		bool force_to_body; //send forces to connected body instead
 		dReal threshold;
 		dReal buffer;
-		bool event;
+
 		//for events
 		Script *script; //script to execute when colliding (NULL if not used)
 
