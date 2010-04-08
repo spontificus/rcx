@@ -17,17 +17,19 @@ Object_Template *Object_Template::Load(const char *path)
 	printlog(1, "Loading object: %s", path);
 
 	//see if already loaded
-	Racetime_Data *tmp;
-	if ((tmp = Racetime_Data::Find(path)))
+	Object_Template *tmp;
+	if ((tmp = Racetime_Data::Find<Object_Template>(path)))
 	{
 		printlog(1, "(already loaded)");
 
-		Object_Template *tmp_obj = dynamic_cast<Object_Template *>(tmp);
+		return tmp;
+
+		/*Object_Template *tmp_obj = dynamic_cast<Object_Template *>(tmp);
 
 		if (!tmp_obj)
 			printlog(0, "ERROR: could not convert Racetime_Data class \"%s\" to Object_Template class!");
 		else
-			return tmp_obj; //abort loading of car, return already loaded one
+			return tmp_obj; //abort loading of car, return already loaded one*/
 	}
 
 	//new object

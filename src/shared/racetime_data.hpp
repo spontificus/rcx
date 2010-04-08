@@ -7,7 +7,10 @@ class Racetime_Data
 {
 	public:
 		static void Destroy_All();
-		static Racetime_Data *Find(const char *name);
+
+		//find data that matches specified typename
+		template<typename T>
+			static T *Find(const char *name);
 
 	protected:
 		Racetime_Data(const char *name);
@@ -19,5 +22,4 @@ class Racetime_Data
 		static Racetime_Data *head;
 		Racetime_Data *next;
 };
-
 #endif
