@@ -14,18 +14,12 @@ Car_Template *Car_Template::Load (const char *path)
 	printlog(1, "Loading car: %s", path);
 
 	//see if already loaded
-	Car_Template *tmp;
-	if ((tmp = Racetime_Data::Find<Car_Template>(path)))
+	Racetime_Data *tmp;
+	if ((tmp = Racetime_Data::Find(path, typeid(Car_Template))))
 	{
 		printlog(1, "(already loaded)");
 
-		return tmp;
-		/*Car_Template *tmp_car = dynamic_cast<Car_Template *>(tmp);
-
-		if (!tmp_car)
-			printlog(0, "ERROR: could not convert Racetime_Data class \"%s\" to Car_Template class!");
-		else
-			return tmp_car; //abort loading of car, return already loaded one*/
+		return (Car_Template*)tmp;
 	}
 
 	//apparently not

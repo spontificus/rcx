@@ -1,6 +1,8 @@
 #ifndef _RCX_RACETIME_DATA_H
 #define _RCX_RACETIME_DATA_H
 
+#include <typeinfo>
+
 //TODO: polymorph, never used in this baseclass form
 
 class Racetime_Data
@@ -8,9 +10,8 @@ class Racetime_Data
 	public:
 		static void Destroy_All();
 
-		//find data that matches specified typename
-		template<typename T>
-			static T *Find(const char *name);
+		//find data that matches specified name and type
+		static Racetime_Data *Find(const char *name, const std::type_info &type);
 
 	protected:
 		Racetime_Data(const char *name);
