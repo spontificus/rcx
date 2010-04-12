@@ -93,26 +93,7 @@ Object_Template *Object_Template::Load(const char *path)
 
 		debug_draw_box (tmplt->graphics_debug1->list, 4,0.4,2.7, dgray,black, 0);
 		debug_draw_box (tmplt->graphics_debug2->list, 4,4,0.2, lgray,gray, 30);
-
-		glNewList (tmplt->graphics_debug3->list, GL_COMPILE);
-
-		glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, dgray);
-		glMaterialfv (GL_FRONT, GL_SPECULAR, gray);
-		glMateriali (GL_FRONT, GL_SHININESS, 30);
-
-		glBegin (GL_QUAD_STRIP);
-		float v;
-		for (v=0; v<=2*M_PI; v+=2*M_PI/10)
-		{
-			glNormal3f (sin(v), cos(v), 0.0f);
-			glVertex3f(sin(v)/2, cos(v)/2, 2.5/2.0f);
-			glVertex3f(sin(v)/2, cos(v)/2, -2.5/2.0f);
-		}
-		glEnd();
-
-		glMaterialfv (GL_FRONT, GL_SPECULAR, black);
-
-		glEndList();
+		debug_draw_capsule (tmplt->graphics_debug3->list, 0.5, 1.5, dgray,gray, 30);
 
 		tmplt->building = true;
 	}

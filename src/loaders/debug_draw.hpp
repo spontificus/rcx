@@ -8,7 +8,7 @@ void debug_draw_box (GLuint list, GLfloat x, GLfloat y, GLfloat z,
 void debug_draw_sphere (GLuint list, GLfloat d, const GLfloat colour[],
 		const GLfloat specular[], const GLint shininess);
 
-void debug_draw_capsule (GLuint list, GLfloat d, GLfloat l,
+void debug_draw_capsule (GLuint list, GLfloat r, GLfloat l,
 		const GLfloat colour[], const GLfloat specular[], const GLint shininess);
 
 #endif
