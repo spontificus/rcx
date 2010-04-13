@@ -11,7 +11,7 @@ class Racetime_Data
 		static void Destroy_All();
 
 		//find data that matches specified name and type
-		static Racetime_Data *Find(const char *name, const std::type_info &type);
+		static Racetime_Data *Find(const char *name);
 
 	protected:
 		Racetime_Data(const char *name);

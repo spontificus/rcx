@@ -146,7 +146,10 @@ int main (int argc, char *argv[])
 	box = Object_Template::Load("data/objects/misc/box");
 	sphere = Object_Template::Load("data/objects/misc/sphere");
 	if (!box || !sphere)
+	{
+		printf("hmm...\n");
 		emergency_quit();
+	}
 
 	//spawn car
 	Car *venom = venom_template->Spawn(track.start[0]-5, track.start[1], track.start[2]);

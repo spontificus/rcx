@@ -14,12 +14,11 @@ Car_Template *Car_Template::Load (const char *path)
 	printlog(1, "Loading car: %s", path);
 
 	//see if already loaded
-	Racetime_Data *tmp;
-	if ((tmp = Racetime_Data::Find(path, typeid(Car_Template))))
+	Car_Template *tmp = dynamic_cast<Car_Template*>(Racetime_Data::Find(path));
+	if (tmp)
 	{
 		printlog(1, "(already loaded)");
-
-		return (Car_Template*)tmp;
+		return tmp;
 	}
 
 	//apparently not

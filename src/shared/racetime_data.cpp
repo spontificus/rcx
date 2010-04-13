@@ -19,18 +19,13 @@ Racetime_Data::~Racetime_Data()
 	delete[] name;
 }
 
-Racetime_Data *Racetime_Data::Find(const char *name, const std::type_info &type)
+Racetime_Data *Racetime_Data::Find(const char *name)
 {
 	Racetime_Data *tmp;
 
 	for (tmp=head; tmp; tmp=tmp->next) //loop
 		if (!strcmp(tmp->name, name)) //name match
-		{
-			if (typeid(tmp) == type) //type match
-				return tmp;
-			else //this is odd: right name, wrong type...
-				printlog(0, "ERROR: could not convert Racetime_Data class \"%s\"!", name);
-		}
+			return tmp;
 
 	return NULL; //else
 }

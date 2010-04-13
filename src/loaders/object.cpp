@@ -17,12 +17,11 @@ Object_Template *Object_Template::Load(const char *path)
 	printlog(1, "Loading object: %s", path);
 
 	//see if already loaded
-	Racetime_Data *tmp;
-	if ((tmp = Racetime_Data::Find(path, typeid(Object_Template))))
+	Object_Template *tmp = dynamic_cast<Object_Template*>(Racetime_Data::Find(path));
+	if (tmp)
 	{
 		printlog(1, "(already loaded)");
-
-		return (Object_Template*)tmp; //safe to cast
+		return tmp;
 	}
 
 	//new object
