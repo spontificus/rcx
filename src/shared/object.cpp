@@ -2,6 +2,7 @@
 #include "printlog.hpp"
 #include "track.hpp"
 #include "printlog.hpp"
+#include "../events/event_lists.hpp"
 
 #include <stdlib.h>
 
@@ -37,6 +38,7 @@ Object::Object ()
 
 	//default values
 	components = NULL;
+	activity = 0;
 	selected_space = NULL;
 }
 
@@ -44,7 +46,7 @@ Object::Object ()
 Object::~Object()
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, "freeing object");
+	printlog(2, "freeing Object");
 
 	//1: remove it from the list
 	if (prev == NULL) //first link
@@ -64,6 +66,9 @@ Object::~Object()
 	//remove components
 	while (components)
 		delete components; //just removes the one in top each time
+
+	//make sure no events for this object is left
+	Object_Event_List::Remove(this);
 }
 
 //destroys all objects

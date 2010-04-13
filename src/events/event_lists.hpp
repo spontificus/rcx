@@ -6,13 +6,14 @@
 #include "../shared/body.hpp"
 #include "../shared/joint.hpp"
 
-class Event_Lists
+//for components having "health" buffers
+class Buffer_Event_List
 {
 	public:
 		//for adding events
-		Event_Lists(Geom*);
-		Event_Lists(Body*);
-		Event_Lists(Joint*);
+		Buffer_Event_List(Geom*);
+		Buffer_Event_List(Body*);
+		Buffer_Event_List(Joint*);
 
 		//for processing (read and remove) events
 		static bool Get_Event(Geom**);
@@ -29,12 +30,29 @@ class Event_Lists
 		Component *component; //the one thing to keep track of
 
 		//different lists (by heads) for different components
-		static Event_Lists *geom_head;
-		static Event_Lists *body_head;
-		static Event_Lists *joint_head;
+		static Buffer_Event_List *geom_head;
+		static Buffer_Event_List *body_head;
+		static Buffer_Event_List *joint_head;
 
 		//next in list
-		Event_Lists *next;
+		Buffer_Event_List *next;
+};
+
+//objects that have become unactive, and should be removed
+class Object_Event_List
+{
+	public:
+		Object_Event_List(Object*);
+
+		static bool Get_Event(Object**);
+
+		static void Remove(Object*);
+
+	private:
+		Object *object;
+
+		static Object_Event_List *head;
+		Object_Event_List *next;
 };
 
 #endif

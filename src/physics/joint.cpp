@@ -16,7 +16,7 @@ void Joint::Set_Event(dReal thres, dReal buff, Script *scr)
 		script=scr;
 
 		//make sure no old event is left
-		Event_Lists::Remove(this);
+		Buffer_Event_List::Remove(this);
 	}
 	else
 	{
@@ -27,7 +27,7 @@ void Joint::Set_Event(dReal thres, dReal buff, Script *scr)
 			delete feedback;
 			feedback=NULL;
 		}
-		Event_Lists::Remove(this);
+		Buffer_Event_List::Remove(this);
 		//disable
 		threshold = 0;
 		dJointSetFeedback(joint_id, 0);
@@ -59,7 +59,7 @@ void Joint::Physics_Step (void)
 			{
 				d->buffer -= delt*internal.stepsize;
 				if (d->buffer < 0)
-					new Event_Lists(d);
+					new Buffer_Event_List(d);
 			}
 		}
 

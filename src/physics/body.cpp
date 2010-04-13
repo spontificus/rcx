@@ -146,13 +146,13 @@ void Body::Set_Event(dReal thres, dReal buff, Script *scr)
 		script=scr;
 
 		//make sure no old event is left
-		Event_Lists::Remove(this);
+		Buffer_Event_List::Remove(this);
 	}
 	else
 	{
 		printlog(2, "disabling Body event");
 
-		Event_Lists::Remove(this);
+		Buffer_Event_List::Remove(this);
 
 		//disable
 		threshold = 0;

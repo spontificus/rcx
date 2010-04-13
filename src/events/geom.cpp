@@ -8,7 +8,7 @@
 void Geom::TMP_Events_Step(Uint32 step)
 {
 	Geom *geom;
-	while (Event_Lists::Get_Event(&geom))
+	while (Buffer_Event_List::Get_Event(&geom))
 	{
 		dBodyID bodyid = dGeomGetBody(geom->geom_id);
 

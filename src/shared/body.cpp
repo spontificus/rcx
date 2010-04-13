@@ -10,6 +10,9 @@ Body::Body (dBodyID body, Object *obj): Component(obj)
 {
 	printlog(2, "configuring Body class");
 
+	//increase object activity counter
+	++object_parent->activity;
+
 	//ad it to the list
 	next = head;
 	head = this;
@@ -40,7 +43,7 @@ Body::~Body()
 	printlog(2, "clearing Body class");
 
 	//remove all events
-	Event_Lists::Remove(this);
+	Buffer_Event_List::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer
@@ -59,5 +62,12 @@ Body::~Body()
 	//2: remove it from memory
 
 	dBodyDestroy(body_id);
+
+	//decrease activity and check if 0
+	if ((--object_parent->activity) == 0)
+	{
+		printlog(2, "Object became inactive, generating event");
+		new Object_Event_List(object_parent);
+	}
 }
 

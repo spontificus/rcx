@@ -27,7 +27,7 @@ Component::Component(Object *obj)
 Component::~Component()
 {
 	//just unlink...
-	printlog(2, "freeing component");
+	printlog(2, "freeing Component");
 	if (prev)
 	{
 		prev->next = next;

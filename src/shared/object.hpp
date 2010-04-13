@@ -49,6 +49,9 @@ class Object
 		virtual ~Object(); //(virtual makes sure also inherited classes calls this destructor)
 		static void Destroy_All();
 
+		//removes empty objects
+		static void Events_Step();
+
 	private:
 		Object();
 		//the following are either using or inherited from this class
@@ -58,10 +61,12 @@ class Object
 
 		//things to keep track of when cleaning out object
 		Component *components;
+		unsigned int activity; //counts geoms,bodies and future stuff (script timers, loops, etc)
 		dSpaceID selected_space;
 		//to allow acces to the two above pointers
 		friend class Component;
 		friend class Geom;
+		friend class Body;
 		friend class Space;
 
 		//placeholder for more data

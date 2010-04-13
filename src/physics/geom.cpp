@@ -198,7 +198,7 @@ void Geom::Collision_Force(dReal force)
 		if (buffer < 0)
 		{
 			printlog(2, "Geom buffer depleted, generating event");
-			new Event_Lists(this);
+			new Buffer_Event_List(this);
 		}
 	}
 	else //just damage buffer even more
@@ -210,5 +210,5 @@ void Geom::Increase_Buffer(dReal buff)
 	buffer+=buff;
 
 	if (buffer < 0) //still depleted, regenerate event
-		new Event_Lists(this);
+		new Buffer_Event_List(this);
 }

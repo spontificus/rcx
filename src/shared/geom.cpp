@@ -14,6 +14,9 @@ Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to
 {
 	printlog(2, "configuring Geom class");
 
+	//increase object activity counter
+	++object_parent->activity;
+
 	//parent object
 	if (obj->selected_space)
 	{
@@ -76,7 +79,7 @@ Geom::~Geom ()
 	printlog(2, "clearing Geom class");
 
 	//remove all events
-	Event_Lists::Remove(this);
+	Buffer_Event_List::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer
@@ -93,5 +96,12 @@ Geom::~Geom ()
 		printlog(2, "(geom is last)");
 
 	dGeomDestroy(geom_id);
+
+	//decrease activity and check if 0
+	if ((--object_parent->activity) == 0)
+	{
+		printlog(2, "Object became inactive, generating event");
+		new Object_Event_List(object_parent);
+	}
 }
 

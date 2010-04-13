@@ -8,9 +8,6 @@ Joint::Joint (dJointID joint, Object *obj): Component(obj)
 {
 	printlog(2, "configuring Joint class");
 
-	//parent object
-	object_parent = obj;
-
 	//add it to the list
 	next = head;
 	head = this;
@@ -39,7 +36,7 @@ Joint::~Joint ()
 	printlog(2, "clearing Joint class");
 
 	//remove all events
-	Event_Lists::Remove(this);
+	Buffer_Event_List::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer

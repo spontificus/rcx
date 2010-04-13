@@ -31,6 +31,8 @@ void event_step(Uint32 step)
 	Joint::TMP_Events_Step(step);
 	Body::TMP_Events_Step(step);
 
+	Object::Events_Step(); //remove inactive objects
+
 	//get SDL events
 	SDL_mutexP(sdl_mutex); //make sure not colliding with other threads
 
