@@ -27,6 +27,10 @@ const char ISSUE[] =
       * \"Simple DirectMedia Layer\"	OS/hardware abstractions\n\
       * \"Open Dynamics Engine\"		Rigid body dynamics and collision detection\n\
       * \"The GNU Project\"		Its fight for computer freedom has changed the world\n\n\
+    Default key bindings can be found (and changed) in \"data/profiles/default/keys.lst\"\n\
+    Some other keys worth mentioning (just for testing/demo):\n\
+      * F5 and F6	- spawn boxes and spheres\n\
+      * F8		- switch car\n\
     - See README for more info -\n\n";
  
 

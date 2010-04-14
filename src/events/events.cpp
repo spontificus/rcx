@@ -67,17 +67,14 @@ void event_step(Uint32 step)
 					case SDLK_F5:
 						box->Spawn (0,0,10);
 					break;
+
+					//sphere spawning
 					case SDLK_F6:
-						printlog(1, "(10sec height)");
-						box->Spawn (0,0,489.5);
-					break;
-					
-					case SDLK_F7:
 						sphere->Spawn (0,0,10);
 					break;
 
 					//tmp: switch cars
-					case SDLK_TAB:
+					case SDLK_F8:
 						if (profile_head->car == Venom1)
 						{
 							profile_head->car = Venom2;
