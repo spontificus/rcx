@@ -13,6 +13,9 @@
 //>Allocated at start
 class Script: public Racetime_Data
 {
+	public:
+		Script(const char*);
+		~Script();
 };
 
 #endif
