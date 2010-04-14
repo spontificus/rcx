@@ -75,9 +75,9 @@ profile *load_profile (const char *path)
 
 		//find match
 		int i;
-		for (i=0; (profile_key_list[i].name != '\0') && (strcmp(profile_key_list[i].name, file.words[0])); ++i);
+		for (i=0; (profile_key_list[i].offset != 0) && (strcmp(profile_key_list[i].name, file.words[0])); ++i);
 
-		if (profile_key_list[i].name == '\0') //we reached end (no found)
+		if (profile_key_list[i].offset == 0) //we reached end (no found)
 			printlog(0, "ERROR: no key action match: %s!",file.words[0]);
 		else //found
 		{

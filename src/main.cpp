@@ -152,13 +152,13 @@ int main (int argc, char *argv[])
 	}
 
 	//spawn car
-	Car *venom = venom_template->Spawn(track.start[0]-5, track.start[1], track.start[2]);
-	prof->car = venom;
-	camera.car = venom;
+	Venom1 = venom_template->Spawn(track.start[0]-5, track.start[1], track.start[2]);
+	prof->car = Venom1;
+	camera.car = Venom1;
 
 	//lets spawn another (not driveable) car:
-	Car *tmp = venom_template->Spawn(track.start[0]+5, track.start[1], track.start[2]);
-	tmp->drift_breaks = false;
+	Venom2 = venom_template->Spawn(track.start[0]+5, track.start[1], track.start[2]);
+	//Venom2->drift_breaks = false;
 
 	//start race
 	start_race();

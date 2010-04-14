@@ -31,7 +31,10 @@ void physics_quit (void);
 
 //TMP: used by events for keeping track of objects spawning
 #include "object.hpp"
+#include "car.hpp"
 extern Object_Template *box; //keep track of our loaded debug box
 extern Object_Template *sphere;
+extern Car *Venom1;
+extern Car *Venom2;
 
 #endif

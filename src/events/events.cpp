@@ -22,6 +22,7 @@ Uint8 *keys;
 //TMP: keep track of demo spawn stuff
 Object_Template *box = NULL;
 Object_Template *sphere = NULL;
+Car *Venom1, *Venom2;
 
 
 void event_step(Uint32 step)
@@ -73,6 +74,20 @@ void event_step(Uint32 step)
 					
 					case SDLK_F7:
 						sphere->Spawn (0,0,10);
+					break;
+
+					//tmp: switch cars
+					case SDLK_TAB:
+						if (profile_head->car == Venom1)
+						{
+							profile_head->car = Venom2;
+							camera.car = Venom2;
+						}
+						else
+						{
+							profile_head->car = Venom1;
+							camera.car = Venom1;
+						}
 					break;
 
 					default:
