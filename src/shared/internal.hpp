@@ -34,6 +34,24 @@ extern struct internal_struct {
 	bool fullscreen;
 } internal;
 
+const struct internal_struct internal_defaults = {
+	1, //verbosity 1 until cheanged
+	true,true,
+	0.01,
+	20,
+	20,
+	0.1,
+	20,
+	0.6,
+	1.0,0.8,0.01,0.01,
+	5,5,
+	0.05,0.10,0.5,1,
+	{1200,800},
+	2800,
+	false,
+	0,
+	false};
+
 const struct Conf_Index internal_index[] = {
 	{"verbosity",		'i',1, offsetof(struct internal_struct, verbosity)},
 	{"sync_graphics",	'b',1, offsetof(struct internal_struct, sync_graphics)},

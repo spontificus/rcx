@@ -18,8 +18,7 @@ int load_track (char *path)
 	strcpy (conf,path);
 	strcat (conf,"/track.conf");
 
-	if (load_conf(conf, (char *)&track, track_index))
-		return -1;
+	load_conf(conf, (char *)&track, track_index);
 
 	free (conf);
 

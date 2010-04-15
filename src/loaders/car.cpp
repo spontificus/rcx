@@ -29,8 +29,7 @@ Car_Template *Car_Template::Load (const char *path)
 	strcpy (conf,path);
 	strcat (conf,"/car.conf");
 
-	if (load_conf(conf, (char *)&target->conf, Car_Template::conf_index))
-		return NULL;
+	load_conf(conf, (char *)&target->conf, car_conf_index); //try to load conf
 
 	//geoms.lst
 	char lst[strlen(path)+9+1];

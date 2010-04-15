@@ -3,4 +3,4 @@
 dWorldID world;
 dSpaceID space;
 dJointGroupID contactgroup;
-struct track_struct track;
+struct Track_Struct track = track_defaults;

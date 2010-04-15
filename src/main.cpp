@@ -98,9 +98,6 @@ int main (int argc, char *argv[])
 	if (argc != 1)
 		printf("(Passing arguments - not supported)\n\n");
 
-	//printlog needs internal.verbosity, set it to default value
-	printf("(verbosity level is assumed \"1\" until read from internal conf)\n");
-	internal.verbosity = 1;
 	//check if program was called with another pwd (got '/' in "name")
 	int count;
 	for (count = strlen(argv[0]); count != -1; --count)
@@ -116,15 +113,14 @@ int main (int argc, char *argv[])
 
 	printlog(0, "Loading...\n");
 
-	if (load_conf ("data/internal.conf", (char *)&internal, internal_index))
-		return -1;
+	load_conf ("data/internal.conf", (char *)&internal, internal_index);
 
 	if (graphics_init())
 		return -1;
 
 	//<insert menu here>
 	
-	profile *prof = load_profile ("data/profiles/default");
+	Profile *prof = Profile_Load ("data/profiles/default");
 	if (!prof)
 		return -1;
 
@@ -146,10 +142,7 @@ int main (int argc, char *argv[])
 	box = Object_Template::Load("data/objects/misc/box");
 	sphere = Object_Template::Load("data/objects/misc/sphere");
 	if (!box || !sphere)
-	{
-		printf("hmm...\n");
 		emergency_quit();
-	}
 
 	//spawn car
 	Venom1 = venom_template->Spawn(track.start[0]-5, track.start[1], track.start[2]);

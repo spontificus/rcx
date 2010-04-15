@@ -18,9 +18,6 @@ void free_all (void)
 	//first thing to destroy: cars
 	printlog(2, "TODO: change from free_car to destroy_car?");
 
-	while (profile_head)
-		free_profile(profile_head);
-
 	Object::Destroy_All();
 	Racetime_Data::Destroy_All();
 
@@ -35,5 +32,5 @@ void free_all (void)
 		free (file_3d_tmp);
 	}
 
-	//no need to destroy track, since it's not allocated by program
+	Profile_Remove_All();
 }

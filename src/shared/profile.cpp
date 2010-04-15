@@ -1,8 +1,8 @@
 #include "profile.hpp"
 
-profile *profile_head = NULL;
+Profile *profile_head = NULL;
 
-profile *allocate_profile(void)
+/*Profile *allocate_profile(void)
 {
 	printlog(2, "allocating profile");
 	profile *profile_next = profile_head;
@@ -40,13 +40,12 @@ profile *allocate_profile(void)
 	profile_head->cam_z_neg = UNUSED_KEY;
 
 	return profile_head;
-}
+}*/
 
 
-//free profile
-void free_profile (profile *target)
+void Profile_Remove (Profile *target)
 {
-	printlog(2, "freeing profile");
+	printlog(2, "removing profile");
 
 	//remove from list
 	if (!target->prev) //head
@@ -61,4 +60,9 @@ void free_profile (profile *target)
 	free (target);
 }
 
+void Profile_Remove_All()
+{
+	while (profile_head)
+		Profile_Remove(profile_head);
+}
 

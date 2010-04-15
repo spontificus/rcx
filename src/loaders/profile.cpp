@@ -37,18 +37,26 @@ SDLKey get_key (char *name)
 }
 
 //load profile (conf and key list)
-profile *load_profile (const char *path)
+Profile *Profile_Load (const char *path)
 {
 	printlog(1, "loading profile: %s", path);
-	profile *prof = allocate_profile();
+
+	//create
+	Profile *prof = new Profile; //allocate
+	prof->next = profile_head;
+	prof->prev = NULL;
+	profile_head = prof;
+	if (prof->next)
+		prof->next->prev=prof;
+
+	*prof = profile_defaults; //set all to defaults
 
 	//load personal conf
 	char *conf=(char *)calloc(strlen(path)+13+1,sizeof(char));//+1 for \0
 	strcpy (conf,path);
 	strcat (conf,"/profile.conf");
 
-	if (load_conf(conf, (char *)prof, profile_index))
-		return NULL;
+	load_conf(conf, (char *)prof, profile_index); //try to load conf
 
 	free (conf);
 
@@ -66,28 +74,30 @@ profile *load_profile (const char *path)
 	printlog(1, "loading key list: %s", list);
 	Text_File file;
 
-	if (!file.Open(list))
-		return NULL;
-
-	while (file.Read_Line())
+	if (file.Open(list))
 	{
-		printlog(2, "action: %s", file.words[0]);
-
-		//find match
-		int i;
-		for (i=0; (profile_key_list[i].offset != 0) && (strcmp(profile_key_list[i].name, file.words[0])); ++i);
-
-		if (profile_key_list[i].offset == 0) //we reached end (no found)
-			printlog(0, "ERROR: no key action match: %s!",file.words[0]);
-		else //found
+		while (file.Read_Line())
 		{
-			printlog(2, "match found");
-			if (file.word_count == 2) //got a key name
-				*(SDLKey*)((char*)prof+profile_key_list[i].offset) = get_key(file.words[1]);
-			else
-				printlog(0, "ERROR: no key specified for action \"%s\"", file.words[i]);
+			printlog(2, "action: %s", file.words[0]);
+
+			//find match
+			int i;
+			for (i=0; (profile_key_list[i].offset != 0) && (strcmp(profile_key_list[i].name, file.words[0])); ++i);
+
+			if (profile_key_list[i].offset == 0) //we reached end (no found)
+				printlog(0, "ERROR: no key action match: %s!",file.words[0]);
+			else //found
+			{
+				printlog(2, "match found");
+				if (file.word_count == 2) //got a key name
+					*(SDLKey*)((char*)prof+profile_key_list[i].offset) = get_key(file.words[1]);
+				else
+					printlog(0, "ERROR: no key specified for action \"%s\"", file.words[i]);
+			}
 		}
 	}
+	else
+		printlog(0, "ERROR: could not open file");
 
 	return prof;
 }
