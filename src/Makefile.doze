@@ -11,19 +11,22 @@ ARGS	= -O2 -pipe -Wall -march=i686 -mtune=i686 $(FLAGS) -Dwindows
 all: rcx
 
 rcx: builddirs $(OBJS)
-	g++ -o ../rcx.exe $(OBJS) $(ARGS) $(LIBS)
+	@echo "Linking..."
+	@g++ -o ../rcx.exe $(OBJS) $(ARGS) $(LIBS)
 
 #prerequisites
 include prereqs.lst
 
 #universal build rule
 $(OBJS): build/%.o:%.cpp
-	g++ -c -o $@ $< $(ARGS)
+	@echo "Compiling $(<)..."
+	@g++ -c -o $@ $< $(ARGS)
 
 .PHONY: builddirs clean distclean
 
 builddirs:
-	-mkdir -p build/{shared,events,loaders,graphics,physics}
+	@echo "Making sure build directories exists..."
+	@mkdir -p build/shared build/events build/loaders build/graphics build/physics
 
 clean:
 	-rm -f $(OBJS)

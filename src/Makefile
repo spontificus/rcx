@@ -10,19 +10,22 @@ all: rcx
 
 #final normal target
 rcx: builddirs $(OBJS)
-	g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
+	@echo "Linking..."
+	@g++ -o ../rcx $(OBJS) $(LIBS) $(ARGS)
 
 #prerequisites
 include prereqs.lst
 
 #universal build rule
 $(OBJS): build/%.o:%.cpp
-	g++ -c -o $@ $< $(ARGS)
+	@echo "Compiling $(<)..."
+	@g++ -c -o $@ $< $(ARGS)
 
 .PHONY: builddirs clean distclean
 
 builddirs:
-	-mkdir -p build/{shared,events,loaders,graphics,physics}
+	@echo "Making sure build directories exists..."
+	@mkdir -p build/shared build/events build/loaders build/graphics build/physics
 
 clean:
 	-rm -f $(OBJS)
