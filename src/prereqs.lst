@@ -1,9 +1,11 @@
-build/main.o: ./shared/info.hpp ./shared/internal.hpp ./shared/threads.hpp ./shared/printlog.hpp ./shared/cleanup.hpp ./shared/runlevel.hpp ./shared/profile.hpp ./shared/track.hpp
+build/main.o: ./shared/info.hpp ./shared/internal.hpp ./shared/threads.hpp ./shared/printlog.hpp ./shared/runlevel.hpp ./shared/profile.hpp ./shared/track.hpp
 build/events/body.o: events/../shared/body.hpp
 build/events/event_lists.o: events/event_lists.hpp
 build/events/events.o: events/../shared/threads.hpp events/../shared/internal.hpp events/../shared/runlevel.hpp events/../shared/printlog.hpp events/../shared/geom.hpp events/../shared/profile.hpp events/../shared/joint.hpp events/../shared/camera.hpp
 build/events/geom.o: events/../shared/geom.hpp events/../shared/body.hpp events/../shared/track.hpp events/event_lists.hpp
 build/events/joint.o: events/../shared/joint.hpp events/../events/event_lists.hpp
+build/events/object.o: events/../shared/object.hpp events/event_lists.hpp
+build/events/profile.o: events/../shared/profile.hpp
 build/graphics/camera.o: graphics/../shared/camera.hpp
 build/graphics/geom.o: graphics/../shared/geom.hpp
 build/graphics/graphics.o: graphics/../shared/internal.hpp graphics/../shared/info.hpp graphics/../shared/track.hpp graphics/../shared/runlevel.hpp graphics/../shared/threads.hpp graphics/../shared/printlog.hpp graphics/../shared/camera.hpp
@@ -24,13 +26,12 @@ build/physics/physics.o: physics/../shared/threads.hpp physics/../shared/interna
 build/shared/body.o: shared/body.hpp shared/object.hpp shared/internal.hpp shared/printlog.hpp shared/../events/event_lists.hpp
 build/shared/camera.o: shared/camera.hpp
 build/shared/car.o: shared/car.hpp shared/printlog.hpp
-build/shared/cleanup.o: shared/cleanup.hpp shared/car.hpp shared/profile.hpp shared/geom.hpp shared/body.hpp shared/joint.hpp shared/object.hpp shared/script.hpp shared/file_3d.hpp
 build/shared/component.o: shared/component.hpp shared/object.hpp shared/printlog.hpp
 build/shared/file_3d.o: shared/file_3d.hpp shared/printlog.hpp
 build/shared/geom.o: shared/geom.hpp shared/printlog.hpp shared/track.hpp shared/internal.hpp shared/../events/event_lists.hpp shared/../loaders/conf.hpp
 build/shared/internal.o: shared/internal.hpp
 build/shared/joint.o: shared/joint.hpp shared/component.hpp shared/../events/event_lists.hpp
-build/shared/object.o: shared/object.hpp shared/printlog.hpp shared/track.hpp shared/printlog.hpp
+build/shared/object.o: shared/object.hpp shared/printlog.hpp shared/track.hpp shared/printlog.hpp shared/../events/event_lists.hpp
 build/shared/printlog.o: shared/internal.hpp shared/printlog.hpp
 build/shared/profile.o: shared/profile.hpp
 build/shared/racetime_data.o: shared/racetime_data.hpp shared/printlog.hpp

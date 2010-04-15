@@ -69,7 +69,7 @@ void graphics_resize (int new_w, int new_h)
 	glLoadIdentity();
 }
 
-int graphics_init(void)
+bool graphics_init(void)
 {
 	printlog(0, "Initiating graphics");
 
@@ -107,7 +107,7 @@ int graphics_init(void)
 	free (name);
 
 	//everything ok
-	return 0;
+	return true;
 }
 
 

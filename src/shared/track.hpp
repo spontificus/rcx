@@ -79,6 +79,6 @@ const struct Conf_Index track_index[] = {
 	{"target_start",'f',3,	offsetof(Track_Struct, target_start)},
 	{"",0,0}};//end
 
-int load_track (char *path);
+bool load_track (const char *path);
 
 #endif

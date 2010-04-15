@@ -56,7 +56,7 @@ class Object
 		Object();
 		//the following are either using or inherited from this class
 		friend class Object_Template; //needs access to constructor
-		friend int load_track (char *);
+		friend bool load_track (const char *);
 		friend class Car;
 
 		//things to keep track of when cleaning out object

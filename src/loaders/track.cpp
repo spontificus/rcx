@@ -11,7 +11,7 @@
 #include "debug_draw.hpp"
 //#include "loaders.hpp"
 
-int load_track (char *path)
+bool load_track (const char *path)
 {
 	printlog(1, "Loading track: %s", path);
 	char *conf=(char *)calloc(strlen(path)+11+1,sizeof(char));//+1 for \0
@@ -211,6 +211,6 @@ int load_track (char *path)
 	}
 
 	//that's it!
-	return 0;
+	return true;
 }
 

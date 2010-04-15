@@ -22,7 +22,7 @@
 
 unsigned int stepsize_warnings = 0;
 
-int physics_init(void)
+bool physics_init(void)
 {
 	printlog(0, "Initiating physics");
 	dInitODE2(0);
@@ -44,7 +44,7 @@ int physics_init(void)
 	dWorldSetAutoDisableSteps (world, internal.dis_steps);
 	dWorldSetAutoDisableTime (world, internal.dis_time);
 	
-	return 0;
+	return true;
 }
 
 

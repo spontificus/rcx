@@ -18,14 +18,14 @@ extern bool graphics_event_resize;
 extern int graphics_event_resize_w, graphics_event_resize_h;
 
 //functions
-int graphics_init(void);
-int graphics_loop (void);
+bool graphics_init(void);
 void graphics_quit(void);
-int events_loop (void *d);
-int physics_init(void);
-int physics_loop (void *d);
+bool physics_init(void);
 void physics_quit (void);
 
+int graphics_loop (void);
+int events_loop (void *d);
+int physics_loop (void *d);
 
 
 

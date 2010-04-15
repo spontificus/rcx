@@ -23,22 +23,10 @@
 #include "shared/internal.hpp"
 #include "shared/threads.hpp"
 #include "shared/printlog.hpp"
-#include "shared/cleanup.hpp"
 #include "shared/runlevel.hpp"
 #include "shared/profile.hpp"
 #include "shared/track.hpp"
 
-
-//if something goes wrong (after initing physics and graphics)
-void emergency_quit (void)
-{
-	printlog(0, "ERROR REQUIRES GAME TO STOP:\n");
-	free_all();
-	graphics_quit();
-	physics_quit();
-
-	exit (-1);
-}
 
 Uint32 start_time = 0;
 void start_race(void)
@@ -115,34 +103,40 @@ int main (int argc, char *argv[])
 
 	load_conf ("data/internal.conf", (char *)&internal, internal_index);
 
-	if (graphics_init())
+	if (!graphics_init())
 		return -1;
 
-	//<insert menu here>
+	//TODO: there should be menus here, but menu/osd system is not implemented yet... also:
+	//on failure, rcx should not just terminate but instead abort the race and warn the user
 	
+	//MENU: welcome to rcx, please select profile or create a new profile
 	Profile *prof = Profile_Load ("data/profiles/default");
 	if (!prof)
-		return -1;
+		return -1; //GOTO: profile menu
 
-	Car_Template *venom_template = Car_Template::Load("data/teams/Nemesis/cars/Venom");
-	if (!venom_template)
-		emergency_quit();
-
-	//menu done, race selected, starting race...
-	if (physics_init())
+	if (!physics_init())
 	{
+		//menu: warn and quit!
 		graphics_quit();
 		return -1;
 	}
 
-	if (load_track((char *)"data/worlds/Sandbox/tracks/Box"))
-		emergency_quit();
+	//MENU: select race type
+	// - assuming free roam -
+	//MENU: select theme/car
+	Car_Template *venom_template = Car_Template::Load("data/teams/Nemesis/cars/Venom");
+	if (!venom_template)
+		return -1; //GOTO: car selection menu
 
-	//load box for online spawning
+	//MENU: select world/track
+	if (!load_track((char *)"data/worlds/Sandbox/tracks/Box"))
+		return -1; //GOTO: track selection menu
+
+	//TMP: load box for online spawning
 	box = Object_Template::Load("data/objects/misc/box");
 	sphere = Object_Template::Load("data/objects/misc/sphere");
 	if (!box || !sphere)
-		emergency_quit();
+		return -1;
 
 	//spawn car
 	Venom1 = venom_template->Spawn(track.start[0]-5, track.start[1], track.start[2]);
@@ -153,19 +147,39 @@ int main (int argc, char *argv[])
 	Venom2 = venom_template->Spawn(track.start[0]+5, track.start[1], track.start[2]);
 	//Venom2->drift_breaks = false;
 
-	//start race
+	//MENU: race configured, start?
 	start_race();
 
-	//race done
-	free_all();
+	//race done, remove all objects...
+	Object::Destroy_All();
+
+	//MENU: race done, replay, play again, quit?
+	// - assuming quit -
+	
+	//remove loaded data (not all data, only "racetime" - for this race)
+	Racetime_Data::Destroy_All();
+
+	//TODO: file_3d _is_ racetime data, and should be removed above...
+	file_3d_struct *file_3d_tmp;
+	while (file_3d_head)
+	{
+		file_3d_tmp = file_3d_head; //copy from from list
+		file_3d_head = file_3d_head->next; //remove from list
+
+		glDeleteLists (file_3d_tmp->list, 1);
+		free (file_3d_tmp);
+	}
+
+	//MENU: back to main menu here
+	// - assuming player wants to log out -
 	physics_quit();
-	
-	//<insert menu here>
-	
-	//menu done, quit selected, ending graphics and terminating program
+	Profile_Remove_All(); //should only be one active profile right now, but any case, remove all
+
+	//MENU: select profile
+	// - assumes player wants to quit -
 	graphics_quit();
 	
-	//some basic info
+	//some basic info (until menu for printing it)
 	print_info();
 
 	printf("\nBye!\n\n");
