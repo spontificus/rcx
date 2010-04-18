@@ -36,7 +36,7 @@ Object_Template *Object_Template::Load(const char *path)
 		tmplt = new Object_Template(path);
 
 		//the debug box will only spawn one component - one "3D file"
-		tmplt->graphics_debug1 = allocate_file_3d();
+		tmplt->graphics_debug1 = new file_3d();
 		debug_draw_box (tmplt->graphics_debug1->list, 1,1,1, red,gray, 50);
 		tmplt->box = true;
 	}
@@ -46,8 +46,8 @@ Object_Template *Object_Template::Load(const char *path)
 
 		tmplt = new Object_Template(path);
 
-		tmplt->graphics_debug1 = allocate_file_3d();
-		tmplt->graphics_debug2 = allocate_file_3d();
+		tmplt->graphics_debug1 = new file_3d();
+		tmplt->graphics_debug2 = new file_3d();
 
 		debug_draw_box (tmplt->graphics_debug1->list, 8,8,0.5, red,gray, 30);
 		debug_draw_box (tmplt->graphics_debug2->list, 3,3,2, lblue,black, 0);
@@ -60,9 +60,9 @@ Object_Template *Object_Template::Load(const char *path)
 		tmplt = new Object_Template(path);
 
 		//draw approximate sphere
-		tmplt->graphics_debug1 = allocate_file_3d();
+		tmplt->graphics_debug1 = new file_3d();
 		debug_draw_sphere (tmplt->graphics_debug1->list,2, lblue,white,42);
-		tmplt->graphics_debug2 = allocate_file_3d();
+		tmplt->graphics_debug2 = new file_3d();
 		debug_draw_sphere (tmplt->graphics_debug2->list,1.6,white,white,42);
 
 		tmplt->NH4 = true;
@@ -74,7 +74,7 @@ Object_Template *Object_Template::Load(const char *path)
 		tmplt = new Object_Template(path);
 
 		//draw approximate sphere
-		tmplt->graphics_debug1 = allocate_file_3d();
+		tmplt->graphics_debug1 = new file_3d();
 		debug_draw_sphere (tmplt->graphics_debug1->list,2, lblue,white,42);
 
 		tmplt->sphere = true;
@@ -86,9 +86,9 @@ Object_Template *Object_Template::Load(const char *path)
 		tmplt = new Object_Template(path);
 
 		//create graphics
-		tmplt->graphics_debug1 = allocate_file_3d(); //walls
-		tmplt->graphics_debug2 = allocate_file_3d(); //floor/ceiling
-		tmplt->graphics_debug3 = allocate_file_3d(); //pillars
+		tmplt->graphics_debug1 = new file_3d(); //walls
+		tmplt->graphics_debug2 = new file_3d(); //floor/ceiling
+		tmplt->graphics_debug3 = new file_3d(); //pillars
 
 		debug_draw_box (tmplt->graphics_debug1->list, 4,0.4,2.7, dgray,black, 0);
 		debug_draw_box (tmplt->graphics_debug2->list, 4,4,0.2, lgray,gray, 30);
@@ -103,8 +103,8 @@ Object_Template *Object_Template::Load(const char *path)
 
 		tmplt = new Object_Template(path);
 
-		tmplt->graphics_debug1 = allocate_file_3d();
-		tmplt->graphics_debug2 = allocate_file_3d();
+		tmplt->graphics_debug1 = new file_3d();
+		tmplt->graphics_debug2 = new file_3d();
 		debug_draw_box (tmplt->graphics_debug1->list, 2,2,5, gray,gray, 50); //complete
 		debug_draw_box (tmplt->graphics_debug2->list, 2,2,5/2, gray,gray, 50); //broken in half
 		tmplt->pillar = true;
@@ -180,7 +180,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 //	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = graphics_debug1;
+	data->f_3d = graphics_debug1;
 
 	//done
 	//
@@ -212,7 +212,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 //	data->bounce = 4.0;
 	
 	//Graphics
-	data->file_3d = graphics_debug1;
+	data->f_3d = graphics_debug1;
 
 
 	//flipper sensor
@@ -224,7 +224,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 	data->flipper_geom = geom; //tmp debug solution
 
 	//graphics
-	data->file_3d = graphics_debug2;
+	data->f_3d = graphics_debug2;
 	//
 	}
 	//
@@ -260,7 +260,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = graphics_debug1;
+	data->f_3d = graphics_debug1;
 
 	dReal pos[4][3] = {
 		{0, 0, 1.052},
@@ -294,7 +294,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 	data->bounce = 2.0;
 	
 	//Next, Graphics
-	data->file_3d = graphics_debug2;
+	data->f_3d = graphics_debug2;
 
 	//connect to main sphere
 	
@@ -340,7 +340,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 	data->bounce = 1.5;
 	
 	//Next, Graphics
-	data->file_3d = graphics_debug1;
+	data->f_3d = graphics_debug1;
 	}
 	//
 	else if (building)
@@ -378,7 +378,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 
 			new Body (body1[i], obj);
 
-			data->file_3d = graphics_debug1;
+			data->f_3d = graphics_debug1;
 		}
 		
 		const dReal k = 1.5*4+0.4/2;
@@ -437,7 +437,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 
 			new Body (body2[i], obj);
 
-			data->file_3d = graphics_debug2;
+			data->f_3d = graphics_debug2;
 		}
 
 		const dReal k2=2.7-0.2/2;
@@ -504,7 +504,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 			//friction
 			data->mu = 1;
 			//Next, Graphics
-			data->file_3d = graphics_debug3;
+			data->f_3d = graphics_debug3;
 		}
 
 		dBodySetPosition (body[0], x+2, y+2, z+2.5/2);
@@ -555,7 +555,7 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 		dGeomSetPosition(g->geom_id, x,y,(z+2.5));
 
 		//render
-		g->file_3d = graphics_debug1;
+		g->f_3d = graphics_debug1;
 
 		//identification
 		g->TMP_pillar_geom = true;

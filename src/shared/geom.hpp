@@ -39,7 +39,7 @@ class Geom: public Component
 
 		//End of physics data
 		
-		file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
+		file_3d *f_3d; //points to 3d list, or NULL if invisible
 
 
 		//geom tweaks:
@@ -50,7 +50,7 @@ class Geom: public Component
 		int flipper_counter;
 
 		bool TMP_pillar_geom;
-		file_3d_struct *TMP_pillar_graphics; //TMP
+		file_3d *TMP_pillar_graphics; //TMP
 
 		//register if geom is colliding
 		bool colliding; //set after each collision

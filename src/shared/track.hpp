@@ -37,7 +37,7 @@ extern struct Track_Struct {
 	dReal cam_start[3];
 	dReal target_start[3];
 
-	file_3d_struct *file_3d;
+	file_3d *f_3d;
 	//NOTE/TODO: currently coded to store 5 planes (components) - only temporary!
 	Object *object;
 	Space *space;

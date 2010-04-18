@@ -88,7 +88,7 @@ Car_Template *Car_Template::Load (const char *path)
 				target->boxes.push_back(tmp_box);
 
 				//create graphics for box:
-				file_3d_struct *f3d = allocate_file_3d();
+				file_3d *f3d = new file_3d();
 				target->box_graphics.push_back(f3d);
 				debug_draw_box(f3d->list, tmp_box.size[0],tmp_box.size[1],tmp_box.size[2], lgreen, gray, 70);
 			}
@@ -110,7 +110,7 @@ Car_Template *Car_Template::Load (const char *path)
 				target->spheres.push_back(tmp_sphere);
 
 				//graphics
-				file_3d_struct *f3d = allocate_file_3d();
+				file_3d *f3d = new file_3d();
 				target->sphere_graphics.push_back(f3d);
 				debug_draw_sphere(f3d->list, tmp_sphere.radius*2, lgreen, gray, 70);
 			}
@@ -155,7 +155,7 @@ Car_Template *Car_Template::Load (const char *path)
 				target->capsules.push_back(tmp_capsule);
 
 				//graphics
-				file_3d_struct *f3d = allocate_file_3d();
+				file_3d *f3d = new file_3d();
 				target->capsule_graphics.push_back(f3d);
 				debug_draw_capsule(f3d->list, tmp_capsule.size[0], tmp_capsule.size[1], lgreen, gray, 70);
 			}
@@ -206,7 +206,7 @@ Car_Template *Car_Template::Load (const char *path)
 	float w_w = target->conf.w[1];
 	//wheels:
 	//(note: wheel axis is along z)
-	target->wheel_graphics = allocate_file_3d();
+	target->wheel_graphics = new file_3d();
 	glNewList (target->wheel_graphics->list, GL_COMPILE);
 	//tyre
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
@@ -324,7 +324,7 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		gdata->erp = conf.body_erp;
 		gdata->cfm = conf.body_cfm;
 		//graphics
-		gdata->file_3d = box_graphics[i];
+		gdata->f_3d = box_graphics[i];
 	}
 	//then: spheres
 	struct sphere sphere;
@@ -346,7 +346,7 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		gdata->erp = conf.body_erp;
 		gdata->cfm = conf.body_cfm;
 		//graphics
-		gdata->file_3d = sphere_graphics[i];
+		gdata->f_3d = sphere_graphics[i];
 	}
 	//finally: capsule
 	struct capsule capsule;
@@ -373,7 +373,7 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		gdata->erp = conf.body_erp;
 		gdata->cfm = conf.body_cfm;
 		//graphics
-		gdata->file_3d = capsule_graphics[i];
+		gdata->f_3d = capsule_graphics[i];
 	}
 
 	//side detection sensors:
@@ -435,7 +435,7 @@ Car *Car_Template::Spawn (dReal x, dReal y, dReal z)
 		bdata->Set_Angular_Drag (conf.wheel_angular_drag);
 
 		//graphics
-		wheel_data[i]->file_3d = wheel_graphics;
+		wheel_data[i]->f_3d = wheel_graphics;
 		
 		//(we need easy access to wheel body ids if using finite rotation)
 		car->wheel_body[i] = wheel_body[i];

@@ -149,7 +149,7 @@ void graphics_step (Uint32 step)
 
 	//render world
 	glPushMatrix();
-		glCallList (track.file_3d->list);
+		glCallList (track.f_3d->list);
 	glPopMatrix();
 
 	Geom::Graphics_Step();

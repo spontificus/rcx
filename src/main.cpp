@@ -159,17 +159,6 @@ int main (int argc, char *argv[])
 	//remove loaded data (not all data, only "racetime" - for this race)
 	Racetime_Data::Destroy_All();
 
-	//TODO: file_3d _is_ racetime data, and should be removed above...
-	file_3d_struct *file_3d_tmp;
-	while (file_3d_head)
-	{
-		file_3d_tmp = file_3d_head; //copy from from list
-		file_3d_head = file_3d_head->next; //remove from list
-
-		glDeleteLists (file_3d_tmp->list, 1);
-		free (file_3d_tmp);
-	}
-
 	//MENU: back to main menu here
 	// - assuming player wants to log out -
 	physics_quit();

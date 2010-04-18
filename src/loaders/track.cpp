@@ -91,8 +91,8 @@ bool load_track (const char *path)
 	//since a plane is a non-placeable geom, the sepparate components will
 	//not be "rendered" separately, instead create one 3d image sepparately
 
-	track.file_3d = allocate_file_3d();
-	glNewList (track.file_3d->list, GL_COMPILE);
+	track.f_3d = new file_3d();
+	glNewList (track.f_3d->list, GL_COMPILE);
 	//the ground and walls for the environment box
 	glMaterialfv (GL_FRONT, GL_AMBIENT_AND_DIFFUSE, green);
 	glNormal3f (0.0f, 0.0f, 1.0f);
@@ -147,8 +147,8 @@ bool load_track (const char *path)
 	data->cfm = track.cfm;
 
 	//render box using built in
-	data->file_3d = allocate_file_3d();
-	debug_draw_box (data->file_3d->list, 8,12,1, gray, black, 0);
+	data->f_3d = new file_3d();
+	debug_draw_box (data->f_3d->list, 8,12,1, gray, black, 0);
 
 
 	//now lets load some objects!

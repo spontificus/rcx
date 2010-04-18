@@ -29,9 +29,9 @@ class Object_Template:public Racetime_Data
 		Script *spawn;
 
 		//temporary graphics
-		file_3d_struct *graphics_debug1;
-		file_3d_struct *graphics_debug2;
-		file_3d_struct *graphics_debug3;
+		file_3d *graphics_debug1;
+		file_3d *graphics_debug2;
+		file_3d *graphics_debug3;
 
 		//temporary solution
 		bool box;

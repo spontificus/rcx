@@ -100,7 +100,7 @@ class Car_Template:public Racetime_Data
 		//more data:
 		char *name;
 		dReal fsteer, rsteer, fmotor, rmotor, fbreak, rbreak;
-		file_3d_struct *wheel_graphics; //add right/left wheels
+		file_3d *wheel_graphics; //add right/left wheels
 		dReal inertia_tensor;
 
 		//geoms
@@ -111,7 +111,7 @@ class Car_Template:public Racetime_Data
 		};
 
 		std::vector<class box> boxes;
-		std::vector<file_3d_struct*> box_graphics; //TMP: for storing graphics
+		std::vector<file_3d*> box_graphics; //TMP: for storing graphics
 
 		struct sphere {
 			dReal radius;
@@ -119,7 +119,7 @@ class Car_Template:public Racetime_Data
 		};
 
 		std::vector<class sphere> spheres;
-		std::vector<file_3d_struct*> sphere_graphics;
+		std::vector<file_3d*> sphere_graphics;
 
 		struct capsule {
 			dReal size[2];
@@ -128,7 +128,7 @@ class Car_Template:public Racetime_Data
 		};
 
 		std::vector<class capsule> capsules;
-		std::vector<file_3d_struct*> capsule_graphics;
+		std::vector<file_3d*> capsule_graphics;
 };
 
 class Car:public Object

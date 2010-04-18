@@ -10,7 +10,7 @@ void Geom::Graphics_Step()
 	const dReal *pos, *rot; //store rendering position
 	for (geom = head; geom; geom = geom->next)
 	{
-		if (!geom->file_3d) //invisible
+		if (!geom->f_3d) //invisible
 			continue;
 
 		glPushMatrix();
@@ -41,7 +41,7 @@ void Geom::Graphics_Step()
 			glMultMatrixf (matrix);
 
 			//render
-			glCallList (geom->file_3d->list);
+			glCallList (geom->f_3d->list);
 		glPopMatrix();
 	}
 }
