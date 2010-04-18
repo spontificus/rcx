@@ -61,7 +61,7 @@ void Geom::Collision_Callback (void *data, dGeomID o1, dGeomID o2)
 		slip = 0.0;
 
 		bool feedback = false;
-		if (geom1->threshold>0 || geom2->threshold>0)
+		if (geom1->buffer_event || geom2->buffer_event)
 			feedback = true;
 
 		//optional bouncyness (good for wheels?)
@@ -183,10 +183,47 @@ void Geom::Collision_Callback (void *data, dGeomID o1, dGeomID o2)
 	}
 }
 
-void Geom::Collision_Force(dReal force)
+//set event
+void Geom::Set_Buffer_Event(dReal thres, dReal buff, Script *scr)
 {
-	//if not true, no point continuing
-	if (!(threshold>0 && force>threshold))
+	if (thres > 0 && buff > 0 && scr)
+	{
+		printlog(2, "setting Geom event");
+
+		threshold=thres;
+		buffer=buff;
+		buffer_script=scr;
+
+		//make sure no old event is left
+		Buffer_Event_List::Remove(this);
+
+		buffer_event=true;
+	}
+	else
+	{
+		printlog(2, "disabling Geom event");
+		buffer_event=false;
+		Buffer_Event_List::Remove(this);
+	}
+}
+
+bool Geom::Set_Buffer_Body(Body *b)
+{
+	force_to_body = b;
+
+	return true;
+}
+
+void Geom::Damage_Buffer(dReal force)
+{
+	if (force_to_body)
+	{
+		force_to_body->Damage_Buffer(force);
+		return;
+	}
+
+	//if not configured or force not exceeds threshold, stop
+	if (!buffer_event || (force<threshold))
 		return;
 
 	//buffer still got health

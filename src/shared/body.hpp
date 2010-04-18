@@ -30,6 +30,12 @@ class Body: public Component
 		//body data bellongs to
 		dBodyID body_id;
 
+		//buffer events (sent from geoms)
+		void Set_Buffer_Event(dReal thresh, dReal buff, Script *scr);
+		void Increase_Buffer(dReal add);
+		void Damage_Buffer(dReal force);
+		bool Buffer_Event_Configured(); //check if configured (by geom)
+
 	private:
 		//used to find next/prev link in dynamically allocated chain
 		//set next to null in last link in chain (prev = NULL in first)
@@ -45,9 +51,10 @@ class Body: public Component
 		dReal angular_drag;
 
 		//event processing
+		bool buffer_event; //indicates body is correctly configured for buffer events
 		dReal threshold; //if allocated forces exceeds, eat buffer
 		dReal buffer; //if buffer reaches zero, trigger event
-		Script *script; //execute on event
+		Script *buffer_script; //execute on event
 
 		//private methods for drag
 		void Linear_Drag();

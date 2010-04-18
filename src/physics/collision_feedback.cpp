@@ -30,8 +30,8 @@ void Collision_Feedback::Physics_Step()
 	while (head)
 	{
 		//just pass force to appropriate geom
-		head->geom1->Collision_Force(dLENGTH(head->feedback.f1));
-		head->geom2->Collision_Force(dLENGTH(head->feedback.f2));
+		head->geom1->Damage_Buffer(dLENGTH(head->feedback.f1));
+		head->geom2->Damage_Buffer(dLENGTH(head->feedback.f2));
 
 		//remove
 		prev = head;

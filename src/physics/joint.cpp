@@ -3,7 +3,7 @@
 #include "../events/event_lists.hpp"
 
 //set event
-void Joint::Set_Event(dReal thres, dReal buff, Script *scr)
+void Joint::Set_Buffer_Event(dReal thres, dReal buff, Script *scr)
 {
 	if (thres > 0 && buff > 0 && scr)
 	{
@@ -13,14 +13,17 @@ void Joint::Set_Event(dReal thres, dReal buff, Script *scr)
 
 		threshold=thres;
 		buffer=buff;
-		script=scr;
+		buffer_script=scr;
 
 		//make sure no old event is left
 		Buffer_Event_List::Remove(this);
+
+		buffer_event=true;
 	}
 	else
 	{
 		printlog(2, "disabling Joint event");
+		buffer_event=false;
 		//remove feedback data
 		if (feedback)
 		{
@@ -29,7 +32,6 @@ void Joint::Set_Event(dReal thres, dReal buff, Script *scr)
 		}
 		Buffer_Event_List::Remove(this);
 		//disable
-		threshold = 0;
 		dJointSetFeedback(joint_id, 0);
 	}
 }
@@ -44,7 +46,7 @@ void Joint::Physics_Step (void)
 
 	while (d)
 	{
-		if (d->threshold && d->feedback && d->buffer > 0)
+		if (d->buffer_event)
 		{
 			//TODO: check torque also?
 			delt1 = dLENGTH(d->feedback->f1);
@@ -57,9 +59,17 @@ void Joint::Physics_Step (void)
 
 			if (delt > 0)
 			{
-				d->buffer -= delt*internal.stepsize;
-				if (d->buffer < 0)
-					new Buffer_Event_List(d);
+				if (d->buffer < 0) //already depleted, just damage more
+					d->buffer -= delt*internal.stepsize;
+				else
+				{
+					d->buffer -= delt*internal.stepsize;
+					if (d->buffer < 0)
+					{
+						printlog(2, "Joint buffer depleted, generating event");
+						new Buffer_Event_List(d);
+					}
+				}
 			}
 		}
 

@@ -1,6 +1,7 @@
 #ifndef _RCX_GEOM_H
 #define _RCX_GEOM_H
 #include "component.hpp"
+#include "body.hpp"
 #include "object.hpp"
 #include "file_3d.hpp"
 #include "script.hpp"
@@ -40,22 +41,9 @@ class Geom: public Component
 		
 		file_3d_struct *file_3d; //points to 3d list, or NULL if invisible
 
+
+		//geom tweaks:
 		bool collide; //create physical collision when touching other components
-
-		//register if geom is colliding
-		bool colliding; //set after each collision
-
-		//geom can respond to collision forces, TODO private:
-		void Collision_Force(dReal force); //"damage" geom with specified force
-		bool force_to_body; //send forces to connected body instead
-		dReal threshold;
-		dReal buffer;
-
-		//for events
-		Script *script; //script to execute when colliding (NULL if not used)
-
-		//void Set_Buffer(... - TODO
-		void Increase_Buffer(dReal add);
 
 		//debug variables
 		dGeomID flipper_geom;
@@ -63,7 +51,30 @@ class Geom: public Component
 
 		bool TMP_pillar_geom;
 		file_3d_struct *TMP_pillar_graphics; //TMP
+
+		//register if geom is colliding
+		bool colliding; //set after each collision
+
+		//for buffer events
+		void Set_Buffer_Event(dReal thresh, dReal buff, Script *scr);
+		void Increase_Buffer(dReal add);
+		bool Set_Buffer_Body(Body*); //send damage to body instead
+		void Damage_Buffer(dReal force); //"damage" geom with specified force
 	private:
+		//events:
+		bool buffer_event;
+		//bool sensor_event; - TODO
+		//bool radar_event; - TODO
+
+		//buffer events:
+		Body *force_to_body; //send forces to this body instead
+
+		//normal buffer handling
+		dReal threshold;
+		dReal buffer;
+		Script *buffer_script; //script to execute when colliding (NULL if not used)
+
+
 		//used to find next/prev geom in list of all geoms
 		//set next to null in last link in chain (prev = NULL in first)
 		static Geom *head; // = NULL;

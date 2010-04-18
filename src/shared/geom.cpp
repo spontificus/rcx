@@ -46,7 +46,6 @@ Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to
 	//now lets set some default values...
 	//event processing (triggering):
 	colliding = false; //no collision event yet
-	script = NULL; //nothing to run on collision (yet)
 	
 	file_3d = NULL; //default, isn't rendered
 	//collision contactpoint data
@@ -62,9 +61,8 @@ Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to
 	collide = true; //on collision, create opposing forces
 
 	//for force handling (disable)
-	force_to_body=false;
-	threshold=0;
-	buffer=1;
+	buffer_event=false;
+	force_to_body=NULL; //when true, points at wanted body
 
 	//debug variables
 	flipper_geom = 0;

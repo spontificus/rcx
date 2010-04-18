@@ -30,10 +30,7 @@ Body::Body (dBodyID body, Object *obj): Component(obj)
 	//default values
 	Set_Linear_Drag(internal.linear_drag);
 	Set_Angular_Drag(internal.angular_drag);
-
-	threshold = 0; //no threshold (disables event testing)
-	buffer = 1; //almost empty buffer
-	script = NULL;
+	buffer_event=false;
 }
 
 //destroys a body, and removes it from the list

@@ -17,13 +17,15 @@ class Joint: public Component
 		Joint (dJointID joint, Object *obj);
 		~Joint();
 
-		void Set_Event(dReal thresh, dReal buff, Script *scr);
-
 		static void Physics_Step();
 		static void TMP_Events_Step(Uint32 step);
 
 		//geom data bellongs to
 		dJointID joint_id;
+
+		//buffer event
+		void Set_Buffer_Event(dReal thresh, dReal buff, Script *scr);
+		void Increase_Buffer(dReal add);
 
 	private:
 		//used to find next/prev link in dynamically allocated chain
@@ -31,11 +33,13 @@ class Joint: public Component
 		static Joint *head;
 		Joint *prev, *next;
 
-		//for event processing
+		//events
+		bool buffer_event;
+		//for buffer event processing
 		dJointFeedback *feedback; //used if checking forces
 		dReal threshold; //if force on body exceeds threshold, eat buffer
 		dReal buffer; //if buffer reaches zero, trigger event
-		Script *script; //the script to run
+		Script *buffer_script; //the script to run
 };
 
 #endif

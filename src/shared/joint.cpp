@@ -23,9 +23,8 @@ Joint::Joint (dJointID joint, Object *obj): Component(obj)
 	joint_id = joint;
 
 	//default values (currently only event triggering)
-	threshold = 0; //no threshold (disables event testing)
-	buffer = 1; //almost empty
-	script = NULL;
+	buffer_event = false; //disables event testing
+	//TODO: send_to_body option?
 	feedback = NULL;
 }
 

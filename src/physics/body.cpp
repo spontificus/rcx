@@ -135,7 +135,7 @@ void Body::Angular_Drag ()
 }
 
 
-void Body::Set_Event(dReal thres, dReal buff, Script *scr)
+void Body::Set_Buffer_Event(dReal thres, dReal buff, Script *scr)
 {
 	if (thres > 0 && buff > 0 && scr)
 	{
@@ -143,10 +143,11 @@ void Body::Set_Event(dReal thres, dReal buff, Script *scr)
 
 		threshold=thres;
 		buffer=buff;
-		script=scr;
+		buffer_script=scr;
 
 		//make sure no old event is left
 		Buffer_Event_List::Remove(this);
+		buffer_event=true;
 	}
 	else
 	{
@@ -155,16 +156,35 @@ void Body::Set_Event(dReal thres, dReal buff, Script *scr)
 		Buffer_Event_List::Remove(this);
 
 		//disable
-		threshold = 0;
+		buffer_event=false;
 	}
 }
 
+void Body::Damage_Buffer(dReal force)
+{
+	//if not processing forces or not high enough force, no point continuing
+	if (!buffer_event || (force<threshold))
+		return;
+
+	//buffer still got health
+	if (buffer > 0)
+	{
+		buffer -= (force-threshold)*internal.stepsize;
+
+		//now it's negative, issue event
+		if (buffer < 0)
+		{
+			printlog(2, "Body buffer depleted, generating event");
+			new Buffer_Event_List(this);
+		}
+	}
+	else //just damage buffer even more
+		buffer -= (force-threshold)*internal.stepsize;
+}
 
 void Body::Physics_Step (void)
 {
 	Body *d = Body::head;
-	const dReal *force;
-	dReal force_total;
 
 	while (d)
 	{
