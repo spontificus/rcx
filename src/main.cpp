@@ -135,7 +135,8 @@ int main (int argc, char *argv[])
 	//TMP: load box for online spawning
 	box = Object_Template::Load("data/objects/misc/box");
 	sphere = Object_Template::Load("data/objects/misc/sphere");
-	if (!box || !sphere)
+	funbox = Object_Template::Load("data/objects/misc/funbox");
+	if (!box || !sphere || !funbox)
 		return -1;
 
 	//spawn car

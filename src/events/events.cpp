@@ -21,6 +21,7 @@ SDL_Event event;
 //TMP: keep track of demo spawn stuff
 Object_Template *box = NULL;
 Object_Template *sphere = NULL;
+Object_Template *funbox = NULL;
 Car *Venom1, *Venom2;
 
 
@@ -70,6 +71,11 @@ void event_step(Uint32 step)
 					//sphere spawning
 					case SDLK_F6:
 						sphere->Spawn (0,0,10);
+					break;
+
+					//spawn funbox
+					case SDLK_F7:
+						funbox->Spawn (0,0,10);
 					break;
 
 					//tmp: switch cars

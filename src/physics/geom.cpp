@@ -61,7 +61,8 @@ void Geom::Collision_Callback (void *data, dGeomID o1, dGeomID o2)
 		slip = 0.0;
 
 		bool feedback = false;
-		if (geom1->buffer_event || geom2->buffer_event)
+		//if any of the geoms responds to forces or got a body that responds to force, enable force feedback
+		if (geom1->buffer_event || geom2->buffer_event || geom1->force_to_body || geom2->force_to_body)
 			feedback = true;
 
 		//optional bouncyness (good for wheels?)

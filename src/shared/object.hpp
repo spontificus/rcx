@@ -35,6 +35,7 @@ class Object_Template:public Racetime_Data
 
 		//temporary solution
 		bool box;
+		bool funbox;
 		bool flipper;
 		bool NH4;
 		bool building;

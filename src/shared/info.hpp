@@ -20,7 +20,7 @@ const char ISSUE[] =
       * \"Slinger\"	Creator (coder)\n\
       * \"XEWEASEL\"	3D Models\n\n\
     = Special Thanks =\n\
-      * \"K.Mac\"		Extensive testing and new ideas\n\
+      * \"K.Mac\"		Extensive testing, hacks and new ideas\n\
       * \"MeAkaJon\"	Creator/maintainer of gorcx.net webpage\n\
       * \"Spontificus\"	Testing, hacks, github registion and various fixes\n\n\
     = Other Projects that made RCX possible =\n\
@@ -29,7 +29,9 @@ const char ISSUE[] =
       * \"The GNU Project\"		Its fight for computer freedom has changed the world\n\n\
     Default key bindings can be found (and changed) in \"data/profiles/default/keys.lst\"\n\
     Some other keys worth mentioning (just for testing/demo):\n\
-      * F5 and F6	- spawn boxes and spheres\n\
+      * F5		- spawn boxe\n\
+      * F6		- spawn sphere\n\
+      * F7		- spawn funbox\n\
       * F8		- switch car\n\
     - See README for more info -\n\n";
  

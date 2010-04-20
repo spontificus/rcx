@@ -40,6 +40,21 @@ Object_Template *Object_Template::Load(const char *path)
 		debug_draw_box (tmplt->graphics_debug1->list, 1,1,1, red,gray, 50);
 		tmplt->box = true;
 	}
+	else if (!strcmp(path, "data/objects/misc/funbox"))
+	{
+		printlog(2, "(Mac's hard-coded funbox");
+
+		tmplt = new Object_Template(path);
+
+		//graphics
+		tmplt->graphics_debug1 = new file_3d();
+		debug_draw_box (tmplt->graphics_debug1->list, 2,2,2, white,gray, 80);
+		tmplt->graphics_debug2 = new file_3d();
+		debug_draw_box (tmplt->graphics_debug2->list, 1,1,1, green,red, 80);
+
+		tmplt->funbox = true; //id
+
+	}
 	else if (!strcmp(path, "data/objects/misc/flipper"))
 	{
 		printlog(2, "(hard-coded flipper)");
@@ -138,7 +153,7 @@ void debug_joint_fixed(dBodyID body1, dBodyID body2, Object *obj)
 //TODO: rotation
 void Object_Template::Spawn (dReal x, dReal y, dReal z)
 {
-	printlog(1, "Spawning object at: %f %f %f", x,y,z);
+	printlog(2, "Spawning object at: %f %f %f", x,y,z);
 	//prettend to be executing the script... just load debug values
 	//
 	Object *obj;
@@ -183,8 +198,89 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 	data->f_3d = graphics_debug1;
 
 	//done
+	}
 	//
 	//
+	else if (funbox)
+	{
+	printlog(2, "(Mac's hard-coded funbox)");
+	
+	obj = new Object();
+	new Space(obj);
+
+	//one body to which all geoms are added
+	dBodyID body1 = dBodyCreate (world);
+
+	//mass
+	dMass m;
+	dMassSetBox (&m,1,2.5,2.5,2.5); //sides
+	dMassAdjust (&m,100); //mass
+	//TODO: create dMass for all geoms, and use dMassTranslate+dMassAdd to add to m
+	dBodySetMass (body1, &m);
+
+	//create Body metadata
+	Body *bd = new Body (body1, obj);
+
+	//set buffer for body (when destroyed, so are all other geoms)
+	bd->Set_Buffer_Event(100000, 100, (Script*)1337);
+
+
+	//
+	//create geoms
+	//
+
+	//geom at (0,0,0)
+	dGeomID geom  = dCreateBox (0, 2,2,2); //geom
+	Geom *data = new Geom(geom, obj);
+
+	dGeomSetBody (geom, body1);
+	dBodySetPosition (body1, x, y, z);
+
+	data->f_3d = graphics_debug1;
+	data->Set_Buffer_Body(bd); //send collision forces to body
+
+	//the outer boxes (different offsets)
+	geom = dCreateBox(0, 1, 1, 1);
+	data = new Geom(geom, obj);
+	dGeomSetBody (geom, body1);
+	dGeomSetOffsetPosition(geom, 1,0,0); //offset
+	data->f_3d = graphics_debug2; //graphics
+	data->Set_Buffer_Body(bd);
+
+	geom = dCreateBox(0, 1, 1, 1);
+	data = new Geom(geom, obj);
+	dGeomSetBody (geom, body1);
+	dGeomSetOffsetPosition(geom, 0,1,0); //offset
+	data->f_3d = graphics_debug2; //graphics
+	data->Set_Buffer_Body(bd);
+
+	geom = dCreateBox(0, 1, 1, 1);
+	data = new Geom(geom, obj);
+	dGeomSetBody (geom, body1);
+	dGeomSetOffsetPosition(geom, 0,0,1); //offset
+	data->f_3d = graphics_debug2; //graphics
+	data->Set_Buffer_Body(bd);
+
+	geom = dCreateBox(0, 1, 1, 1);
+	data = new Geom(geom, obj);
+	dGeomSetBody (geom, body1);
+	dGeomSetOffsetPosition(geom, -1,0,0); //offset
+	data->f_3d = graphics_debug2; //graphics
+	data->Set_Buffer_Body(bd);
+
+	geom = dCreateBox(0, 1, 1, 1);
+	data = new Geom(geom, obj);
+	dGeomSetBody (geom, body1);
+	dGeomSetOffsetPosition(geom, 0,-1,0); //offset
+	data->f_3d = graphics_debug2; //graphics
+	data->Set_Buffer_Body(bd);
+
+	geom = dCreateBox(0, 1, 1, 1);
+	data = new Geom(geom, obj);
+	dGeomSetBody (geom, body1);
+	dGeomSetOffsetPosition(geom, 0,0,-1); //offset
+	data->f_3d = graphics_debug2; //graphics
+	data->Set_Buffer_Body(bd);
 	}
 	//
 	//

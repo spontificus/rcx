@@ -12,6 +12,7 @@ Object_Template::Object_Template(const char *name): Racetime_Data(name)
 {
 	//debug identification bools set to false
 	box = false;
+	funbox = false;
 	flipper = false;
 	NH4 = false;
 	building = false;
@@ -25,7 +26,7 @@ Object *Object::head = NULL;
 //allocate a new object, add it to the list and returns its pointer
 Object::Object ()
 {
-	printlog(2, "creating Object class");
+	printlog(1, "creating Object");
 
 	prev=NULL;
 	next=head;
@@ -46,7 +47,7 @@ Object::Object ()
 Object::~Object()
 {
 	//lets just hope the given pointer is ok...
-	printlog(2, "freeing Object");
+	printlog(1, "freeing Object");
 
 	//1: remove it from the list
 	if (prev == NULL) //first link
