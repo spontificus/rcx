@@ -80,6 +80,7 @@ class Geom: public Component
 		static Geom *head; // = NULL;
 		Geom *prev;
 		Geom *next;
+		friend void Body::TMP_Events_Step(Uint32 step); //this is just TMP for accessing above...
 };
 
 #endif
