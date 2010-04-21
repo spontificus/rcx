@@ -143,6 +143,55 @@ void Buffer_Event_List::Remove(Joint *comp)
 }
 
 //
+//sensor triggering/untriggering
+//
+
+Sensor_Event_List *Sensor_Event_List::head = NULL;
+
+Sensor_Event_List::Sensor_Event_List(Geom *g): geom(g)
+{
+	next = head;
+	head = this;
+}
+
+bool Sensor_Event_List::Get_Event(Geom **g)
+{
+	if (!head)
+		return false;
+
+	Sensor_Event_List *tmp = head;
+	head = tmp->next;
+
+	*g = tmp->geom;
+	delete (tmp);
+
+	return true;
+}
+
+void Sensor_Event_List::Remove(Geom *geom)
+{
+	printlog(2, "removing all events for specified Sensor");
+
+	Sensor_Event_List *p = head; //points at first event
+	Sensor_Event_List **pp = &head; //points at pointer for first event
+
+	while (p)
+	{
+		if (p->geom == geom)
+		{
+			*pp = p->next;
+			delete p;
+			p = *pp;
+		}
+		else
+		{
+			pp = &p->next;
+			p = p->next;
+		}
+	}
+}
+
+//
 //object inactivity:
 //
 Object_Event_List *Object_Event_List::head = NULL;

@@ -23,6 +23,7 @@ class Geom: public Component
 
 		//methods for steps/simulations:
 		static void Graphics_Step();
+		static void Physics_Step();
 		static void TMP_Events_Step(Uint32 step);
 		static void Collision_Callback(void *, dGeomID, dGeomID);
 
@@ -58,13 +59,21 @@ class Geom: public Component
 		//for buffer events
 		void Set_Buffer_Event(dReal thresh, dReal buff, Script *scr);
 		void Increase_Buffer(dReal add);
-		bool Set_Buffer_Body(Body*); //send damage to body instead
+		void Set_Buffer_Body(Body*); //send damage to body instead
 		void Damage_Buffer(dReal force); //"damage" geom with specified force
+
+		//sensor events
+		void Set_Sensor_Event(Script *s1, Script *s2);
+
 	private:
 		//events:
 		bool buffer_event;
-		//bool sensor_event; - TODO
+		bool sensor_event;
 		//bool radar_event; - TODO
+
+		//sensor events:
+		bool sensor_last_state; //last state of sensor: enabled or disabled
+		Script *sensor_triggered_script, *sensor_untriggered_script;
 
 		//buffer events:
 		Body *force_to_body; //send forces to this body instead

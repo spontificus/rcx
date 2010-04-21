@@ -38,6 +38,22 @@ class Buffer_Event_List
 		Buffer_Event_List *next;
 };
 
+//geoms functioning as sensors (detects other geoms that gets in/leaves range)
+class Sensor_Event_List
+{
+	public:
+		//only geoms:
+		Sensor_Event_List(Geom*);
+		static bool Get_Event(Geom**);
+		static void Remove(Geom*);
+
+	private:
+		Geom *geom;
+
+		static Sensor_Event_List *head;
+		Sensor_Event_List *next;
+};
+
 //objects that have become unactive, and should be removed
 class Object_Event_List
 {

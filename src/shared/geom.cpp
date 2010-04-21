@@ -60,9 +60,11 @@ Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to
 
 	collide = true; //on collision, create opposing forces
 
+	//events:
 	//for force handling (disable)
 	buffer_event=false;
 	force_to_body=NULL; //when true, points at wanted body
+	sensor_event=false;
 
 	//debug variables
 	flipper_geom = 0;
@@ -78,6 +80,7 @@ Geom::~Geom ()
 
 	//remove all events
 	Buffer_Event_List::Remove(this);
+	Sensor_Event_List::Remove(this);
 
 	//1: remove it from the list
 	if (!prev) //head in list, change head pointer

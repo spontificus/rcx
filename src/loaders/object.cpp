@@ -318,6 +318,8 @@ void Object_Template::Spawn (dReal x, dReal y, dReal z)
 	dGeomSetPosition (geom2, x, y, z+0.76);
 
 	data->flipper_geom = geom; //tmp debug solution
+	//enable script execution on sensor triggering (but not when untriggered)
+	data->Set_Sensor_Event ( ((Script*)1337) , NULL); //(triggered,untriggered)
 
 	//graphics
 	data->f_3d = graphics_debug2;

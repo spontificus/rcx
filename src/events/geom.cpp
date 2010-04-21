@@ -8,6 +8,8 @@
 void Geom::TMP_Events_Step(Uint32 step)
 {
 	Geom *geom;
+
+	//buffer:
 	while (Buffer_Event_List::Get_Event(&geom))
 	{
 		dBodyID bodyid = dGeomGetBody(geom->geom_id);
@@ -93,17 +95,33 @@ void Geom::TMP_Events_Step(Uint32 step)
 		}
 	}
 
-	//TODO: flippers disabled for now
-		/*if (geom->flipper_geom)
+	//sensors:
+	while (Sensor_Event_List::Get_Event(&geom))
+	{
+		if (geom->flipper_geom)
 		{
-			if (geom->colliding)
+			//this geom (the sensor) is connected to the flipper surface geom ("flipper_geom") which is moved
+			if (geom->sensor_last_state == true) //triggered
+			{
+				printlog(0, "triggered");
+			}
+			else //untriggered
+				printlog(0, "untriggered");
+		}
+		else
+			printlog(0, "WARNING: unidentified geom got configured as sensor?! - ignoring...");
+
+			//const dReal *pos;
+			//pos = dGeomGetPosition(geom->flipper_geom);
+			//dGeomSetPosition(
+			/*if (geom->colliding)
 			{
 				const dReal *pos;
 				pos = dGeomGetPosition(geom->flipper_geom);
 				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
 						pos[2]+step*0.02);
 				if ((geom->flipper_counter+=step) > 10)
-					geom->colliding=false;
+					//geom->colliding=false; //no
 			}
 			else if (geom->flipper_counter>0)
 			{
@@ -114,7 +132,6 @@ void Geom::TMP_Events_Step(Uint32 step)
 				geom->flipper_counter-=step;
 			}
 			else
-				geom->flipper_counter=0;
-		}
-		geom=geom->next;*/
+				geom->flipper_counter=0;*/
+	}
 }

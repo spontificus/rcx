@@ -59,6 +59,7 @@ void physics_step(void)
 
 	Collision_Feedback::Physics_Step(); //forces from collisions
 	Joint::Physics_Step(); //joint forces
+	Geom::Physics_Step(); //sensor/radar handling
 	camera.Physics_Step(); //move camera to wanted postion
 }
 

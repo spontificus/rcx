@@ -184,7 +184,11 @@ void Geom::Collision_Callback (void *data, dGeomID o1, dGeomID o2)
 	}
 }
 
-//set event
+//
+//set events:
+//
+
+//buffer
 void Geom::Set_Buffer_Event(dReal thres, dReal buff, Script *scr)
 {
 	if (thres > 0 && buff > 0 && scr)
@@ -208,11 +212,9 @@ void Geom::Set_Buffer_Event(dReal thres, dReal buff, Script *scr)
 	}
 }
 
-bool Geom::Set_Buffer_Body(Body *b)
+void Geom::Set_Buffer_Body(Body *b)
 {
 	force_to_body = b;
-
-	return true;
 }
 
 void Geom::Damage_Buffer(dReal force)
@@ -249,4 +251,42 @@ void Geom::Increase_Buffer(dReal buff)
 
 	if (buffer < 0) //still depleted, regenerate event
 		new Buffer_Event_List(this);
+}
+
+//sensor
+void Geom::Set_Sensor_Event(Script *s1, Script *s2)
+{
+	if (s1 || s2) //enable
+	{
+		sensor_triggered_script=s1;
+		sensor_untriggered_script=s2;
+		sensor_last_state=false;
+		sensor_event=true;
+	}
+	else //disable
+		sensor_event=false;
+}
+
+//physics step
+void Geom::Physics_Step()
+{
+	Geom *geom;
+	for (geom=head; geom; geom=geom->next)
+	{
+		if (geom->sensor_event)
+		{
+			//triggered/untriggered
+			if (geom->colliding != geom->sensor_last_state)
+			{
+				geom->sensor_last_state=geom->colliding;
+
+				new Sensor_Event_List(geom);
+			}
+
+			//always reset collision status for these geoms - allows update for each step
+			geom->colliding=false;
+		}
+
+		//if (geom->radar_event)... - TODO
+	}
 }
