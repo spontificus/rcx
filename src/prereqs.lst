@@ -1,11 +1,12 @@
 build/main.o: ./shared/info.hpp ./shared/internal.hpp ./shared/threads.hpp ./shared/printlog.hpp ./shared/runlevel.hpp ./shared/profile.hpp ./shared/track.hpp
-build/events/body.o: events/../shared/body.hpp
+build/events/body.o: events/../shared/body.hpp events/event_lists.hpp events/../shared/printlog.hpp
 build/events/event_lists.o: events/event_lists.hpp
-build/events/events.o: events/../shared/threads.hpp events/../shared/internal.hpp events/../shared/runlevel.hpp events/../shared/printlog.hpp events/../shared/geom.hpp events/../shared/profile.hpp events/../shared/joint.hpp events/../shared/camera.hpp
-build/events/geom.o: events/../shared/geom.hpp events/../shared/body.hpp events/../shared/track.hpp events/event_lists.hpp
+build/events/events.o: events/../shared/threads.hpp events/../shared/internal.hpp events/../shared/runlevel.hpp events/../shared/printlog.hpp events/../shared/geom.hpp events/../shared/profile.hpp events/../shared/joint.hpp events/../shared/camera.hpp events/timers.hpp
+build/events/geom.o: events/../shared/geom.hpp events/../shared/body.hpp events/../shared/track.hpp events/event_lists.hpp events/timers.hpp
 build/events/joint.o: events/../shared/joint.hpp events/../events/event_lists.hpp
 build/events/object.o: events/../shared/object.hpp events/event_lists.hpp
 build/events/profile.o: events/../shared/profile.hpp
+build/events/timers.o: events/timers.hpp events/../shared/object.hpp events/../shared/geom.hpp
 build/graphics/camera.o: graphics/../shared/camera.hpp
 build/graphics/geom.o: graphics/../shared/geom.hpp
 build/graphics/graphics.o: graphics/../shared/internal.hpp graphics/../shared/info.hpp graphics/../shared/track.hpp graphics/../shared/runlevel.hpp graphics/../shared/threads.hpp graphics/../shared/printlog.hpp graphics/../shared/camera.hpp

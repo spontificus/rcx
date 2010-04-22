@@ -16,6 +16,10 @@ Animation_Timer::Animation_Timer (Object *obj, Script *scr, dReal start, dReal s
 	next=head;
 	prev=NULL;
 	head=this;
+
+	//if another timer in list
+	if (next)
+		next->prev=this;
 }
 
 Animation_Timer::~Animation_Timer()
@@ -41,8 +45,11 @@ void Animation_Timer::Events_Step(Uint32 step)
 	{
 		//process timer:
 
+		//timer->object->Modify_Variable(name_here, 'f', timer->ounter); //set script variable
+		//timer->script->Execute(timer->object); //execute script (using this object for variable tables)
+
 		//
-		//TMP: assumes flipper
+		//instead: TMP: assumes flipper
 		//
 
 		//note: TMP: the script is actually a pointer to the flipper geom...
@@ -83,6 +90,21 @@ void Animation_Timer::Events_Step(Uint32 step)
 		if (	(timer->speed > 0 && timer->counter >= timer->goal) || //counter increased to goal
 			(timer->speed < 0 && timer->counter <= timer->goal)  ) //counter decreased to goal
 		{
+			//pretty much the same as above, "run the same script"
+			//timer->object->Modify_Variable(name_here, 'f', timer->goal); //set script variable
+			//timer->script->Execute(timer->object); //execute script (using this object for variable tables)
+
+			//TMP:
+			dGeomID geom = (dGeomID)timer->script;
+			const dReal *pos = dGeomGetPosition(geom);
+			dGeomSetPosition(geom, pos[0], pos[1], timer->goal);
+
+			//now that we're done elevating flipper (positive movement), start new timer for lowering it back:
+			//goas from old timer's goal to goal-2, during 2 seconds (slower - looks nice)
+			if (timer->speed > 0)
+				new Animation_Timer(timer->object,(Script*)geom,timer->goal,(timer->goal-2.0), 2.0);
+			//end of TMP
+
 			//delete
 			tmp=timer;
 			timer=timer->next; //next
