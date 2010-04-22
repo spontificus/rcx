@@ -15,7 +15,7 @@ Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to
 	printlog(2, "configuring Geom class");
 
 	//increase object activity counter
-	++object_parent->activity;
+	object_parent->Increase_Activity();
 
 	//parent object
 	if (obj->selected_space)
@@ -68,8 +68,6 @@ Geom::Geom (dGeomID geom, Object *obj): Component(obj) //pass object argument to
 
 	//debug variables
 	flipper_geom = 0;
-	flipper_counter = 0;
-
 	TMP_pillar_geom =false; //not a demo pillar geom
 }
 //destroys a geom, and removes it from the list
@@ -99,10 +97,6 @@ Geom::~Geom ()
 	dGeomDestroy(geom_id);
 
 	//decrease activity and check if 0
-	if ((--object_parent->activity) == 0)
-	{
-		printlog(2, "Object became inactive, generating event");
-		new Object_Event_List(object_parent);
-	}
+	object_parent->Decrease_Activity();
 }
 

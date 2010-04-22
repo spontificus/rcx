@@ -14,6 +14,7 @@
 #include "../shared/profile.hpp"
 #include "../shared/joint.hpp"
 #include "../shared/camera.hpp"
+#include "timers.hpp"
 
 SDL_Event event;
 
@@ -107,12 +108,14 @@ void event_step(Uint32 step)
 
 	//unlock sdl access
 	SDL_mutexV(sdl_mutex);
+
+	//timers
+	Animation_Timer::Events_Step(step);
 }
 
 int events_loop (void *d)
 {
 	printlog(1, "Starting event loop");
-	//dAllocateODEDataForThread (dAllocateFlagBasicData); //needed for manipulating ode from event thread
 	Uint32 time, time_old;
 	time_old = SDL_GetTicks();
 	while (runlevel == running)

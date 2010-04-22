@@ -3,6 +3,7 @@
 #include "../shared/body.hpp"
 #include "../shared/track.hpp"
 #include "event_lists.hpp"
+#include "timers.hpp"
 
 //temporary geom event processing
 void Geom::TMP_Events_Step(Uint32 step)
@@ -103,35 +104,14 @@ void Geom::TMP_Events_Step(Uint32 step)
 			//this geom (the sensor) is connected to the flipper surface geom ("flipper_geom") which is moved
 			if (geom->sensor_last_state == true) //triggered
 			{
-				printlog(0, "triggered");
+				//run script for each step with a value going from <z> to <z+2> over 0.1 seconds
+				const dReal *pos;
+				pos = dGeomGetPosition(geom->flipper_geom); //get position (need z)
+				new Animation_Timer(geom->object_parent, (Script*)geom->flipper_geom, pos[2], pos[2]+2.0, 0.1);
+				//note: Animation_Timer expects a script, but pass flipper geom instead...
 			}
-			else //untriggered
-				printlog(0, "untriggered");
 		}
 		else
 			printlog(0, "WARNING: unidentified geom got configured as sensor?! - ignoring...");
-
-			//const dReal *pos;
-			//pos = dGeomGetPosition(geom->flipper_geom);
-			//dGeomSetPosition(
-			/*if (geom->colliding)
-			{
-				const dReal *pos;
-				pos = dGeomGetPosition(geom->flipper_geom);
-				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
-						pos[2]+step*0.02);
-				if ((geom->flipper_counter+=step) > 10)
-					//geom->colliding=false; //no
-			}
-			else if (geom->flipper_counter>0)
-			{
-				const dReal *pos;
-				pos = dGeomGetPosition(geom->flipper_geom);
-				dGeomSetPosition(geom->flipper_geom, pos[0], pos[1],
-						pos[2]-step*0.02);
-				geom->flipper_counter-=step;
-			}
-			else
-				geom->flipper_counter=0;*/
 	}
 }

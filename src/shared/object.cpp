@@ -72,6 +72,20 @@ Object::~Object()
 	Object_Event_List::Remove(this);
 }
 
+void Object::Increase_Activity()
+{
+	++activity;
+}
+
+void Object::Decrease_Activity()
+{
+	if ((--activity) == 0)
+	{
+		printlog(2, "Object became inactive, generating event");
+		new Object_Event_List(this);
+	}
+}
+
 //destroys all objects
 void Object::Destroy_All()
 {

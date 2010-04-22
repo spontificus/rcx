@@ -53,6 +53,9 @@ class Object
 		//removes empty objects
 		static void Events_Step();
 
+		//for increasing/decreasing activity counter
+		void Increase_Activity();
+		void Decrease_Activity();
 	private:
 		Object();
 		//the following are either using or inherited from this class
@@ -61,14 +64,15 @@ class Object
 		friend class Car;
 
 		//things to keep track of when cleaning out object
-		Component *components;
 		unsigned int activity; //counts geoms,bodies and future stuff (script timers, loops, etc)
+
+		Component *components;
 		dSpaceID selected_space;
+
 		//to allow acces to the two above pointers
-		friend class Component;
-		friend class Geom;
-		friend class Body;
-		friend class Space;
+		friend class Component; //components
+		friend class Geom; //selected space
+		friend class Space; //selected space
 
 		//placeholder for more data
 			

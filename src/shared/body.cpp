@@ -11,7 +11,7 @@ Body::Body (dBodyID body, Object *obj): Component(obj)
 	printlog(2, "configuring Body class");
 
 	//increase object activity counter
-	++object_parent->activity;
+	object_parent->Increase_Activity();
 
 	//ad it to the list
 	next = head;
@@ -61,10 +61,6 @@ Body::~Body()
 	dBodyDestroy(body_id);
 
 	//decrease activity and check if 0
-	if ((--object_parent->activity) == 0)
-	{
-		printlog(2, "Object became inactive, generating event");
-		new Object_Event_List(object_parent);
-	}
+	object_parent->Decrease_Activity();
 }
 

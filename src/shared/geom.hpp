@@ -48,7 +48,6 @@ class Geom: public Component
 
 		//debug variables
 		dGeomID flipper_geom;
-		int flipper_counter;
 
 		bool TMP_pillar_geom;
 		file_3d *TMP_pillar_graphics; //TMP
