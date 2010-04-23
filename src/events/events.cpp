@@ -16,7 +16,6 @@
 #include "../shared/camera.hpp"
 #include "timers.hpp"
 
-SDL_Event event;
 
 
 //TMP: keep track of demo spawn stuff
@@ -26,98 +25,14 @@ Object_Template *funbox = NULL;
 Car *Venom1, *Venom2;
 
 
-void event_step(Uint32 step)
-{
-	//loop geoms to see if any event
-	Geom::TMP_Events_Step(step);
-	Joint::TMP_Events_Step(step);
-	Body::TMP_Events_Step(step);
-
-	Object::Events_Step(); //remove inactive objects
-
-	//get SDL events
-	SDL_mutexP(sdl_mutex); //make sure not colliding with other threads
-
-	while (SDL_PollEvent (&event))
-	{
-		switch (event.type)
-		{
-			case SDL_VIDEORESIZE:
-				graphics_event_resize_w = event.resize.w;
-				graphics_event_resize_h = event.resize.h;
-				graphics_event_resize = true;
-			break;
-
-			case SDL_QUIT:
-				runlevel = done;
-			break;
-
-			case SDL_ACTIVEEVENT:
-				if (event.active.gain == 0)
-					printlog(1, "(FIXME: pause when losing focus (or being iconified)!)");
-			break;
-			//check for special key presses
-			case SDL_KEYDOWN:
-				switch (event.key.keysym.sym)
-				{
-					case SDLK_ESCAPE:
-						runlevel = done;
-					break;
-
-					//box spawning
-					case SDLK_F5:
-						box->Spawn (0,0,10);
-					break;
-
-					//sphere spawning
-					case SDLK_F6:
-						sphere->Spawn (0,0,10);
-					break;
-
-					//spawn funbox
-					case SDLK_F7:
-						funbox->Spawn (0,0,10);
-					break;
-
-					//tmp: switch cars
-					case SDLK_F8:
-						if (profile_head->car == Venom1)
-						{
-							profile_head->car = Venom2;
-							camera.car = Venom2;
-						}
-						else
-						{
-							profile_head->car = Venom1;
-							camera.car = Venom1;
-						}
-					break;
-
-					default:
-						break;
-				}
-			break;
-
-			default:
-				break;
-		}
-	}
-
-	Profile_Events_Step(step);
-
-
-	//unlock sdl access
-	SDL_mutexV(sdl_mutex);
-
-	//timers
-	Animation_Timer::Events_Step(step);
-}
-
 int events_loop (void *d)
 {
 	printlog(1, "Starting event loop");
-	Uint32 time, time_old;
+
+	SDL_Event event;
+	Uint32 time, time_old, delta;
 	time_old = SDL_GetTicks();
+
 	while (runlevel == running)
 	{
 		//if syncing, sleep until physics signals
@@ -132,8 +47,94 @@ int events_loop (void *d)
 		SDL_mutexP(ode_mutex);
 
 		time = SDL_GetTicks();
-		event_step(time-time_old);
+		delta = time-time_old;
 
+		//process events
+		Geom::TMP_Events_Step(delta);
+		Joint::TMP_Events_Step(delta);
+		Body::TMP_Events_Step(delta);
+
+		Object::Events_Step(); //remove inactive objects
+
+		//get SDL events
+		SDL_mutexP(sdl_mutex); //make sure not colliding with other threads
+
+		while (SDL_PollEvent (&event))
+		{
+			switch (event.type)
+			{
+				case SDL_VIDEORESIZE:
+					graphics_event_resize_w = event.resize.w;
+					graphics_event_resize_h = event.resize.h;
+					graphics_event_resize = true;
+				break;
+
+				case SDL_QUIT:
+					runlevel = done;
+				break;
+
+				case SDL_ACTIVEEVENT:
+					if (event.active.gain == 0)
+						printlog(1, "(FIXME: pause when losing focus (or being iconified)!)");
+				break;
+				//check for special key presses
+				case SDL_KEYDOWN:
+					switch (event.key.keysym.sym)
+					{
+						case SDLK_ESCAPE:
+							runlevel = done;
+						break;
+
+						//box spawning
+						case SDLK_F5:
+							box->Spawn (0,0,10);
+						break;
+
+						//sphere spawning
+						case SDLK_F6:
+							sphere->Spawn (0,0,10);
+						break;
+
+						//spawn funbox
+						case SDLK_F7:
+							funbox->Spawn (0,0,10);
+						break;
+
+						//tmp: switch cars
+						case SDLK_F8:
+							if (profile_head->car == Venom1)
+							{
+								profile_head->car = Venom2;
+								camera.car = Venom2;
+							}
+							else
+							{
+								profile_head->car = Venom1;
+								camera.car = Venom1;
+							}
+						break;
+
+						default:
+							break;
+					}
+				break;
+
+				default:
+					break;
+			}
+		}
+
+		Profile_Events_Step(delta);
+
+
+		//unlock sdl access
+		SDL_mutexV(sdl_mutex);
+
+		//timers
+		Animation_Timer::Events_Step(delta);
+
+
+		//done
 		SDL_mutexV(ode_mutex);
 
 		time_old = time;

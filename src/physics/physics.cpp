@@ -48,21 +48,6 @@ bool physics_init(void)
 }
 
 
-void physics_step(void)
-{
-	Car::Physics_Step(); //control, antigrav...
-	Body::Physics_Step(); //drag (air/liquid "friction")
-
-	dSpaceCollide (space, 0, &Geom::Collision_Callback);
-	dWorldQuickStep (world, internal.stepsize);
-	dJointGroupEmpty (contactgroup);
-
-	Collision_Feedback::Physics_Step(); //forces from collisions
-	Joint::Physics_Step(); //joint forces
-	Geom::Physics_Step(); //sensor/radar handling
-	camera.Physics_Step(); //move camera to wanted postion
-}
-
 int physics_loop (void *d)
 {
 	printlog(1, "Starting physics loop");
@@ -73,9 +58,20 @@ int physics_loop (void *d)
 
 	while (runlevel == running)
 	{
-		//technically, collision detection doesn't need this, but since it's already in step function, this is easier
+		//technically, collision detection doesn't need this, but this is easier
 		SDL_mutexP(ode_mutex);
-		physics_step();
+
+		Car::Physics_Step(); //control, antigrav...
+		Body::Physics_Step(); //drag (air/liquid "friction")
+
+		dSpaceCollide (space, 0, &Geom::Collision_Callback);
+		dWorldQuickStep (world, internal.stepsize);
+		dJointGroupEmpty (contactgroup);
+
+		Collision_Feedback::Physics_Step(); //forces from collisions
+		Joint::Physics_Step(); //joint forces
+		Geom::Physics_Step(); //sensor/radar handling
+		camera.Physics_Step(); //move camera to wanted postion
 
 		//done with ode
 		SDL_mutexV(ode_mutex);

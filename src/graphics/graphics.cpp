@@ -111,54 +111,6 @@ bool graphics_init(void)
 }
 
 
-//render lists, position "camera" (time step not used for now)
-void graphics_step (Uint32 step)
-{
-	//keep track of how many rendered frames
-	++frame_count;
-
-	//see if we need to resize
-	if (graphics_event_resize)
-	{
-		//make sure sdl request doesn't collide with other thread
-		SDL_mutexP(sdl_mutex);
-		screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
-		SDL_mutexV(sdl_mutex);
-
-		if (screen)
-		{
-			graphics_resize (screen->w, screen->h);
-			graphics_event_resize = false;
-		}
-		else
-			printlog(0, "Warning: resizing failed, will retry");
-	}
-
-	//start rendering
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-//	glLoadIdentity();
-
-	glPushMatrix();
-
-	//move camera
-	camera.Graphics_Step();
-
-	//place sun
-	glLightfv (GL_LIGHT0, GL_POSITION, track.position);
-
-	//render world
-	glPushMatrix();
-		glCallList (track.f_3d->list);
-	glPopMatrix();
-
-	Geom::Graphics_Step();
-
-
-	glPopMatrix();
-
-	SDL_GL_SwapBuffers();
-}
 
 int graphics_loop ()
 {
@@ -179,7 +131,50 @@ int graphics_loop ()
 
 		time = SDL_GetTicks();
 
-		graphics_step(time-time_old);
+		//keep track of how many rendered frames
+		++frame_count;
+
+		//see if we need to resize
+		if (graphics_event_resize)
+		{
+			//make sure sdl request doesn't collide with other thread
+			SDL_mutexP(sdl_mutex);
+			screen = SDL_SetVideoMode (graphics_event_resize_w, graphics_event_resize_h, 0, flags);
+			SDL_mutexV(sdl_mutex);
+
+			if (screen)
+			{
+				graphics_resize (screen->w, screen->h);
+				graphics_event_resize = false;
+			}
+			else
+				printlog(0, "Warning: resizing failed, will retry");
+		}
+
+		//start rendering
+		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//	glLoadIdentity();
+
+		glPushMatrix();
+
+		//move camera
+		camera.Graphics_Step();
+
+		//place sun
+		glLightfv (GL_LIGHT0, GL_POSITION, track.position);
+
+		//render world
+		glPushMatrix();
+			glCallList (track.f_3d->list);
+		glPopMatrix();
+
+		Geom::Graphics_Step();
+
+
+		glPopMatrix();
+
+		SDL_GL_SwapBuffers();
 
 		time_old = time;
 
