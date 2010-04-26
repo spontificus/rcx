@@ -115,8 +115,6 @@ bool graphics_init(void)
 int graphics_loop ()
 {
 	printlog(1, "Starting graphics loop");
-	Uint32 time, time_old;
-	time_old = SDL_GetTicks();
 
 	while (runlevel == running)
 	{
@@ -128,8 +126,6 @@ int graphics_loop ()
 			SDL_CondWaitTimeout (sync_cond, sync_mutex, 500); //if no signal in half a second, stop waiting
 			SDL_mutexV(sync_mutex);
 		}
-
-		time = SDL_GetTicks();
 
 		//keep track of how many rendered frames
 		++frame_count;
@@ -175,8 +171,6 @@ int graphics_loop ()
 		glPopMatrix();
 
 		SDL_GL_SwapBuffers();
-
-		time_old = time;
 
 		//in case event thread can't pump SDL events (limit of some OSes)
 		SDL_mutexP(sdl_mutex);
