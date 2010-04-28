@@ -1,8 +1,17 @@
+/*
+ * RCX Copyright (C) Slinger
+ *
+ * This program comes with ABSOLUTELY NO WARRANTY!
+ *
+ * This is free software, and you are welcome to
+ * redistribute it under certain conditions.
+ *
+ * See license.txt and README for more info
+ */
+
 //handle events, both real events like window resizing, termination and
 //keyboard, but also respond to simulations (usually when objects collides
 //and they are meant to respond to collisions - like building destructions...)
-//
-//See main.c for licensing
 
 #include <SDL/SDL.h>
 #include <ode/ode.h>

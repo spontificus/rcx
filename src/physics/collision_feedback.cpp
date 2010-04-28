@@ -1,3 +1,14 @@
+/*
+ * RCX Copyright (C) Slinger
+ *
+ * This program comes with ABSOLUTELY NO WARRANTY!
+ *
+ * This is free software, and you are welcome to
+ * redistribute it under certain conditions.
+ *
+ * See license.txt and README for more info
+ */
+
 #include "collision_feedback.hpp"
 
 Collision_Feedback *Collision_Feedback::head = NULL;

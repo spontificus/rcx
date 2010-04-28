@@ -1,6 +1,15 @@
+/*
+ * RCX Copyright (C) Slinger
+ *
+ * This program comes with ABSOLUTELY NO WARRANTY!
+ *
+ * This is free software, and you are welcome to
+ * redistribute it under certain conditions.
+ *
+ * See license.txt and README for more info
+ */
+
 //handle drawing of 3d/2d accelerated graphics
-//
-//See main.c for licensing
 
 #include <SDL/SDL.h>
 #include <GL/glu.h>

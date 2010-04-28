@@ -1,7 +1,15 @@
+/*
+ * RCX Copyright (C) Slinger
+ *
+ * This program comes with ABSOLUTELY NO WARRANTY!
+ *
+ * This is free software, and you are welcome to
+ * redistribute it under certain conditions.
+ *
+ * See license.txt and README for more info
+ */
+
 //handles physics simulation (mostly rigid body dynamics)
-//
-//See main.c about licensing
-//
 
 #include <SDL/SDL_timer.h>
 #include <SDL/SDL_mutex.h>

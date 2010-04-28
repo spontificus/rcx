@@ -1,3 +1,14 @@
+/*
+ * RCX Copyright (C) Slinger
+ *
+ * This program comes with ABSOLUTELY NO WARRANTY!
+ *
+ * This is free software, and you are welcome to
+ * redistribute it under certain conditions.
+ *
+ * See license.txt and README for more info
+ */
+
 #include "file_3d.hpp"
 #include "printlog.hpp"
 #include <stdlib.h>
