@@ -22,9 +22,9 @@ class Geom: public Component
 		~Geom();
 
 		//methods for steps/simulations:
-		static void Graphics_Step();
 		static void Physics_Step();
 		static void TMP_Events_Step(Uint32 step);
+
 		static void Collision_Callback(void *, dGeomID, dGeomID);
 
 		//end of methods, variables:
@@ -89,6 +89,7 @@ class Geom: public Component
 		Geom *prev;
 		Geom *next;
 		friend void Body::TMP_Events_Step(Uint32 step); //this is just TMP for accessing above...
+		friend void Graphic_List_Update(); //to allow loop through geoms
 };
 
 #endif

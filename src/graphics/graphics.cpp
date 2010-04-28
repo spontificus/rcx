@@ -18,6 +18,7 @@
 #endif
 
 #include "../shared/camera.hpp"
+#include "graphic_list.hpp"
 
 SDL_Surface *screen;
 Uint32 flags = SDL_OPENGL | SDL_RESIZABLE;
@@ -154,19 +155,18 @@ int graphics_loop ()
 
 		glPushMatrix();
 
-		//move camera
-		camera.Graphics_Step();
+			//move camera
+			camera.Graphics_Step();
 
-		//place sun
-		glLightfv (GL_LIGHT0, GL_POSITION, track.position);
+			//place sun
+			glLightfv (GL_LIGHT0, GL_POSITION, track.position);
 
-		//render world
-		glPushMatrix();
-			glCallList (track.f_3d->list);
-		glPopMatrix();
+			//render world
+			glPushMatrix();
+				glCallList (track.f_3d->list);
+			glPopMatrix();
 
-		Geom::Graphics_Step();
-
+			Graphic_List_Render();
 
 		glPopMatrix();
 

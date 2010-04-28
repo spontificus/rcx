@@ -8,8 +8,8 @@ build/events/object.o: events/../shared/object.hpp events/event_lists.hpp
 build/events/profile.o: events/../shared/profile.hpp
 build/events/timers.o: events/timers.hpp events/../shared/object.hpp events/../shared/geom.hpp
 build/graphics/camera.o: graphics/../shared/camera.hpp
-build/graphics/geom.o: graphics/../shared/geom.hpp
-build/graphics/graphics.o: graphics/../shared/internal.hpp graphics/../shared/info.hpp graphics/../shared/track.hpp graphics/../shared/runlevel.hpp graphics/../shared/threads.hpp graphics/../shared/printlog.hpp graphics/../shared/camera.hpp
+build/graphics/graphic_list.o: graphics/graphic_list.hpp graphics/../shared/printlog.hpp graphics/../shared/geom.hpp graphics/../shared/body.hpp
+build/graphics/graphics.o: graphics/../shared/internal.hpp graphics/../shared/info.hpp graphics/../shared/track.hpp graphics/../shared/runlevel.hpp graphics/../shared/threads.hpp graphics/../shared/printlog.hpp graphics/../shared/camera.hpp graphics/graphic_list.hpp
 build/loaders/car.o: loaders/../shared/car.hpp loaders/../shared/printlog.hpp loaders/../shared/track.hpp loaders/../shared/geom.hpp loaders/../shared/body.hpp loaders/../shared/joint.hpp loaders/colours.hpp loaders/debug_draw.hpp loaders/text_file.hpp
 build/loaders/conf.o: loaders/conf.hpp loaders/text_file.hpp loaders/../shared/printlog.hpp
 build/loaders/debug_draw.o: loaders/debug_draw.hpp loaders/colours.hpp loaders/../shared/printlog.hpp

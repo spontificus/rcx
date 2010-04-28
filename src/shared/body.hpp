@@ -41,6 +41,7 @@ class Body: public Component
 		//set next to null in last link in chain (prev = NULL in first)
 		Body *prev, *next;
 		static Body *head;
+		friend void Graphic_List_Update(); //to allow loop through bodies
 
 		//data for drag (air+water friction)
 		//values for enabled/disabled drag

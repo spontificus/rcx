@@ -19,6 +19,7 @@
 
 #include "collision_feedback.hpp"
 
+#include "../graphics/graphic_list.hpp"
 
 unsigned int stepsize_warnings = 0;
 
@@ -76,6 +77,7 @@ int physics_loop (void *d)
 		//done with ode
 		SDL_mutexV(ode_mutex);
 		
+		Graphic_List_Update(); //make copy of position/rotation for rendering
 
 		//broadcast to wake up sleeping threads
 		if (internal.sync_events || internal.sync_graphics)

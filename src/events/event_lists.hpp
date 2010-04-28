@@ -1,5 +1,5 @@
-#ifndef _RCX_EVENT_LISTS
-#define _RCX_EVENT_LISTS
+#ifndef _RCX_EVENT_LISTS_H
+#define _RCX_EVENT_LISTS_H
 //definitions of components that causes/uses events
 #include "../shared/component.hpp"
 #include "../shared/geom.hpp"

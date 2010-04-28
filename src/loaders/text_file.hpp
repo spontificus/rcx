@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 //initial values for holding data (automatically resized if needed)
-#define INITIAL_BUFFER_SIZE 150 //how manny characters
-#define INITIAL_LIST_SIZE 8 //how many words
+#define INITIAL_TEXT_FILE_BUFFER_SIZE 150 //how manny characters
+#define INITIAL_TEXT_FILE_LIST_SIZE 8 //how many words
 
 class Text_File
 {

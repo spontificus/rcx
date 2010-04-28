@@ -17,9 +17,9 @@ Text_File::Text_File ()
 	word_count = 0; //no words read yet
 
 	//allocate buffer anyway (even if not open), if reopening
-	buffer_size = INITIAL_BUFFER_SIZE;
-	list_size = INITIAL_LIST_SIZE;
-	buffer = (char*) malloc (buffer_size);
+	buffer_size = INITIAL_TEXT_FILE_BUFFER_SIZE;
+	list_size = INITIAL_TEXT_FILE_LIST_SIZE;
+	buffer = (char*) malloc (buffer_size*sizeof(char));
 	words = (char**) malloc (list_size*sizeof(char**));
 }
 
@@ -134,7 +134,7 @@ bool Text_File::Line_To_Buffer()
 		
 		//else: I guess the buffer was too small...
 		printlog(1, "Note: Text_File buffer was too small, resizing");
-		buffer_size += INITIAL_BUFFER_SIZE;
+		buffer_size += INITIAL_TEXT_FILE_BUFFER_SIZE;
 		buffer = (char*) realloc (buffer, buffer_size);
 	}
 }
@@ -230,7 +230,7 @@ void Text_File::Append_To_List(char *word)
 	if (word_count > list_size)
 	{
 		printlog(1, "Note: Text_File word list was too small, resizing");
-		list_size+=INITIAL_LIST_SIZE;
+		list_size+=INITIAL_TEXT_FILE_LIST_SIZE;
 		words = (char**) realloc(words, list_size*sizeof(char**));
 	}
 
