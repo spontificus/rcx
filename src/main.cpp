@@ -87,17 +87,12 @@ int main (int argc, char *argv[])
 		printf("(Passing arguments - not supported)\n\n");
 
 	//check if program was called with another pwd (got '/' in "name")
-	int count;
-	for (count = strlen(argv[0]); count != -1; --count)
-		if (argv[0][count] == '/')
-		{
-			char pwd[count+2]; //1 for \0 and 1 for [0]
-			strncpy (pwd, argv[0], count+1);
-			pwd[count+1] = '\0';
-			printf ("(changing pwd: %s)\n", pwd);
-			chdir (pwd);
-			break;
-		}
+	if (char *s = strrchr(argv[0], '/'))
+	{
+		*s='\0'; //modify string to end at last slash
+		printf("(changing pwd: %s)\n", argv[0]);
+		chdir (argv[0]);
+	}
 
 	printlog(0, "Loading...\n");
 
