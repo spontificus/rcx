@@ -1,114 +1,191 @@
-﻿ - = [ { RollCageX 0.05 } ] = -
-
-Welcome to a new version of rcx, featuring many different improvements (compared
-to the earlier version).
 
 
-
-[LICENSING]
----
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
----
+  /----------====----------\
+ [# RollCageX version 0.06 #]
+  \----------====----------/
 
 
-[RUNNING]
+
+1) [TABLE OF CONTENTS]
+
+1) Table of Contents
+2) Licensing
+3) Running
+4) Default Controls
+5) Configuration
+6) Hardware Requirements
+7) Software Requirements
+   7.1) OpenGL
+   7.2) SDL
+   7.3) ODE (single precision)
+8) Compilation
+9) Credits
+10) Links
+
+
+
+2) [LICENSING]
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+3) [RUNNING]
+
 In order to run a compiled binary of this version of rcx, make sure "rcx" (or
 "rcx.exe" for windows) binary is located inside the directory containing the
 "data" directory. If you extracted one of the official archives (0.05.tgz or
 0.05.win.zip) that should not be a problem (if you compiled it from the source
 available inside "src" in the archive "0.05.tgz", the binary is still placed
 inside the correct directory). Simply speaking: Always keep the program
-together with its “data” directory.
+together with its directory.
 
 The src directory is only needed if you want/need to compile the program. It
 can be removed if you do not need it.
 
 
-[CONTROLS]
-It is now possible to change keys by modifying the key list in the default
-profile (data/profiles/default/keys.lst). The following is the default keys:
 
-Arrow keys for accelerating/reversing and steering, space for drifting breaks,
-Left Alt controls non-locking breaks (should be easier than the drifting breaks
-which will act similar to the breaks in the original games). It is also possible
-to move the camera along the X, Y and Z axes by pressing A/D , W/S and Q/E
-respectively.
+4) [DEFAULT CONTROLS]
 
-You can also spawn extra "debug" boxes, which will be dropped above the center
-of the ground, using F5 and F6 - these keys can not be changed in the key list.
-(F6 drops a box at a distance which should take it exactly 10 seconds to reach
-the ground - this is good for reality/simulation time comparison)
+While (almost) all input keys can be changed (data/profiles/default/keys.lst),
+the following is the defaults keys for the car:
 
+* Arrow keys for accelerating/reversing and steering
+* Space for non-locking breaks (should be easier than the drifting breaks
+* Left Alt for locking/drifting breaks
+* Changing of camera modes using F1-F4
+(the camera can also be tweaked along the X, Y and Z axes using A/D, W/S and
+Q/E)
 
-[CONFIGURATION]
-Most things in the game can now be configured using normal text files, but what
-you might be most interested in is most likely specified in “data/internal.conf”.
-It provides many ways of tweaking the performance, and also is the place where
-you will be able to select resolution, fullscreen toggling, and eye_distance.
+For quitting the game, just press Esc.
 
-If you are wondering about the last one, the viewing angle in the game is
-calculated based on your eye distance from the screen, in pixels: You can
-determine how many pixels a normal length unit is by dividing your screen height
-(or width) resolution with your physical screen height (or width). And you can
-then multiply the resulting value with the distance you have measured between
-your eyes and screen.
-
-This system got the advantage of always providing a realistic viewing angle for
-all resolutions. But if you don't like this, you can force a viewing angle in the
-configuration file (internal.conf).
+There are also a couple of demo/debug keys (these keys can not be changed):
+* F5 - spawn box
+* F6 - spawn sphere
+* F7 - spawn funbox (a composite object consisting of several boxes)
+* F8 - switch car
 
 
-[REQUIREMENTS]
-The current version shouldn't take to much computer power, any modern
-system should be enough.
 
-Running the game requires the following extra runtime libraries (unless you
-are running a static binary, such as the official windows binary)
+5) [Configuration]
 
-Library dependencies:
-	Open Dynamics Engine		(ODE)
-	Simple Directmedia Layer	(SDL)
-	OpenGL implementation		(OS or graphics server specific)
+RCX can be configured using a couple of plain-text files divided in several
+directories inside the data directory, such as "teams", "worlds" and "profile"
 
-If you need (or want) to compile rcx, you will need the dev version of
-the libraries (but only if your distro/os provide them separately)
+What you might be most interested in is specified in internal.conf, it
+provides many ways of tweaking the performance, and also is the place where
+you will be able to select resolution, full screen toggling, and eye_distance.
 
+If you are wondering about the last one:
 
-[INSTALLING]
-Just run the program, there is no reason to install it (just make sure it's
-in the same directory as "data").
+The viewing angle in the game is calculated based on your eye distance from
+the screen, in pixels.This system got the advantage of always providing a
+realistic viewing angle for all resolutions. But if you don't like this, you
+can force a viewing angle in the configuration file (internal.conf).
 
-
-[COMPILING]
-Running "make" in the directory containing the sourcecode should be enough.
-If you are running windows, you should install MinGW (a minimalistic GNU port
-running under windows) and the libraries (requiring compilation). You are
-probably going to want to compile a static binary by typing "make win32-static".
-If you are not running a dev friendly os (such as GNU or BSD), or windows (which
-got a separate make option), you might have to look into changing the normal
-compilation arguments in the Makefile to get compilation to work.
+If you want to tweak this value to your specific workstation, determine how
+many pixels a normal length unit is by dividing your screen height (or width)
+resolution with your physical screen height (or width). You can then multiply
+the resulting value with the distance you have measured between your eyes and
+screen (in reality).
 
 
-[CREDITS]
-(people referred to by their nickname on the gorcx.net forum)
 
-"MeAkaJon"	- the creator of the project
-"Soul Slinger"	- me, coder (the creator of the current versions of rcx)
+6) [HARDWARE REQUIREMENTS]
 
-Finally a special thanks to the whole rollcage community!
+The requirements for running rcx is modest, a recommended minimum would be:
+
+* Processor:	1GHz, 32bit
+* Memory:	10MiB free
+* Graphics:	basic OpenGL 3D acceleration (nvidious no recommended)
+
+Note: hardware opengl acceleration recommended, but of course, software
+rendering is an alternative, assuming you got enough processing power.
+
+Also, a POSIX compliant OS is recommended (such as GNU or BSD). Windows is not
+a targeted OS, because it's not POSIX compliant and generally difficult to
+use/develop on. There is however a windows compiled version of rcx (rcx.exe)
+which hopefully will work.
 
 
-[LINKS]
-http://www.gorcx.net
-http://www.planetrollcage.com
+
+7) [SOFTWARE REQUIREMENTS]
+
+RCX needs OpenGL and two libraries (the compiled windows binary includes these
+libraries):
+
+   5.1) [OPENGL]
+   As mentioned above, some kind of OpenGL implementation is needed for
+   rendering of 3D graphics. This is OS dependent, but it is quite common
+   (either hardware or software).
+
+   5.2) [SDL]
+   RCX uses the library "Simple DirectMedia Layer" for some OS independent
+   functionality.
+
+   5.3) [ODE]
+   RCX uses the library "Open Dynamics Engine" for some physics simulations
+
+   IMPORTANT: ode can be compiled in two modes: Single or Double precision
+   While rcx should work with both, double precision has shown to cause
+   problems: while rcx will compile, it will crash as soon as a race starts.
+   If your distro provides packages with different versions of ode, MAKE SURE
+   THAT YOU CHOSE: Single precision (SP)
+
+
+
+8) [COMPILING]
+
+If you want/need to compile rcx, check if your distro provides development
+libraries for ODE and SDL in separate packages and if so, install them. Also
+make sure you got at least a Make program and a C++ compiler (such as GNU Make
+and the GNU C++ Compiler, g++).  
+Then just cd into the src directory and type "make" to compile rcx.
+
+
+On windows things will be more difficult: first of all, install MinGW (a
+minimal port of GNU for windows - it provides compilers and standard libraries
+for compilation), make sure to install make, autoconf and g++. Msys is also
+recommended (as it provides a user interface to MinGW).
+
+Then you must compile and install the SDL and ODE libraries. This procedure is
+not covered here, but once you have downloaded and extracted the tarballs, use
+"./configure", "make" and "make install" to install them.
+
+Then use "make -f Makefile.doze" inside the src directory of rcx to compile a
+static binary ("rcx.exe").
+
+
+
+9) [CREDITS]
+
+  * "Slinger"       Creator (coder)
+  * "XEWEASEL"      3D Models
+
+  Special Thanks:
+  * "K.Mac"         Extensive testing, hacks and new ideas
+  * "MeAkaJon"      Creator/maintainer of gorcx.net webpage
+  * "Spontificus"   Testing, hacks, github registration and various fixes
+
+  Other Projects that made RCX possible:
+  * "Simple DirectMedia Layer"      OS/hardware abstractions
+  * "Open Dynamics Engine"          Rigid body dynamics and collision detection
+  * "The GNU Project"               Its fight for computer freedom has changed the world
+
+
+
+10) [LINKS]
+
+* http://www.gorcx.net
+
